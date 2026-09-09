@@ -88,3 +88,26 @@
 {"ts":"2026-09-09T12:29:19.871Z","type":"TEST_PASSED","command":"pnpm test --run","result":"156 passed; 2 skipped"}
 {"ts":"2026-09-09T12:29:19.871Z","type":"TEST_PASSED","command":"pnpm test:e2e","result":"9 passed; 3 skipped"}
 {"ts":"2026-09-09T12:29:19.871Z","type":"TEST_PASSED","command":"pnpm lint && pnpm build","result":"passed"}
+{"ts":"2026-09-09T12:47:41.582Z","type":"MODEL_ROLE_CHANGED","role":"BUILDER","selectedModel":"gpt-5.6-luna"}
+{"ts":"2026-09-09T12:48:44.704Z","type":"CORE_FREEZE_CREATED","path":"CORE_FREEZE.md","contractHash":"ee3eeec282a34d9eedc4c7b9357e5239b29b5b123618ec7d62e9b344cd858025"}
+{"ts":"2026-09-09T12:48:44.704Z","type":"BUILDER_PHASE_STARTED","phaseId":"director-phase-3","role":"BUILDER","selectedModel":"gpt-5.6-luna","taskId":"director-phase3-trace-viewer"}
+{"ts":"2026-09-09T12:48:44.705Z","type":"TASK_STATUS_CHANGED","taskId":"director-phase2-semantic-planner","status":"COMPLETED","progress":100,"evidence":"CORE_FREEZE.md"}
+{"ts":"2026-09-09T12:48:44.706Z","type":"TASK_STATUS_CHANGED","taskId":"director-phase2-visual-unit-contract","status":"COMPLETED","progress":100,"evidence":"CORE_FREEZE.md"}
+{"ts":"2026-09-09T12:48:44.706Z","type":"TASK_STATUS_CHANGED","taskId":"director-phase2-capability-contract","status":"COMPLETED","progress":100,"evidence":"CORE_FREEZE.md"}
+{"ts":"2026-09-09T12:48:44.707Z","type":"TASK_STATUS_CHANGED","taskId":"director-phase2-per-unit-retrieval","status":"COMPLETED","progress":100,"evidence":"CORE_FREEZE.md"}
+{"ts":"2026-09-09T12:48:44.707Z","type":"TASK_STATUS_CHANGED","taskId":"director-phase2-data-contract-validation","status":"COMPLETED","progress":100,"evidence":"CORE_FREEZE.md"}
+{"ts":"2026-09-09T12:48:44.708Z","type":"TASK_STATUS_CHANGED","taskId":"director-phase2-duration-validation","status":"COMPLETED","progress":100,"evidence":"CORE_FREEZE.md"}
+{"ts":"2026-09-09T12:48:44.708Z","type":"TASK_STATUS_CHANGED","taskId":"director-phase2-selection-trace","status":"COMPLETED","progress":100,"evidence":"CORE_FREEZE.md"}
+{"ts":"2026-09-09T12:48:44.708Z","type":"TASK_STATUS_CHANGED","taskId":"director-phase2-composition-linter","status":"COMPLETED","progress":100,"evidence":"CORE_FREEZE.md"}
+{"ts":"2026-09-09T12:48:44.709Z","type":"TASK_STATUS_CHANGED","taskId":"director-phase2-fallback-contract","status":"COMPLETED","progress":100,"evidence":"CORE_FREEZE.md"}
+{"ts":"2026-09-09T12:48:44.709Z","type":"TASK_STATUS_CHANGED","taskId":"director-phase2-golden-tests","status":"COMPLETED","progress":100,"evidence":"CORE_FREEZE.md"}
+{"ts":"2026-09-09T12:48:44.710Z","type":"TASK_STATUS_CHANGED","taskId":"director-phase2-layout-integration","status":"COMPLETED","progress":100,"evidence":"CORE_FREEZE.md"}
+{"ts":"2026-09-09T12:48:44.710Z","type":"TASK_STATUS_CHANGED","taskId":"director-phase2-core-freeze","status":"COMPLETED","progress":100,"evidence":"CORE_FREEZE.md"}
+{"ts":"2026-09-09T12:48:44.710Z","type":"TASK_STATUS_CHANGED","taskId":"director-phase3-trace-viewer","status":"IN_PROGRESS","progress":1}
+{"ts":"2026-09-09T18:17:20.434Z","type":"TASK_STATUS_CHANGED","taskId":"director-phase3-runtime-migration","status":"COMPLETED","progress":100,"evidence":"docs/director-recovery/13_REAL_WORLD_REGRESSION.md"}
+{"ts":"2026-09-09T18:17:20.435Z","type":"TASK_STATUS_CHANGED","taskId":"director-phase3-trace-viewer","status":"COMPLETED","progress":100,"evidence":"docs/director-recovery/13_REAL_WORLD_REGRESSION.md"}
+{"ts":"2026-09-09T18:17:20.435Z","type":"TASK_STATUS_CHANGED","taskId":"director-phase3-real-regression","status":"COMPLETED","progress":100,"evidence":"docs/director-recovery/13_REAL_WORLD_REGRESSION.md"}
+{"ts":"2026-09-09T18:17:20.435Z","type":"TASK_STATUS_CHANGED","taskId":"director-phase3-acceptance","status":"COMPLETED","progress":100,"evidence":"docs/director-recovery/13_REAL_WORLD_REGRESSION.md"}
+{"ts":"2026-09-09T18:17:20.435Z","type":"BUILDER_PHASE_COMPLETED","phaseId":"director-phase-3","realTestStatus":"PASS","usedFallback":false}
+{"ts":"2026-09-09T18:17:20.436Z","type":"WAITING_REVIEW","phaseId":"director-phase-4","reason":"Independent verifier and external GitHub review required"}
+{"ts":"2026-09-09T18:17:51.556Z","type":"EXTERNAL_REVIEW_HANDOFF_CREATED","projectId":"cuecut3-cecb1e53"}

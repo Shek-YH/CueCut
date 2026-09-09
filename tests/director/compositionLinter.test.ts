@@ -121,4 +121,52 @@ describe('Director composition linter', () => {
     expect(result.metrics.visualEventsPerMinute).toBe(2);
     expect(result.errors.map((error) => error.code)).toContain('visual_event_density_out_of_range');
   });
+
+  it('rejects unknown motion and SFX IDs in the final composition', () => {
+    const composition = createFixtureProject();
+    composition.effects = [composition.effects[0]!];
+    composition.effects[0] = {
+      ...composition.effects[0]!,
+      motion: {
+        enter: { ...composition.effects[0]!.motion.enter, motionId: 'unknown-motion' },
+        exit: composition.effects[0]!.motion.exit,
+      },
+      sfx: { sfxId: 'unknown-sfx', offsetSec: 0, gain: 0.5 },
+    };
+
+    const result = lintComposition(composition, []);
+
+    expect(result.errors.map((error) => error.code)).toEqual(expect.arrayContaining(['unknown_motion_id', 'unknown_sfx_id']));
+  });
+
+  it('rejects excessive consecutive reuse of one effect family', () => {
+    const composition = createFixtureProject();
+    composition.effects = Array.from({ length: 4 }, (_, index) => ({
+      ...createFixtureProject().effects[0]!,
+      effectId: `fx-${index}`,
+      time: { startSec: index, endSec: index + 1 },
+    }));
+
+    const result = lintComposition(composition, []);
+
+    expect(result.errors.map((error) => error.code)).toContain('excessive_repetition');
+  });
+
+  it('rejects an ordered process whose linked effect omits items', () => {
+    const composition = createFixtureProject();
+    composition.effects = [composition.effects[0]!];
+    const visualUnit = {
+      visualUnitId: 'vu-s-1',
+      sourceSubtitleIds: ['s-1'],
+      startSec: 2.2,
+      endSec: 7.8,
+      semanticIntent: 'ordered_process' as const,
+      importance: 1,
+      structure: { type: 'ordered_process', items: [{ id: '1', text: '第一步' }, { id: '2', text: '第二步' }, { id: '3', text: '第三步' }, { id: '4', text: '第四步' }] },
+    };
+
+    const result = lintComposition(composition, [], { visualUnits: [visualUnit] });
+
+    expect(result.errors.map((error) => error.code)).toContain('ordered_structure_incomplete');
+  });
 });

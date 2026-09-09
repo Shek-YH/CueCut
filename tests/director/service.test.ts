@@ -214,4 +214,35 @@ describe('Director service', () => {
       durationContractPassed: true,
     })]);
   });
+
+  it('clamps malformed subtitle timing before local schema validation', async () => {
+    const composition = createFixtureProject();
+    composition.subtitles = [{ id: 's-bad', startSec: 4, endSec: 3, text: 'ASR' }];
+    const service = createDirectorService(async () => composition, () => createFixtureProject());
+
+    const result = await service.generate({});
+
+    expect(result.usedFallback).toBe(false);
+    expect(result.composition.subtitles[0]!.endSec).toBeGreaterThan(result.composition.subtitles[0]!.startSec);
+    expect(result.warnings).toContain('Director timing locally clamped');
+  });
+
+  it('repairs effect duration to capability bounds with an explicit warning', async () => {
+    const composition = createFixtureProject();
+    composition.effects = [composition.effects[0]!];
+    composition.effects[0] = { ...composition.effects[0]!, familyId: 'quote', variantId: 'default', time: { startSec: 0, endSec: 5 }, content: { quoteText: '重要观点' } };
+    const quote = createEffectCapability({
+      familyId: 'quote', variantId: 'default', displayName: 'Quote', semanticTags: ['quote', 'text'], contentSlots: ['quoteText'], minDurationSec: 0.5, maxDurationSec: 2, supportedAspectRatios: ['16:9'], recommendedMotionCategories: [], recommendedSfxIntents: [],
+    });
+    const service = createDirectorService(async () => composition, () => createFixtureProject());
+
+    const result = await service.generate({
+      effectCapabilities: [quote],
+      candidateIndexes: { effects: [{ familyId: 'quote', variantId: 'default' }, { familyId: 'numeric', variantId: 'ring-a' }, { familyId: 'comparison', variantId: 'compare-a' }], motions: ['spring-in', 'scale-fade-out'], sfx: [] },
+    });
+
+    expect(result.usedFallback).toBe(false);
+    expect(result.composition.effects[0]!.time.endSec - result.composition.effects[0]!.time.startSec).toBe(2);
+    expect(result.warnings).toContain('Director effect duration repaired to capability bounds');
+  });
 });

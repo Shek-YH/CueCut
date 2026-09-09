@@ -18,8 +18,15 @@ import { effectRegistry } from '../effects/registry';
 import { findMotion, motionRegistry } from '../motions/registry';
 import { evaluateMotion } from '../motions/runtime';
 import { evaluateSceneAtTime } from '../render/scene';
+import type { SelectionTraceEntry } from '../director/types';
 
 type ViewId = 'edit' | 'lab' | 'sfx' | 'learn';
+
+type GenerationDiagnostics = {
+  usedFallback: boolean;
+  warnings: string[];
+  selectionTrace: SelectionTraceEntry[];
+};
 
 const navItems: Array<{ id: ViewId; icon: string; label: string }> = [
   { id: 'edit', icon: '✦', label: '编辑' },
@@ -383,6 +390,7 @@ export function App() {
   const [sourceVideoFile, setSourceVideoFile] = useState<File | null>(null);
   const [generationState, setGenerationState] = useState<'idle' | 'generating' | 'success' | 'error'>('idle');
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [generationDiagnostics, setGenerationDiagnostics] = useState<GenerationDiagnostics | null>(null);
   const [exportMode, setExportMode] = useState<'full-video' | 'transparent-mov'>('full-video');
   const [exportState, setExportState] = useState<'idle' | 'exporting' | 'success' | 'error'>('idle');
   const [exportError, setExportError] = useState<string | null>(null);
@@ -439,6 +447,7 @@ export function App() {
     setMediaProbeError(null);
     setGenerationState('idle');
     setGenerationError(null);
+    setGenerationDiagnostics(null);
     setVideoSrc(videoSourceManager.replace(file));
     const importedProject = createFixtureProject();
     importedProject.project.video.sourceFileName = file.name;
@@ -476,6 +485,7 @@ export function App() {
     if (!sourceVideoFile || mediaProbeState !== 'ready' || generationState === 'generating') return;
     setGenerationState('generating');
     setGenerationError(null);
+    setGenerationDiagnostics(null);
     try {
       const response = await fetch('/api/generate-effects', {
         method: 'POST',
@@ -486,7 +496,14 @@ export function App() {
         },
         body: sourceVideoFile,
       });
-      const payload = await response.json() as { message?: string; transcript?: TranscriptSegment[]; composition?: ProjectComposition };
+      const payload = await response.json() as {
+        message?: string;
+        transcript?: TranscriptSegment[];
+        composition?: ProjectComposition;
+        usedFallback?: boolean;
+        warnings?: string[];
+        selectionTrace?: SelectionTraceEntry[];
+      };
       if (!response.ok || !payload.composition || !payload.transcript) {
         throw new Error(payload.message ?? ('生成失败（HTTP ' + response.status + '）'));
       }
@@ -495,6 +512,11 @@ export function App() {
       clock.setTime(0);
       setSelectedEffectId(payload.composition.effects[0]?.effectId ?? '');
       setView('edit');
+      setGenerationDiagnostics({
+        usedFallback: payload.usedFallback === true,
+        warnings: Array.isArray(payload.warnings) ? payload.warnings : [],
+        selectionTrace: Array.isArray(payload.selectionTrace) ? payload.selectionTrace : [],
+      });
       setGenerationState('success');
     } catch (error) {
       setGenerationState('error');
@@ -580,10 +602,12 @@ export function App() {
         <label className="btn" htmlFor="video-input">导入视频</label>
         <span className="file-name">{project.project.video.sourceFileName ?? '未导入视频'}</span>
         <button className="btn primary" disabled={!sourceVideoFile || mediaProbeState !== 'ready' || generationState === 'generating' || generationState === 'success'} onClick={() => void handleGenerateEffects()} type="button">
-          {generationState === 'generating' ? '生成中…' : generationState === 'success' ? '已生成并载入' : '开始生成动效'}
+          {generationState === 'generating' ? '生成中…' : generationState === 'success' ? generationDiagnostics?.usedFallback ? '已载入（本地回退）' : '已生成并载入' : '开始生成动效'}
         </button>
         {generationState === 'generating' && <span className="tiny" data-testid="generation-status">提取音频 → ASR → Director → Workspace</span>}
-        {generationState === 'success' && <span className="tiny" data-testid="generation-status">已载入 Workspace</span>}
+        {generationState === 'success' && generationDiagnostics?.usedFallback && <span className="tiny error" data-testid="generation-fallback">⚠ 已使用本地回退，结果已载入（非 Director 成功）</span>}
+        {generationState === 'success' && <span className="tiny" data-testid="generation-status">{generationDiagnostics?.usedFallback ? '已载入 Workspace · 非 Director 成功' : '已载入 Workspace'}</span>}
+        {generationState === 'success' && generationDiagnostics && generationDiagnostics.warnings.length > 0 && <span className="tiny error" data-testid="generation-warnings">警告：{generationDiagnostics.warnings.join('；')}</span>}
         {generationError && <span className="tiny error" role="alert">{generationError}</span>}
         {mediaProbeError && <span className="tiny error" role="alert">{mediaProbeError}</span>}
         <button className="btn" disabled={store.undoDepth() === 0} onClick={() => store.undo()} type="button">↶</button>
@@ -602,6 +626,20 @@ export function App() {
         <button className="btn" onClick={handleContinueProject} type="button">继续</button>
         {projectStatus && <span className="tiny" data-testid="project-status">{projectStatus}</span>}
       </header>
+      {generationState === 'success' && generationDiagnostics && generationDiagnostics.selectionTrace.length > 0 && (
+        <section className="director-trace" data-testid="selection-trace" aria-label="Director Selection Trace">
+          <strong>Director Selection Trace</strong>
+          {generationDiagnostics.selectionTrace.map((entry) => (
+            <div className="trace-entry" data-testid={`selection-trace-${entry.visualUnitId}`} key={entry.visualUnitId}>
+              <span>VisualUnit: {entry.visualUnitId}</span>
+              <span>semanticIntent: {entry.semanticIntent}</span>
+              {entry.selected && <span>selected: {entry.selected}</span>}
+              {entry.retrievedCandidates.length > 0 && <span>retrievedCandidates: {entry.retrievedCandidates.join(', ')}</span>}
+              <span>Data Contract: {entry.dataContractPassed ? '通过' : '未通过'} · Duration Contract: {entry.durationContractPassed ? '通过' : '未通过'}</span>
+            </div>
+          ))}
+        </section>
+      )}
       <section className="workspace">
         <nav className="nav" aria-label="主导航">
           {navItems.map((item) => (

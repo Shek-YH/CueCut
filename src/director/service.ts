@@ -3,6 +3,7 @@ import { createOneCallGuard } from './oneCallGuard';
 import { assertCompositionCandidateIds, sanitizeCompositionCandidateIds, type CandidateIndexes } from './validator';
 import { lintComposition } from './compositionLinter';
 import type { EffectCapabilityCandidate, SelectionTraceEntry, VisualUnit } from './types';
+import { resolveCompositionLayout } from '../layout/compositionLayout';
 
 export interface DirectorResult {
   composition: ProjectComposition;
@@ -43,19 +44,24 @@ export function createDirectorService(provider: DirectorProvider, fallback: Loca
         };
       }
 
-      const timingWarnings = timingRepair.changed ? ['Director timing locally clamped'] : [];
+      const capabilityRepair = repairCompositionCapabilityDuration(result.data, getEffectCapabilities(input));
+      const timingWarnings = [
+        ...(timingRepair.changed ? ['Director timing locally clamped'] : []),
+        ...(capabilityRepair.changed ? ['Director effect duration repaired to capability bounds'] : []),
+      ];
+      const resolvedComposition = applyVisualContextLayout(capabilityRepair.value, input);
 
       const candidateIndexes = getCandidateIndexes(input);
       if (candidateIndexes) {
         try {
-          assertCompositionCandidateIds(result.data, candidateIndexes);
+          assertCompositionCandidateIds(resolvedComposition, candidateIndexes);
         } catch (error) {
-          const sanitized = sanitizeCompositionCandidateIds(result.data, candidateIndexes);
+          const sanitized = sanitizeCompositionCandidateIds(resolvedComposition, candidateIndexes);
           return { composition: sanitized.composition, usedFallback: true, warnings: [...timingWarnings, ...(sanitized.warnings.length ? sanitized.warnings : [error instanceof Error ? error.message : 'Director candidate validation failed'])], selectionTrace: getSelectionTrace(input) };
         }
       }
 
-      const compositionLint = lintComposition(result.data, getEffectCapabilities(input), {
+      const compositionLint = lintComposition(resolvedComposition, getEffectCapabilities(input), {
         safeMargin: getSafeMargin(input),
         visualUnits: getVisualUnits(input),
         visualContext: getVisualContext(input),
@@ -70,7 +76,7 @@ export function createDirectorService(provider: DirectorProvider, fallback: Loca
         };
       }
 
-      return { composition: result.data, usedFallback: false, warnings: timingWarnings, selectionTrace: materializeSelectionTrace(input, result.data, compositionLint), lint: compositionLint };
+      return { composition: resolvedComposition, usedFallback: false, warnings: timingWarnings, selectionTrace: materializeSelectionTrace(input, resolvedComposition, compositionLint), lint: compositionLint };
     },
   };
 }
@@ -131,6 +137,36 @@ function getVisualContext(input: unknown): import('./types').VisualContext | und
   return context && typeof context === 'object' && !Array.isArray(context) ? context as import('./types').VisualContext : undefined;
 }
 
+function applyVisualContextLayout(composition: ProjectComposition, input: unknown): ProjectComposition {
+  const context = getVisualContext(input);
+  return context ? resolveCompositionLayout(composition, context) : composition;
+}
+
+function repairCompositionCapabilityDuration(
+  composition: ProjectComposition,
+  capabilities: EffectCapabilityCandidate[],
+): { value: ProjectComposition; changed: boolean } {
+  if (capabilities.length === 0) return { value: composition, changed: false };
+  const byId = new Map(capabilities.map((candidate) => [`${candidate.familyId}:${candidate.variantId}`, candidate]));
+  let changed = false;
+  const value = {
+    ...composition,
+    effects: composition.effects.map((effect) => {
+      const candidate = byId.get(`${effect.familyId}:${effect.variantId}`);
+      if (!candidate || candidate.timingCapabilities?.includes('persistent') || candidate.timingCapabilities?.includes('item-reveal')) return effect;
+      const duration = effect.time.endSec - effect.time.startSec;
+      const boundedDuration = Math.min(Math.max(duration, candidate.minDurationSec), candidate.maxDurationSec);
+      if (boundedDuration === duration) return effect;
+      const endSec = Math.min(composition.project.durationSec, effect.time.startSec + boundedDuration);
+      const startSec = endSec - boundedDuration >= 0 ? effect.time.startSec : Math.max(0, endSec - boundedDuration);
+      if (startSec === effect.time.startSec && endSec === effect.time.endSec) return effect;
+      changed = true;
+      return { ...effect, time: { startSec, endSec } };
+    }),
+  };
+  return { value, changed };
+}
+
 function getCandidateIndexes(input: unknown): CandidateIndexes | undefined {
   if (!input || typeof input !== 'object' || !('candidateIndexes' in input)) return undefined;
   return (input as { candidateIndexes?: CandidateIndexes }).candidateIndexes;
@@ -187,6 +223,15 @@ function clampCompositionTiming(input: unknown): { value: unknown; changed: bool
       const result = clampRange(time as Record<string, unknown>, duration);
       changed ||= result.changed;
       return { ...effectRecord, time: result.value };
+      });
+  }
+  const subtitles = next.subtitles;
+  if (Array.isArray(subtitles)) {
+    next.subtitles = subtitles.map((subtitle) => {
+      if (!subtitle || typeof subtitle !== 'object' || Array.isArray(subtitle)) return subtitle;
+      const result = clampRange(subtitle as Record<string, unknown>, duration);
+      changed ||= result.changed;
+      return result.value;
     });
   }
   return { value: next, changed };

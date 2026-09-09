@@ -2,6 +2,8 @@ import type { ProjectComposition } from '../project/schema';
 import { validateEffectContent } from './capabilities';
 import type { EffectCapabilityCandidate, VisualContext, VisualUnit } from './types';
 import { blockedZonesForVisualContext } from '../layout/visualContext';
+import { findMotion } from '../motions/registry';
+import { sfxRegistry } from '../sfx/registry';
 
 export interface CompositionLintError {
   code: string;
@@ -48,16 +50,37 @@ export function lintComposition(
       lintItemCues(effect.content.items, effect.time, path, errors);
     }
     if (effect.time.startSec < 0 || effect.time.endSec > composition.project.durationSec) errors.push({ code: 'time_out_of_project_range', path: [...path, 'time'], message: 'Effect time is outside the project range' });
+    if (!findMotion(effect.motion.enter.motionId)) errors.push({ code: 'unknown_motion_id', path: [...path, 'motion', 'enter', 'motionId'], message: `Motion is not registered: ${effect.motion.enter.motionId}` });
+    if (!findMotion(effect.motion.exit.motionId)) errors.push({ code: 'unknown_motion_id', path: [...path, 'motion', 'exit', 'motionId'], message: `Motion is not registered: ${effect.motion.exit.motionId}` });
+    if (effect.sfx && !sfxRegistry.some((sfx) => sfx.sfxId === effect.sfx?.sfxId)) errors.push({ code: 'unknown_sfx_id', path: [...path, 'sfx', 'sfxId'], message: `SFX is not registered: ${effect.sfx.sfxId}` });
     const rect = effect.layout;
-    if (rect.nx < safeMargin || rect.ny < safeMargin || rect.nx + rect.nw > 1 - safeMargin || rect.ny + rect.nh > 1 - safeMargin) errors.push({ code: 'layout_out_of_bounds', path: [...path, 'layout'], message: 'Effect layout exceeds the safe area' });
+    const epsilon = 1e-6;
+    if (rect.nx < safeMargin - epsilon || rect.ny < safeMargin - epsilon || rect.nx + rect.nw > 1 - safeMargin + epsilon || rect.ny + rect.nh > 1 - safeMargin + epsilon) errors.push({ code: 'layout_out_of_bounds', path: [...path, 'layout'], message: 'Effect layout exceeds the safe area' });
     if (blockedZones.some((blocked) => overlaps(rect, blocked))) errors.push({ code: 'layout_overlaps_visual_context', path: [...path, 'layout'], message: 'Effect layout overlaps a subject, face, subtitle reserve, or no-go zone' });
     visualEventCount += 1;
     if (Array.isArray(effect.content.items)) visualEventCount += effect.content.items.length;
   });
 
+  let previousFamily: string | undefined;
+  let consecutiveFamilyCount = 0;
+  composition.effects.forEach((effect, index) => {
+    consecutiveFamilyCount = effect.familyId === previousFamily ? consecutiveFamilyCount + 1 : 1;
+    previousFamily = effect.familyId;
+    if (consecutiveFamilyCount > 3) errors.push({ code: 'excessive_repetition', path: ['effects', String(index), 'familyId'], message: `Effect family repeats more than three times consecutively: ${effect.familyId}` });
+  });
+
   const highImportanceUnits = (options.visualUnits ?? []).filter((unit) => unit.importance >= 0.8);
   const highImportanceCoverage = highImportanceUnits.length === 0 ? 1 : highImportanceUnits.filter((unit) => composition.segments.some((segment) => segment.sourceSubtitleIds.some((id) => unit.sourceSubtitleIds.includes(id)))).length / highImportanceUnits.length;
   if (highImportanceCoverage < 1) errors.push({ code: 'high_importance_coverage_missing', path: ['segments'], message: 'A high-importance VisualUnit has no linked composition segment' });
+  for (const unit of options.visualUnits ?? []) {
+    const supportedStructures = ['ordered_process', 'list', 'ranking', 'comparison'];
+    if (!unit.structure || !supportedStructures.includes(unit.structure.type)) continue;
+    const linkedSegmentIds = composition.segments.filter((segment) => unit.sourceSubtitleIds.some((subtitleId) => segment.sourceSubtitleIds.includes(subtitleId))).map((segment) => segment.segmentId);
+    const linkedEffects = composition.effects.filter((effect) => linkedSegmentIds.includes(effect.segmentId));
+    const actualItemCount = linkedEffects.reduce((count, effect) => count + (Array.isArray(effect.content.items) ? effect.content.items.length : 0), 0);
+    const expectedItemCount = unit.structure.items?.length ?? 0;
+    if (expectedItemCount > 0 && actualItemCount < expectedItemCount) errors.push({ code: 'ordered_structure_incomplete', path: ['visualUnits', unit.visualUnitId], message: `VisualUnit requires ${expectedItemCount} items but linked composition contains ${actualItemCount}` });
+  }
   const visualEventsPerMinute = composition.project.durationSec > 0 ? visualEventCount / (composition.project.durationSec / 60) : 0;
   if ((options.visualUnits?.length ?? 0) > 0 && composition.directorMeta.densityTargetPerMin > 0) {
     const target = composition.directorMeta.densityTargetPerMin;

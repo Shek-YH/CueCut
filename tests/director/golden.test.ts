@@ -69,4 +69,33 @@ describe('CueCut Director Golden regressions', () => {
     expect(result.usedFallback).toBe(true);
     expect(result.warnings).toContain('provider offline');
   });
+
+  it('accepts a complete v2 Director result with capability, provenance, trace, and no fallback', async () => {
+    const composition = createFixtureProject();
+    composition.project.durationSec = 6;
+    composition.effects = [{
+      ...composition.effects[1]!,
+      familyId: 'quote',
+      variantId: 'default',
+      segmentId: 'seg-1',
+      time: { startSec: 0, endSec: 1 },
+      content: { quoteText: '先做重要的事' },
+    }];
+    composition.segments = [{ ...composition.segments[0]!, sourceSubtitleIds: ['s-1'], startSec: 0, endSec: 1 }];
+    const quote = createEffectCapability({
+      familyId: 'quote', variantId: 'default', displayName: 'Quote', semanticTags: ['quote', 'text'], contentSlots: ['quoteText'], minDurationSec: 0.5, maxDurationSec: 8, supportedAspectRatios: ['16:9'], recommendedMotionCategories: [], recommendedSfxIntents: [],
+    });
+    const service = createDirectorService(async () => composition, () => createFixtureProject());
+
+    const result = await service.generate({
+      visualUnits: [{ visualUnitId: 'vu-s-1', sourceSubtitleIds: ['s-1'], startSec: 0, endSec: 1, semanticIntent: 'quote', importance: 0.8, structure: { type: 'quote' } }],
+      effectCapabilities: [quote],
+      selectionTrace: [{ visualUnitId: 'vu-s-1', semanticIntent: 'quote', retrievedCandidates: ['quote:default'], dataContractPassed: true, durationContractPassed: true }],
+      candidateIndexes: { effects: [{ familyId: 'quote', variantId: 'default' }], motions: ['spring-in', 'scale-fade-out'], sfx: [] },
+    });
+
+    expect(result.usedFallback).toBe(false);
+    expect(result.selectionTrace?.[0]).toMatchObject({ selected: 'quote:default', dataContractPassed: true, durationContractPassed: true });
+    expect(result.lint?.ok).toBe(true);
+  });
 });

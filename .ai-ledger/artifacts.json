@@ -108,6 +108,36 @@
       "path": "docs/director-recovery/PHASE2_PROGRESS.md",
       "kind": "progress-report",
       "status": "IN_PROGRESS"
+    },
+    {
+      "id": "director-phase2-test-results",
+      "path": "docs/director-recovery/10_PHASE2_TEST_RESULTS.md",
+      "kind": "test-report",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "director-phase3-implementation",
+      "path": "docs/director-recovery/11_PHASE3_IMPLEMENTATION_REPORT.md",
+      "kind": "implementation-report",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "director-requirement-evidence",
+      "path": "docs/director-recovery/12_REQUIREMENT_EVIDENCE.md",
+      "kind": "requirement-evidence",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "id": "director-real-regression",
+      "path": "docs/director-recovery/13_REAL_WORLD_REGRESSION.md",
+      "kind": "real-world-evidence",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "director-pre-push-acceptance",
+      "path": "docs/director-recovery/14_PRE_PUSH_ACCEPTANCE.md",
+      "kind": "acceptance-report",
+      "status": "WAITING_REVIEW"
     }
   ]
 }
