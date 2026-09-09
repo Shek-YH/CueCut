@@ -19,11 +19,10 @@ export function assertCompositionCandidateScopes(
     const segment = composition.segments.find((candidate) => candidate.segmentId === effect.segmentId);
     if (!segment) throw new Error(`Effect ${effect.effectId} is outside the VisualUnit candidate scope: segment is missing`);
 
-    const unit = visualUnits.find((candidate) => candidate.sourceSubtitleIds.some((id) => segment.sourceSubtitleIds.includes(id)));
-    if (!unit) throw new Error(`Effect ${effect.effectId} is outside the VisualUnit candidate scope: unit is missing`);
-
-    const bundle = candidateBundles.find((candidate) => candidate.visualUnitId === unit.visualUnitId);
-    const selected = bundle?.candidates.some((candidate) => candidate.familyId === effect.familyId && candidate.variantId === effect.variantId);
+    const matchingUnits = visualUnits.filter((candidate) => candidate.sourceSubtitleIds.some((id) => segment.sourceSubtitleIds.includes(id)));
+    if (matchingUnits.length === 0) throw new Error(`Effect ${effect.effectId} is outside the VisualUnit candidate scope: unit is missing`);
+    const bundles = matchingUnits.map((unit) => candidateBundles.find((candidate) => candidate.visualUnitId === unit.visualUnitId));
+    const selected = bundles.every((bundle) => bundle?.candidates.some((candidate) => candidate.familyId === effect.familyId && candidate.variantId === effect.variantId));
     if (!selected) {
       throw new Error(`Effect ${effect.effectId} is outside the VisualUnit candidate scope: ${effect.familyId}:${effect.variantId}`);
     }

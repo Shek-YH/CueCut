@@ -83,13 +83,23 @@ export function lintComposition(
     if (!unit.structure || !supportedStructures.includes(unit.structure.type)) continue;
     const linkedSegmentIds = composition.segments.filter((segment) => unit.sourceSubtitleIds.some((subtitleId) => segment.sourceSubtitleIds.includes(subtitleId))).map((segment) => segment.segmentId);
     const linkedEffects = composition.effects.filter((effect) => linkedSegmentIds.includes(effect.segmentId));
-    const actualItemCount = linkedEffects.reduce((count, effect) => {
+    const structuredEffects = linkedEffects.filter((effect) => {
       const candidate = capabilityById.get(`${effect.familyId}:${effect.variantId}`);
-      const slots = candidate?.dataContract.itemSlots.length ? candidate.dataContract.itemSlots : ['items', 'steps', 'entries'];
-      return count + slots.reduce((slotCount, slot) => slotCount + (Array.isArray(effect.content[slot]) ? effect.content[slot].length : 0), 0);
-    }, 0);
+      return Boolean(candidate?.dataContract.itemSlots.length && ['steps', 'list', 'ranking'].includes(candidate.dataContract.kind));
+    });
+    const actualItems = structuredEffects.flatMap((effect) => getEffectItems(effect, capabilityById.get(`${effect.familyId}:${effect.variantId}`)));
+    const actualItemCount = actualItems.length;
     const expectedItemCount = unit.structure.items?.length ?? 0;
+    if (expectedItemCount > 0 && structuredEffects.length === 0) errors.push({ code: 'ordered_effect_capability_missing', path: ['visualUnits', unit.visualUnitId], message: 'Ordered/list structure requires a linked effect with an item-capable data contract' });
     if (expectedItemCount > 0 && actualItemCount < expectedItemCount) errors.push({ code: 'ordered_structure_incomplete', path: ['visualUnits', unit.visualUnitId], message: `VisualUnit requires ${expectedItemCount} items but linked composition contains ${actualItemCount}` });
+    for (const [index, expectedItem] of (unit.structure.items ?? []).entries()) {
+      const actualItem = actualItems[index];
+      if (!actualItem || expectedItem.startSec === undefined || expectedItem.endSec === undefined) continue;
+      const cueStartSec = getItemCueStart(actualItem);
+      if (cueStartSec === undefined || cueStartSec < expectedItem.startSec - 0.25 || cueStartSec > expectedItem.endSec + 0.25) {
+        errors.push({ code: 'ordered_item_source_mismatch', path: ['visualUnits', unit.visualUnitId, 'items', String(index)], message: `Item ${expectedItem.id} is not cued within its source subtitle range` });
+      }
+    }
   }
   const majorIntentTransitions = composition.segments.filter((segment, index) => index > 0 && segment.intent !== composition.segments[index - 1]?.intent).length;
   visualEventCount += majorIntentTransitions;
@@ -135,4 +145,17 @@ function lintItemCues(
     if (previousCue !== undefined && startSec < previousCue) errors.push({ code: 'item_cue_out_of_order', path: [...path, 'content', 'items', String(index), 'cue', 'startSec'], message: 'Item cues must be chronological' });
     previousCue = startSec;
   });
+}
+
+function getEffectItems(effect: ProjectComposition['effects'][number], candidate: EffectCapabilityCandidate | undefined): unknown[] {
+  const slots = candidate?.dataContract.itemSlots.length ? candidate.dataContract.itemSlots : ['items', 'steps', 'entries'];
+  return slots.flatMap((slot) => Array.isArray(effect.content[slot]) ? effect.content[slot] : []);
+}
+
+function getItemCueStart(item: unknown): number | undefined {
+  if (!item || typeof item !== 'object' || Array.isArray(item)) return undefined;
+  const cue = (item as Record<string, unknown>).cue;
+  if (!cue || typeof cue !== 'object' || Array.isArray(cue)) return undefined;
+  const startSec = (cue as Record<string, unknown>).startSec;
+  return typeof startSec === 'number' && Number.isFinite(startSec) ? startSec : undefined;
 }

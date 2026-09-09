@@ -26,7 +26,7 @@ The explicit real test `CUECUT_RUN_REAL_DIRECTOR=1 pnpm exec vitest run tests/di
 | SelectionTrace coverage | 18/18 VisualUnits in the successful runtime path |
 | Provider Director calls | 1 |
 
-The ComfyUI sample itself does not contain a complete ordered four-step sequence. That acceptance case is now covered by the committed fixture `tests/fixtures/director/ai-reading-four-step.srt`: the planner recognizes the real conversational markers (`第一步`, `第二`, `第三步啊`, `第四步啊`) as one ordered-process VisualUnit, and the fixture composition test verifies all four item cues and completeness.
+The ComfyUI sample itself does not contain a complete ordered four-step sequence. That acceptance case is covered by the committed fixture `tests/fixtures/director/ai-reading-four-step.srt`: the planner recognizes the real conversational markers (`第一步`, `第二`, `第三步啊`, `第四步啊`) as one ordered-process VisualUnit, and the fixture composition test verifies all four item cues and completeness. An opt-in real-video run against `测试素材与api/jj.mp4` was also attempted: the first run exposed an ambiguous cross-unit segment and was correctly rejected; after changing scope validation to require a candidate in every overlapping bundle, a subsequent run was blocked by `fetch failed` before Director acceptance. That network-blocked attempt is recorded as FAIL/NOT_ACCEPTED, not as a real ordered PASS.
 
 ## Repairs observed
 

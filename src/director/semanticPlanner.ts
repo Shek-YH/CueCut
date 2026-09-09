@@ -4,16 +4,23 @@ const orderedMarker = /(?:第\s*([一二三四五六七八九十百\d]+)\s*步?|
 const chineseNumbers: Record<string, number> = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10, 百: 100 };
 
 export function planVisualUnits(transcript: TranscriptInput[]): DirectorSemanticPlan {
-  const ordered = transcript
+  const orderedMarkers = transcript
     .map((segment, index) => ({ segment, order: readOrder(segment.text), index }))
     .filter((entry): entry is { segment: TranscriptInput; order: number; index: number } => entry.order !== null);
 
-  ordered.sort((left, right) => left.order - right.order || left.index - right.index);
+  const orderedByNumber = new Map<number, Array<{ segment: TranscriptInput; order: number; index: number }>>();
+  for (const entry of orderedMarkers) orderedByNumber.set(entry.order, [...(orderedByNumber.get(entry.order) ?? []), entry]);
+  const ordered = [...orderedByNumber.entries()]
+    .map(([order, entries]) => ({ order, entries, representative: [...entries].sort((left, right) => orderedContent(right.segment.text).length - orderedContent(left.segment.text).length || left.index - right.index)[0]! }))
+    .sort((left, right) => left.order - right.order || left.representative.index - right.representative.index);
 
   const units: VisualUnit[] = [];
-  if (ordered.length >= 2) units.push(createOrderedProcessUnit(ordered.map((entry) => entry.segment)));
+  const orderedSourceSegments = ordered.length >= 2
+    ? transcript.slice(ordered[0]!.entries.reduce((min, entry) => Math.min(min, entry.index), ordered[0]!.entries[0]!.index), ordered[ordered.length - 1]!.entries.reduce((max, entry) => Math.max(max, entry.index), ordered[ordered.length - 1]!.entries[0]!.index) + 1)
+    : [];
+  if (ordered.length >= 2) units.push(createOrderedProcessUnit(ordered.map((entry) => entry.representative.segment), orderedSourceSegments));
 
-  const orderedIds = new Set(ordered.map((entry) => entry.segment.id));
+  const orderedIds = new Set(orderedSourceSegments.map((segment) => segment.id));
   transcript.forEach((segment, index) => {
     if (orderedIds.has(segment.id)) return;
     units.push(createLocalUnit(segment, index));
@@ -28,7 +35,7 @@ export function planVisualUnits(transcript: TranscriptInput[]): DirectorSemantic
   };
 }
 
-function createOrderedProcessUnit(segments: TranscriptInput[]): VisualUnit {
+function createOrderedProcessUnit(segments: TranscriptInput[], sourceSegments: TranscriptInput[]): VisualUnit {
   const items: VisualUnitItem[] = segments.map((segment, index) => ({
     id: `item-${readOrder(segment.text) ?? index + 1}`,
     text: orderedContent(segment.text),
@@ -37,7 +44,7 @@ function createOrderedProcessUnit(segments: TranscriptInput[]): VisualUnit {
   }));
   return {
     visualUnitId: `vu-${segments[0]!.id}`,
-    sourceSubtitleIds: segments.map((segment) => segment.id),
+    sourceSubtitleIds: sourceSegments.map((segment) => segment.id),
     startSec: Math.min(...segments.map((segment) => segment.startSec)),
     endSec: Math.max(...segments.map((segment) => segment.endSec)),
     semanticIntent: 'ordered_process',

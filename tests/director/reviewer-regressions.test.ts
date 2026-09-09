@@ -27,6 +27,23 @@ describe('Director independent-review regressions', () => {
     expect(result.units[0]?.structure?.items).toHaveLength(4);
   });
 
+  it('keeps continuation subtitles inside the ordered unit and chooses substantive duplicate markers', () => {
+    const result = planVisualUnits([
+      { id: 's-1', startSec: 0, endSec: 1, text: '第一步，我先问骨架' },
+      { id: 's-1b', startSec: 1, endSec: 2, text: '它论证了什么、怎么论证' },
+      { id: 's-2', startSec: 2, endSec: 3, text: '好，第二。' },
+      { id: 's-2b', startSec: 3, endSec: 4, text: '所以第二步啊，找出反常识的点' },
+      { id: 's-3', startSec: 4, endSec: 5, text: '第三步啊，好，基于我的情况。' },
+      { id: 's-4', startSec: 5, endSec: 6, text: '第四步啊，然后打开书亲自阅读啊。' },
+    ]);
+
+    expect(result.units).toHaveLength(1);
+    expect(result.units[0]?.sourceSubtitleIds).toEqual(['s-1', 's-1b', 's-2', 's-2b', 's-3', 's-4']);
+    expect(result.units[0]?.structure?.items?.map((item) => item.text)).toEqual([
+      '我先问骨架', '找出反常识的点', '好，基于我的情况。', '然后打开书亲自阅读啊。',
+    ]);
+  });
+
   it('rejects an effect selected from another VisualUnit bundle', () => {
     const composition = createFixtureProject();
     composition.effects = [composition.effects[0]!];
@@ -35,6 +52,21 @@ describe('Director independent-review regressions', () => {
     const units: VisualUnit[] = [{ visualUnitId: 'vu-process', sourceSubtitleIds: ['s-process'], startSec: 0, endSec: 2, semanticIntent: 'ordered_process', importance: 1 }];
 
     expect(() => assertCompositionCandidateScopes(composition, units, [{ visualUnitId: 'vu-process', candidates: [numeric], retrievalReason: [] }])).toThrow(/scope/i);
+  });
+
+  it('requires a selected candidate to be present in every overlapping VisualUnit bundle', () => {
+    const composition = createFixtureProject();
+    composition.effects = [composition.effects[0]!];
+    composition.segments = [{ ...composition.segments[0]!, sourceSubtitleIds: ['s-shared'] }];
+    const units: VisualUnit[] = [
+      { visualUnitId: 'vu-a', sourceSubtitleIds: ['s-shared'], startSec: 0, endSec: 2, semanticIntent: 'quote', importance: 0.5 },
+      { visualUnitId: 'vu-b', sourceSubtitleIds: ['s-shared'], startSec: 0, endSec: 2, semanticIntent: 'comparison', importance: 0.5 },
+    ];
+
+    expect(() => assertCompositionCandidateScopes(composition, units, [
+      { visualUnitId: 'vu-a', candidates: [numeric], retrievalReason: [] },
+      { visualUnitId: 'vu-b', candidates: [], retrievalReason: [] },
+    ])).toThrow(/scope/i);
   });
 
   it('rejects a numeric value that is labeled srt but absent from SRT evidence', () => {

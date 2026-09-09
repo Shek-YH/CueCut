@@ -13,6 +13,6 @@ Corrections:
 - `service.ts` validates unit-scoped candidate membership (including missing bundles), makes fallback and unvalidated traces explicitly failed, and only materializes a passed trace after successful local validation.
 - `prompt.ts` states the frozen no-excessive-repetition contract explicitly so the model has the same constraint as the local Linter.
 
-The frozen path list, contract definitions, and contract hash remain unchanged. No requirement was deleted, downgraded, deferred, or replaced with a prompt-only rule. Revalidation evidence: reviewer regression 11/11, full unit suite 176 passed with 3 explicit skips, `pnpm lint`, `pnpm build`, and the latest explicit real Director regression passed.
+The frozen path list, contract definitions, and contract hash remain unchanged. No requirement was deleted, downgraded, deferred, or replaced with a prompt-only rule. Revalidation evidence: reviewer regression 12/12, full unit suite 196 passed with 4 explicit skips, `pnpm lint`, `pnpm build`, and the latest successful ComfyUI explicit real Director regression passed. The separate `jj.mp4` ordered run remains not accepted because its latest attempt was blocked by `fetch failed`.
 
 The amendment is architectural recordkeeping; it does not authorize Git push or change Requirement verification status. Independent verifier status remains the acceptance gate.
