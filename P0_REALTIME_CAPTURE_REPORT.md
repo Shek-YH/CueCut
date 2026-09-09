@@ -37,6 +37,10 @@ Result: **NO-GO** for the strict P0 timing gate. The real Chromium MediaRecorder
 
 FFprobe confirms both files are `matroska,webm`, VP9, 1920×1080. The 10s stream reports `30000/1001`; the 60s stream reports `30/1`. No audio stream is present, as required by P0.
 
+### Existing real CueCut project
+
+`renders/jj-cuecut-composition.json` was also run through the same controller with a 10s override. It reached real Chromium capture and produced the same strict validation failure (`CAPTURE_DURATION_MISMATCH`, `CAPTURE_WALL_DURATION_MISMATCH`), confirming the timing blocker is not limited to the fixture composition. The 60s real-project run is deferred until the timing repair changes the backend architecture.
+
 ## P0 Checks
 
 - [x] Feature flag `realtimeChromaCapture` / `VITE_REALTIME_CHROMA_CAPTURE`

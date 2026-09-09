@@ -26,6 +26,7 @@ P0 Realtime Chroma Capture technical proof of concept, based on `CueCut_Realtime
 - `pnpm test:e2e`: 9 passed, 4 skipped
 - `tests/server/realtimeCaptureStore.test.ts` and `tests/server/realtimeCaptureRoute.test.ts`: 3 passed
 - Host persistence path: temporary write → non-empty check → atomic rename; stale temp cleanup covered by unit tests
+- `REAL_TEST_REQUIREMENTS.md`: records available real compositions and remaining downstream/Electron acceptance conditions
 - Realtime benchmark E2E with flag enabled: FAIL/NO-GO; FFprobe frame-count validation passed, but actual Blob duration validation rejected the 10s run at 10.620s
 
 ## Conditions
