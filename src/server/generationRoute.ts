@@ -6,7 +6,6 @@ import { spawn } from 'node:child_process';
 import { Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import type { EffectDefinition } from '../effects/registry';
 import { effectRegistry } from '../effects/registry';
 import { motionRegistry } from '../motions/registry';
 import { sfxRegistry } from '../sfx/registry';
@@ -29,6 +28,7 @@ export interface GenerationApiResponse {
   composition: ProjectComposition;
   warnings: string[];
   usedFallback: boolean;
+  selectionTrace: NonNullable<DirectorResult['selectionTrace']>;
   asrRequestId: string;
   asrDurationSec: number;
   outputFiles: { srtFileName: string; compositionFileName: string };
@@ -118,7 +118,7 @@ export function createHostGenerationRunner(options: {
           safeMargins: 0.05,
           optionalSceneHints: ['Use the supplied video dimensions and preserve the detected aspect ratio.'],
         },
-        effects: effectRegistry.map(effectCandidate),
+        effects: effectRegistry,
         motions: motionRegistry.map((motion) => ({ id: motion.motionId, tags: [motion.category, ...motion.recommendedEffectFamilies] })),
         sfx: sfxRegistry.map((sfx) => ({ id: sfx.sfxId, tags: sfx.tags, isFavorite: sfx.isFavorite, usageScore: sfx.usageScore })),
         preferences: input.preferenceProfile,
@@ -177,6 +177,7 @@ export function createHostGenerationRunner(options: {
         composition,
         warnings: result.director.warnings,
         usedFallback: result.director.usedFallback,
+        selectionTrace: result.director.selectionTrace ?? [],
         asrRequestId: result.asr.requestId,
         asrDurationSec: result.asr.processedDurationSec,
         outputFiles: { srtFileName, compositionFileName },
@@ -231,10 +232,6 @@ function parsePreferenceProfile(encoded: string | undefined): Record<string, unk
   } catch {
     return {};
   }
-}
-
-function effectCandidate(effect: EffectDefinition): { id: string; tags: string[] } {
-  return { id: `${effect.familyId}:${effect.variantId}`, tags: effect.semanticTags };
 }
 
 function safeFileName(fileName: string): string {

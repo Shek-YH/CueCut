@@ -1,24 +1,29 @@
 {
   "schemaVersion": 2,
   "projectId": "cuecut3-cecb1e53",
-  "ledgerWriter": "AI_Autonomous_Project_Ledger_Skill_v2.2",
+  "ledgerWriter": "AI_Autonomous_Project_Ledger_Skill_v2.3.0",
   "active": true,
   "currentTaskIds": [
-    "verification-gates"
+    "director-phase2-semantic-planner",
+    "director-phase2-visual-unit-contract",
+    "director-phase2-capability-contract",
+    "director-phase2-per-unit-retrieval",
+    "director-phase2-composition-linter",
+    "director-phase2-selection-trace"
   ],
-  "lastWriteAt": "2026-09-09T05:34:36.779Z",
+  "lastWriteAt": "2026-09-09T09:46:02.756Z",
   "dashboard": {
     "enabled": true,
     "status": "RUNNING",
-    "url": "http://127.0.0.1:47831",
-    "port": 47831,
-    "pid": 68524,
+    "url": "http://127.0.0.1:47832",
+    "port": 47832,
+    "pid": 50988,
     "autoOpenDone": true,
     "openedAt": "2026-09-09T04:20:30.079Z",
-    "startedAt": "2026-09-09T04:20:30.072Z",
+    "startedAt": "2026-09-09T09:23:05.200Z",
     "stoppedAt": null,
-    "lastHealthAt": "2026-09-09T05:34:36.778Z",
+    "lastHealthAt": "2026-09-09T09:46:02.755Z",
     "lastError": null,
-    "runtimeVersion": "2.2.0"
+    "runtimeVersion": "2.3.0"
   }
 }

@@ -1,11 +1,15 @@
 import { projectCompositionSchema, type ProjectComposition } from '../project/schema';
 import { createOneCallGuard } from './oneCallGuard';
 import { assertCompositionCandidateIds, sanitizeCompositionCandidateIds, type CandidateIndexes } from './validator';
+import { lintComposition } from './compositionLinter';
+import type { EffectCapabilityCandidate, VisualUnit } from './types';
 
 export interface DirectorResult {
   composition: ProjectComposition;
   usedFallback: boolean;
   warnings: string[];
+  selectionTrace?: import('./types').SelectionTraceEntry[];
+  lint?: import('./compositionLinter').CompositionLintResult;
 }
 
 export type DirectorProvider = (input: unknown) => Promise<unknown>;
@@ -23,6 +27,7 @@ export function createDirectorService(provider: DirectorProvider, fallback: Loca
           composition: fallback(input),
           usedFallback: true,
           warnings: [error instanceof Error ? error.message : 'Director provider failed'],
+          selectionTrace: getSelectionTrace(input),
         };
       }
 
@@ -34,6 +39,7 @@ export function createDirectorService(provider: DirectorProvider, fallback: Loca
           composition: fallback(input),
           usedFallback: true,
           warnings: ['Director structured output failed local schema validation; issues=' + summarizeSchemaIssues(result.error)],
+          selectionTrace: getSelectionTrace(input),
         };
       }
 
@@ -45,13 +51,52 @@ export function createDirectorService(provider: DirectorProvider, fallback: Loca
           assertCompositionCandidateIds(result.data, candidateIndexes);
         } catch (error) {
           const sanitized = sanitizeCompositionCandidateIds(result.data, candidateIndexes);
-          return { composition: sanitized.composition, usedFallback: true, warnings: [...timingWarnings, ...(sanitized.warnings.length ? sanitized.warnings : [error instanceof Error ? error.message : 'Director candidate validation failed'])] };
+          return { composition: sanitized.composition, usedFallback: true, warnings: [...timingWarnings, ...(sanitized.warnings.length ? sanitized.warnings : [error instanceof Error ? error.message : 'Director candidate validation failed'])], selectionTrace: getSelectionTrace(input) };
         }
       }
 
-      return { composition: result.data, usedFallback: false, warnings: timingWarnings };
+      const compositionLint = lintComposition(result.data, getEffectCapabilities(input), {
+        safeMargin: getSafeMargin(input),
+        visualUnits: getVisualUnits(input),
+      });
+      if (!compositionLint.ok) {
+        return {
+          composition: fallback(input),
+          usedFallback: true,
+          warnings: [...timingWarnings, 'Director composition linter failed: ' + compositionLint.errors.map((error) => error.code).join(',')],
+          selectionTrace: getSelectionTrace(input),
+          lint: compositionLint,
+        };
+      }
+
+      return { composition: result.data, usedFallback: false, warnings: timingWarnings, selectionTrace: getSelectionTrace(input), lint: compositionLint };
     },
   };
+}
+
+function getEffectCapabilities(input: unknown): EffectCapabilityCandidate[] {
+  if (!input || typeof input !== 'object' || !('effectCapabilities' in input)) return [];
+  const capabilities = (input as { effectCapabilities?: unknown }).effectCapabilities;
+  return Array.isArray(capabilities) ? capabilities as EffectCapabilityCandidate[] : [];
+}
+
+function getSelectionTrace(input: unknown): import('./types').SelectionTraceEntry[] {
+  if (!input || typeof input !== 'object' || !('selectionTrace' in input)) return [];
+  const trace = (input as { selectionTrace?: unknown }).selectionTrace;
+  return Array.isArray(trace) ? trace as import('./types').SelectionTraceEntry[] : [];
+}
+
+function getVisualUnits(input: unknown): VisualUnit[] {
+  if (!input || typeof input !== 'object' || !('visualUnits' in input)) return [];
+  const units = (input as { visualUnits?: unknown }).visualUnits;
+  return Array.isArray(units) ? units as VisualUnit[] : [];
+}
+
+function getSafeMargin(input: unknown): number {
+  if (!input || typeof input !== 'object' || !('visualContext' in input)) return 0;
+  const context = (input as { visualContext?: unknown }).visualContext;
+  if (!context || typeof context !== 'object' || typeof (context as { safeMargins?: unknown }).safeMargins !== 'number') return 0;
+  return Math.max(0, (context as { safeMargins: number }).safeMargins);
 }
 
 function getCandidateIndexes(input: unknown): CandidateIndexes | undefined {

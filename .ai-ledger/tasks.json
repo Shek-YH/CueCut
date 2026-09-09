@@ -1,13 +1,621 @@
 {
   "schemaVersion": 2,
   "projectId": "cuecut3-cecb1e53",
-  "updatedAt": "2026-09-09T04:18:20.000Z",
+  "updatedAt": "2026-09-09T09:46:02.343Z",
   "tasks": [
-    {"id":"motion-packs","title":"Install and normalize six remaining motion packs","phaseId":"phase-0","status":"COMPLETED","progress":100,"owner":"R01","verifier":"R90","dependencies":[],"evidence":["docs/audit/MOTION_PACK_INVENTORY.md","docs/audit/MOTION_PACK_INSTALL_REPORT.md","docs/evidence/MOTION_PACK_INSTALLATION.md"],"completedAt":"2026-09-09T04:00:00.000Z"},
-    {"id":"host-probe","title":"Establish production host and FFprobe media metadata","phaseId":"phase-1","status":"COMPLETED","progress":100,"owner":"R04","verifier":"R90","dependencies":["motion-packs"],"evidence":["src/server/productionHost.ts","src/server/probeRoute.ts","tests/media/video-probe.test.ts"],"completedAt":"2026-09-09T04:05:00.000Z"},
-    {"id":"canonical-project","title":"Canonicalize subtitles, timeline, persistence, and migration","phaseId":"phase-2","status":"COMPLETED","progress":100,"owner":"R05","verifier":"R90","dependencies":["host-probe"],"evidence":["src/project/schema.ts","src/project/store.ts","src/project/persistence.ts","tests/project"],"completedAt":"2026-09-09T04:10:00.000Z"},
-    {"id":"scene-renderer","title":"Unify SceneFrame preview and export rendering","phaseId":"phase-3","status":"COMPLETED","progress":100,"owner":"R03","verifier":"R90","dependencies":["canonical-project"],"evidence":["src/render/scene.ts","src/render/canvasRenderer.ts","tests/render"],"completedAt":"2026-09-09T04:12:00.000Z"},
-    {"id":"actual-export","title":"Wire actual MP4 and transparent MOV export","phaseId":"phase-3","status":"COMPLETED","progress":100,"owner":"R04","verifier":"R90","dependencies":["scene-renderer"],"evidence":["src/export/controller.ts","src/server/exportRoute.ts","tests/export/portable-export.test.ts"],"completedAt":"2026-09-09T04:15:00.000Z"},
-    {"id":"verification-gates","title":"Complete regression, reports, independent verification, and release readiness","phaseId":"phase-4","status":"IN_PROGRESS","progress":90,"owner":"R00","verifier":"R90","dependencies":["actual-export"],"evidence":["docs/audit/CUECUT_P0_IMPLEMENTATION_REPORT.md","docs/audit/CUECUT_RELEASE_READINESS_REPORT.md"],"completedAt":null}
+    {
+      "id": "motion-packs",
+      "title": "Install and normalize six remaining motion packs",
+      "phaseId": "phase-0",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R01",
+      "verifier": "R90",
+      "dependencies": [],
+      "evidence": [
+        "docs/audit/MOTION_PACK_INVENTORY.md",
+        "docs/audit/MOTION_PACK_INSTALL_REPORT.md",
+        "docs/evidence/MOTION_PACK_INSTALLATION.md"
+      ],
+      "completedAt": "2026-09-09T04:00:00.000Z"
+    },
+    {
+      "id": "host-probe",
+      "title": "Establish production host and FFprobe media metadata",
+      "phaseId": "phase-1",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R04",
+      "verifier": "R90",
+      "dependencies": [
+        "motion-packs"
+      ],
+      "evidence": [
+        "src/server/productionHost.ts",
+        "src/server/probeRoute.ts",
+        "tests/media/video-probe.test.ts"
+      ],
+      "completedAt": "2026-09-09T04:05:00.000Z"
+    },
+    {
+      "id": "canonical-project",
+      "title": "Canonicalize subtitles, timeline, persistence, and migration",
+      "phaseId": "phase-2",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R05",
+      "verifier": "R90",
+      "dependencies": [
+        "host-probe"
+      ],
+      "evidence": [
+        "src/project/schema.ts",
+        "src/project/store.ts",
+        "src/project/persistence.ts",
+        "tests/project"
+      ],
+      "completedAt": "2026-09-09T04:10:00.000Z"
+    },
+    {
+      "id": "scene-renderer",
+      "title": "Unify SceneFrame preview and export rendering",
+      "phaseId": "phase-3",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R03",
+      "verifier": "R90",
+      "dependencies": [
+        "canonical-project"
+      ],
+      "evidence": [
+        "src/render/scene.ts",
+        "src/render/canvasRenderer.ts",
+        "tests/render"
+      ],
+      "completedAt": "2026-09-09T04:12:00.000Z"
+    },
+    {
+      "id": "actual-export",
+      "title": "Wire actual MP4 and transparent MOV export",
+      "phaseId": "phase-3",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R04",
+      "verifier": "R90",
+      "dependencies": [
+        "scene-renderer"
+      ],
+      "evidence": [
+        "src/export/controller.ts",
+        "src/server/exportRoute.ts",
+        "tests/export/portable-export.test.ts"
+      ],
+      "completedAt": "2026-09-09T04:15:00.000Z"
+    },
+    {
+      "id": "verification-gates",
+      "title": "Complete regression, reports, independent verification, and release readiness",
+      "phaseId": "phase-4",
+      "status": "IN_PROGRESS",
+      "progress": 90,
+      "owner": "R00",
+      "verifier": "R90",
+      "dependencies": [
+        "actual-export"
+      ],
+      "evidence": [
+        "docs/audit/CUECUT_P0_IMPLEMENTATION_REPORT.md",
+        "docs/audit/CUECUT_RELEASE_READINESS_REPORT.md"
+      ],
+      "completedAt": null
+    },
+    {
+      "id": "director-phase1-intake",
+      "title": "Director PRD intake, Git Gate, and baseline audit",
+      "phaseId": "director-phase-1",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-ARCH",
+      "verifier": "R90",
+      "dependencies": [],
+      "evidence": [
+        "docs/director-recovery/00_CURRENT_CALL_GRAPH.md",
+        "docs/director-recovery/01_REQUIREMENT_TRACEABILITY.md",
+        "docs/director-recovery/02_ROOT_CAUSE_REPORT.md",
+        "docs/director-recovery/03_DATA_FLOW_LOSS_MAP.md",
+        "docs/director-recovery/04_EFFECT_CAPABILITY_GAP.md",
+        "docs/director-recovery/05_RETRIEVAL_ARCHITECTURE_OPTIONS.md",
+        "docs/director-recovery/06_SELECTED_ARCHITECTURE.md",
+        "docs/director-recovery/07_FILE_BY_FILE_CHANGE_PLAN.md",
+        "docs/director-recovery/08_GOLDEN_TEST_PLAN.md",
+        "docs/director-recovery/09_RISK_REGISTER.md",
+        "docs/director-recovery/PHASE1_EXECUTION_LOG.md",
+        "docs/director-recovery/requirement-traceability.json"
+      ],
+      "completedAt": "2026-09-09T09:30:59.324Z"
+    },
+    {
+      "id": "director-phase1-call-chain-audit",
+      "title": "Trace Director import-to-export call graph",
+      "phaseId": "director-phase-1",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-ARCH",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase1-intake"
+      ],
+      "evidence": [
+        "docs/director-recovery/00_CURRENT_CALL_GRAPH.md",
+        "docs/director-recovery/01_REQUIREMENT_TRACEABILITY.md",
+        "docs/director-recovery/02_ROOT_CAUSE_REPORT.md",
+        "docs/director-recovery/03_DATA_FLOW_LOSS_MAP.md",
+        "docs/director-recovery/04_EFFECT_CAPABILITY_GAP.md",
+        "docs/director-recovery/05_RETRIEVAL_ARCHITECTURE_OPTIONS.md",
+        "docs/director-recovery/06_SELECTED_ARCHITECTURE.md",
+        "docs/director-recovery/07_FILE_BY_FILE_CHANGE_PLAN.md",
+        "docs/director-recovery/08_GOLDEN_TEST_PLAN.md",
+        "docs/director-recovery/09_RISK_REGISTER.md",
+        "docs/director-recovery/PHASE1_EXECUTION_LOG.md",
+        "docs/director-recovery/requirement-traceability.json"
+      ],
+      "completedAt": "2026-09-09T09:30:59.324Z"
+    },
+    {
+      "id": "director-phase1-capability-audit",
+      "title": "Audit Effect, Motion, SFX capability loss and contracts",
+      "phaseId": "director-phase-1",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-ARCH",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase1-call-chain-audit"
+      ],
+      "evidence": [
+        "docs/director-recovery/00_CURRENT_CALL_GRAPH.md",
+        "docs/director-recovery/01_REQUIREMENT_TRACEABILITY.md",
+        "docs/director-recovery/02_ROOT_CAUSE_REPORT.md",
+        "docs/director-recovery/03_DATA_FLOW_LOSS_MAP.md",
+        "docs/director-recovery/04_EFFECT_CAPABILITY_GAP.md",
+        "docs/director-recovery/05_RETRIEVAL_ARCHITECTURE_OPTIONS.md",
+        "docs/director-recovery/06_SELECTED_ARCHITECTURE.md",
+        "docs/director-recovery/07_FILE_BY_FILE_CHANGE_PLAN.md",
+        "docs/director-recovery/08_GOLDEN_TEST_PLAN.md",
+        "docs/director-recovery/09_RISK_REGISTER.md",
+        "docs/director-recovery/PHASE1_EXECUTION_LOG.md",
+        "docs/director-recovery/requirement-traceability.json"
+      ],
+      "completedAt": "2026-09-09T09:30:59.324Z"
+    },
+    {
+      "id": "director-phase1-layout-context-audit",
+      "title": "Audit subject, face, safe-area, and no-go layout context",
+      "phaseId": "director-phase-1",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-ARCH",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase1-call-chain-audit"
+      ],
+      "evidence": [
+        "docs/director-recovery/00_CURRENT_CALL_GRAPH.md",
+        "docs/director-recovery/01_REQUIREMENT_TRACEABILITY.md",
+        "docs/director-recovery/02_ROOT_CAUSE_REPORT.md",
+        "docs/director-recovery/03_DATA_FLOW_LOSS_MAP.md",
+        "docs/director-recovery/04_EFFECT_CAPABILITY_GAP.md",
+        "docs/director-recovery/05_RETRIEVAL_ARCHITECTURE_OPTIONS.md",
+        "docs/director-recovery/06_SELECTED_ARCHITECTURE.md",
+        "docs/director-recovery/07_FILE_BY_FILE_CHANGE_PLAN.md",
+        "docs/director-recovery/08_GOLDEN_TEST_PLAN.md",
+        "docs/director-recovery/09_RISK_REGISTER.md",
+        "docs/director-recovery/PHASE1_EXECUTION_LOG.md",
+        "docs/director-recovery/requirement-traceability.json"
+      ],
+      "completedAt": "2026-09-09T09:30:59.324Z"
+    },
+    {
+      "id": "director-phase1-retrieval-decision",
+      "title": "Compare and select one-call retrieval architecture",
+      "phaseId": "director-phase-1",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-ARCH",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase1-capability-audit"
+      ],
+      "evidence": [
+        "docs/director-recovery/00_CURRENT_CALL_GRAPH.md",
+        "docs/director-recovery/01_REQUIREMENT_TRACEABILITY.md",
+        "docs/director-recovery/02_ROOT_CAUSE_REPORT.md",
+        "docs/director-recovery/03_DATA_FLOW_LOSS_MAP.md",
+        "docs/director-recovery/04_EFFECT_CAPABILITY_GAP.md",
+        "docs/director-recovery/05_RETRIEVAL_ARCHITECTURE_OPTIONS.md",
+        "docs/director-recovery/06_SELECTED_ARCHITECTURE.md",
+        "docs/director-recovery/07_FILE_BY_FILE_CHANGE_PLAN.md",
+        "docs/director-recovery/08_GOLDEN_TEST_PLAN.md",
+        "docs/director-recovery/09_RISK_REGISTER.md",
+        "docs/director-recovery/PHASE1_EXECUTION_LOG.md",
+        "docs/director-recovery/requirement-traceability.json"
+      ],
+      "completedAt": "2026-09-09T09:30:59.324Z"
+    },
+    {
+      "id": "director-phase1-core-freeze-plan",
+      "title": "Define Phase 2 core contracts and freeze boundary",
+      "phaseId": "director-phase-1",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-ARCH",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase1-retrieval-decision"
+      ],
+      "evidence": [
+        "docs/director-recovery/00_CURRENT_CALL_GRAPH.md",
+        "docs/director-recovery/01_REQUIREMENT_TRACEABILITY.md",
+        "docs/director-recovery/02_ROOT_CAUSE_REPORT.md",
+        "docs/director-recovery/03_DATA_FLOW_LOSS_MAP.md",
+        "docs/director-recovery/04_EFFECT_CAPABILITY_GAP.md",
+        "docs/director-recovery/05_RETRIEVAL_ARCHITECTURE_OPTIONS.md",
+        "docs/director-recovery/06_SELECTED_ARCHITECTURE.md",
+        "docs/director-recovery/07_FILE_BY_FILE_CHANGE_PLAN.md",
+        "docs/director-recovery/08_GOLDEN_TEST_PLAN.md",
+        "docs/director-recovery/09_RISK_REGISTER.md",
+        "docs/director-recovery/PHASE1_EXECUTION_LOG.md",
+        "docs/director-recovery/requirement-traceability.json"
+      ],
+      "completedAt": "2026-09-09T09:30:59.324Z"
+    },
+    {
+      "id": "director-phase1-golden-plan",
+      "title": "Design GOLDEN-001 through GOLDEN-006 acceptance tests",
+      "phaseId": "director-phase-1",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-ARCH",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase1-core-freeze-plan"
+      ],
+      "evidence": [
+        "docs/director-recovery/00_CURRENT_CALL_GRAPH.md",
+        "docs/director-recovery/01_REQUIREMENT_TRACEABILITY.md",
+        "docs/director-recovery/02_ROOT_CAUSE_REPORT.md",
+        "docs/director-recovery/03_DATA_FLOW_LOSS_MAP.md",
+        "docs/director-recovery/04_EFFECT_CAPABILITY_GAP.md",
+        "docs/director-recovery/05_RETRIEVAL_ARCHITECTURE_OPTIONS.md",
+        "docs/director-recovery/06_SELECTED_ARCHITECTURE.md",
+        "docs/director-recovery/07_FILE_BY_FILE_CHANGE_PLAN.md",
+        "docs/director-recovery/08_GOLDEN_TEST_PLAN.md",
+        "docs/director-recovery/09_RISK_REGISTER.md",
+        "docs/director-recovery/PHASE1_EXECUTION_LOG.md",
+        "docs/director-recovery/requirement-traceability.json"
+      ],
+      "completedAt": "2026-09-09T09:30:59.324Z"
+    },
+    {
+      "id": "director-phase1-gate",
+      "title": "Close Phase 1 architecture recovery gate",
+      "phaseId": "director-phase-1",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-ARCH",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase1-call-chain-audit",
+        "director-phase1-capability-audit",
+        "director-phase1-layout-context-audit",
+        "director-phase1-retrieval-decision",
+        "director-phase1-core-freeze-plan",
+        "director-phase1-golden-plan"
+      ],
+      "evidence": [
+        "docs/director-recovery/00_CURRENT_CALL_GRAPH.md",
+        "docs/director-recovery/01_REQUIREMENT_TRACEABILITY.md",
+        "docs/director-recovery/02_ROOT_CAUSE_REPORT.md",
+        "docs/director-recovery/03_DATA_FLOW_LOSS_MAP.md",
+        "docs/director-recovery/04_EFFECT_CAPABILITY_GAP.md",
+        "docs/director-recovery/05_RETRIEVAL_ARCHITECTURE_OPTIONS.md",
+        "docs/director-recovery/06_SELECTED_ARCHITECTURE.md",
+        "docs/director-recovery/07_FILE_BY_FILE_CHANGE_PLAN.md",
+        "docs/director-recovery/08_GOLDEN_TEST_PLAN.md",
+        "docs/director-recovery/09_RISK_REGISTER.md",
+        "docs/director-recovery/PHASE1_EXECUTION_LOG.md",
+        "docs/director-recovery/requirement-traceability.json"
+      ],
+      "completedAt": "2026-09-09T09:30:59.324Z"
+    },
+    {
+      "id": "director-phase2-semantic-planner",
+      "title": "Implement global semantic planning and VisualUnit generation",
+      "phaseId": "director-phase-2",
+      "status": "IN_PROGRESS",
+      "progress": 80,
+      "owner": "R-BUILD",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase1-gate"
+      ],
+      "evidence": [
+        "src/director/semanticPlanner.ts",
+        "tests/director/semanticPlanner.test.ts",
+        "tests/generation/workflow.test.ts",
+        "docs/director-recovery/PHASE2_PROGRESS.md"
+      ],
+      "completedAt": null
+    },
+    {
+      "id": "director-phase2-visual-unit-contract",
+      "title": "Implement VisualUnit and item-level cue contracts",
+      "phaseId": "director-phase-2",
+      "status": "IN_PROGRESS",
+      "progress": 80,
+      "owner": "R-BUILD",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase1-gate"
+      ],
+      "evidence": [
+        "src/director/types.ts",
+        "src/director/contextBuilder.ts",
+        "tests/director/contextBuilderV2.test.ts",
+        "docs/director-recovery/PHASE2_PROGRESS.md"
+      ],
+      "completedAt": null
+    },
+    {
+      "id": "director-phase2-capability-contract",
+      "title": "Implement compact Effect capability and data contracts",
+      "phaseId": "director-phase-2",
+      "status": "IN_PROGRESS",
+      "progress": 70,
+      "owner": "R-BUILD",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase2-visual-unit-contract"
+      ],
+      "evidence": [
+        "src/director/capabilities.ts",
+        "tests/director/capabilities.test.ts",
+        "docs/director-recovery/PHASE2_PROGRESS.md"
+      ],
+      "completedAt": null
+    },
+    {
+      "id": "director-phase2-per-unit-retrieval",
+      "title": "Implement capability-aware per-VisualUnit candidate retrieval",
+      "phaseId": "director-phase-2",
+      "status": "IN_PROGRESS",
+      "progress": 70,
+      "owner": "R-BUILD",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase2-semantic-planner",
+        "director-phase2-capability-contract"
+      ],
+      "evidence": [
+        "src/director/retriever.ts",
+        "tests/director/perUnitRetriever.test.ts",
+        "docs/director-recovery/PHASE2_PROGRESS.md"
+      ],
+      "completedAt": null
+    },
+    {
+      "id": "director-phase2-data-contract-validation",
+      "title": "Implement data provenance and typed content validation",
+      "phaseId": "director-phase-2",
+      "status": "IN_PROGRESS",
+      "progress": 55,
+      "owner": "R-BUILD",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase2-capability-contract"
+      ],
+      "evidence": [
+        "src/director/compositionLinter.ts",
+        "src/director/service.ts",
+        "tests/director/compositionLinter.test.ts",
+        "tests/director/service.test.ts",
+        "docs/director-recovery/PHASE2_PROGRESS.md"
+      ],
+      "completedAt": null
+    },
+    {
+      "id": "director-phase2-duration-validation",
+      "title": "Implement effect capability duration validation and repair policy",
+      "phaseId": "director-phase-2",
+      "status": "IN_PROGRESS",
+      "progress": 55,
+      "owner": "R-BUILD",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase2-capability-contract"
+      ],
+      "evidence": [
+        "src/director/compositionLinter.ts",
+        "src/director/service.ts",
+        "tests/director/compositionLinter.test.ts",
+        "tests/director/service.test.ts",
+        "docs/director-recovery/PHASE2_PROGRESS.md"
+      ],
+      "completedAt": null
+    },
+    {
+      "id": "director-phase2-selection-trace",
+      "title": "Implement SelectionTrace for candidate selection and validation",
+      "phaseId": "director-phase-2",
+      "status": "IN_PROGRESS",
+      "progress": 65,
+      "owner": "R-BUILD",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase2-per-unit-retrieval"
+      ],
+      "evidence": [
+        "src/director/service.ts",
+        "src/server/generationRoute.ts",
+        "tests/director/service.test.ts",
+        "tests/server/generationRoute.test.ts",
+        "docs/director-recovery/PHASE2_PROGRESS.md"
+      ],
+      "completedAt": null
+    },
+    {
+      "id": "director-phase2-composition-linter",
+      "title": "Implement Composition Linter for structure, density, coverage, and layout",
+      "phaseId": "director-phase-2",
+      "status": "IN_PROGRESS",
+      "progress": 65,
+      "owner": "R-BUILD",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase2-data-contract-validation",
+        "director-phase2-duration-validation",
+        "director-phase2-selection-trace"
+      ],
+      "evidence": [
+        "src/director/compositionLinter.ts",
+        "src/director/service.ts",
+        "tests/director/compositionLinter.test.ts",
+        "tests/director/service.test.ts",
+        "docs/director-recovery/PHASE2_PROGRESS.md"
+      ],
+      "completedAt": null
+    },
+    {
+      "id": "director-phase2-fallback-contract",
+      "title": "Make fallback visibility and Golden acceptance semantics explicit",
+      "phaseId": "director-phase-2",
+      "status": "IN_PROGRESS",
+      "progress": 35,
+      "owner": "R-BUILD",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase2-composition-linter"
+      ],
+      "evidence": [
+        "src/director/service.ts",
+        "tests/director/service.test.ts",
+        "docs/director-recovery/PHASE2_PROGRESS.md"
+      ],
+      "completedAt": null
+    },
+    {
+      "id": "director-phase2-golden-tests",
+      "title": "Implement GOLDEN-001 through GOLDEN-006 regression tests",
+      "phaseId": "director-phase-2",
+      "status": "NOT_STARTED",
+      "progress": 0,
+      "owner": "R-BUILD",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase2-fallback-contract"
+      ],
+      "evidence": [],
+      "completedAt": null
+    },
+    {
+      "id": "director-phase2-core-freeze",
+      "title": "Create and validate Director Core Freeze",
+      "phaseId": "director-phase-2",
+      "status": "NOT_STARTED",
+      "progress": 0,
+      "owner": "R-BUILD",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase2-golden-tests"
+      ],
+      "evidence": [],
+      "completedAt": null
+    },
+    {
+      "id": "director-phase3-runtime-migration",
+      "title": "Migrate production runtime to the frozen Director contracts",
+      "phaseId": "director-phase-3",
+      "status": "NOT_STARTED",
+      "progress": 0,
+      "owner": "R-BUILD",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase2-core-freeze"
+      ],
+      "evidence": [],
+      "completedAt": null
+    },
+    {
+      "id": "director-phase3-trace-viewer",
+      "title": "Add trace and fallback state visibility to the UI",
+      "phaseId": "director-phase-3",
+      "status": "NOT_STARTED",
+      "progress": 0,
+      "owner": "R-BUILD",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase2-core-freeze"
+      ],
+      "evidence": [],
+      "completedAt": null
+    },
+    {
+      "id": "director-phase3-real-regression",
+      "title": "Run real failed-SRT/video regression and collect evidence",
+      "phaseId": "director-phase-3",
+      "status": "NOT_STARTED",
+      "progress": 0,
+      "owner": "R-BUILD",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase3-runtime-migration"
+      ],
+      "evidence": [],
+      "completedAt": null
+    },
+    {
+      "id": "director-phase3-acceptance",
+      "title": "Complete local acceptance and prepare review handoff",
+      "phaseId": "director-phase-3",
+      "status": "NOT_STARTED",
+      "progress": 0,
+      "owner": "R00",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase3-real-regression",
+        "director-phase3-trace-viewer"
+      ],
+      "evidence": [],
+      "completedAt": null
+    },
+    {
+      "id": "director-phase4-independent-review",
+      "title": "Independent GitHub review and final acceptance",
+      "phaseId": "director-phase-4",
+      "status": "NOT_STARTED",
+      "progress": 0,
+      "owner": "R90",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase3-acceptance"
+      ],
+      "evidence": [],
+      "completedAt": null
+    },
+    {
+      "id": "director-phase2-layout-integration",
+      "title": "Integrate real visual context with the local Layout Solver",
+      "phaseId": "director-phase-2",
+      "status": "NOT_STARTED",
+      "progress": 0,
+      "owner": "R-BUILD",
+      "verifier": "R90",
+      "dependencies": [
+        "director-phase1-layout-context-audit",
+        "director-phase2-visual-unit-contract"
+      ],
+      "evidence": [],
+      "completedAt": null
+    }
   ]
 }

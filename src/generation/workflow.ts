@@ -1,5 +1,6 @@
-import { buildDirectorInput } from '../director/contextBuilder';
-import type { DirectorInput, TranscriptInput, VisualContext } from '../director/types';
+import { buildDirectorInputV2 } from '../director/contextBuilder';
+import type { DirectorInput, DirectorInputV2, TranscriptInput, VisualContext } from '../director/types';
+import type { EffectDefinition } from '../effects/registry';
 import type { DirectorResult } from '../director/service';
 import type { BailianAsrResult } from '../media/bailianAsr';
 import type { CandidateIndexes } from '../director/validator';
@@ -13,7 +14,7 @@ export interface AudioExtractionResult {
 export interface GenerationInput {
   project: DirectorInput['project'];
   visualContext: VisualContext;
-  effects: Array<{ id: string; tags: string[] }>;
+  effects: Array<EffectDefinition | { id: string; tags: string[] }>;
   motions: Array<{ id: string; tags: string[] }>;
   sfx: Array<{ id: string; tags: string[]; isFavorite: boolean; usageScore: number }>;
   preferences: Record<string, unknown>;
@@ -22,7 +23,7 @@ export interface GenerationInput {
 export interface GenerationWorkflowDependencies {
   extractAudio: (input: GenerationInput) => Promise<AudioExtractionResult>;
   transcribe: (audio: AudioExtractionResult) => Promise<BailianAsrResult>;
-  generateDirector: (input: DirectorInput & { candidateIndexes: CandidateIndexes }) => Promise<DirectorResult>;
+  generateDirector: (input: DirectorInputV2 & { candidateIndexes: CandidateIndexes }) => Promise<DirectorResult>;
 }
 
 export interface GenerationWorkflowResult {
@@ -36,7 +37,7 @@ export function createGenerationWorkflow(deps: GenerationWorkflowDependencies) {
     async generate(input: GenerationInput): Promise<GenerationWorkflowResult> {
       const audio = await deps.extractAudio(input);
       const asr = await deps.transcribe(audio);
-      const directorInput = buildDirectorInput({
+      const directorInput = buildDirectorInputV2({
         project: input.project,
         transcript: asr.segments,
         visualContext: input.visualContext,
@@ -46,10 +47,7 @@ export function createGenerationWorkflow(deps: GenerationWorkflowDependencies) {
         preferences: input.preferences,
       });
       const candidateIndexes: CandidateIndexes = {
-        effects: directorInput.effectCandidates.map((candidate) => {
-          const [familyId, variantId] = candidate.id.split(':');
-          return { familyId: familyId ?? candidate.id, variantId: variantId ?? candidate.id };
-        }),
+        effects: directorInput.candidateBundles.flatMap((bundle) => bundle.candidates.map((candidate) => ({ familyId: candidate.familyId, variantId: candidate.variantId }))).filter((candidate, index, all) => all.findIndex((item) => item.familyId === candidate.familyId && item.variantId === candidate.variantId) === index),
         motions: directorInput.motionCandidates.map((candidate) => candidate.id),
         sfx: directorInput.sfxCandidates.map((candidate) => candidate.id),
       };

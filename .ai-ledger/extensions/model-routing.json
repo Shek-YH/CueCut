@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "projectId": "cuecut3-cecb1e53",
+  "complexity": "COMPLEX",
+  "reasons": [
+    "multiple_phases",
+    "large_task_tree",
+    "migration"
+  ],
+  "automaticModelSwitchAvailable": false,
+  "roles": {
+    "ARCHITECT": {
+      "preferredCapability": "strongest_reasoning",
+      "thinking": "high_or_extra_high",
+      "selectedModel": null,
+      "status": "REQUIRED"
+    },
+    "BUILDER": {
+      "preferredCapability": "cost_efficient_coding",
+      "thinking": "high",
+      "selectedModel": null,
+      "status": "REQUIRED"
+    },
+    "INDEPENDENT_VERIFIER": {
+      "preferredCapability": "strongest_reasoning",
+      "thinking": "high_or_extra_high",
+      "selectedModel": null,
+      "status": "REQUIRED"
+    }
+  },
+  "updatedAt": "2026-09-09T09:22:39.847Z"
+}

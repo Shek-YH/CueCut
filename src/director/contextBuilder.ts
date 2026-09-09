@@ -1,5 +1,9 @@
 import { retrieveCandidates } from './retriever';
-import type { DirectorInput, TranscriptInput, VisualContext } from './types';
+import { retrieveCandidatesForUnits } from './retriever';
+import { createEffectCapability } from './capabilities';
+import { planVisualUnits } from './semanticPlanner';
+import type { DirectorInput, DirectorInputV2, TranscriptInput, VisualContext } from './types';
+import type { EffectDefinition } from '../effects/registry';
 
 interface Candidate {
   id: string;
@@ -52,3 +56,54 @@ export function buildDirectorInput(input: {
   };
 }
 
+export function buildDirectorInputV2(input: {
+  project: DirectorInput['project'];
+  transcript: TranscriptInput[];
+  visualContext: VisualContext;
+  effects: Array<EffectDefinition | Candidate>;
+  motions: Candidate[];
+  sfx: SfxCandidate[];
+  preferences: Record<string, unknown>;
+}): DirectorInputV2 {
+  const semanticPlan = planVisualUnits(input.transcript);
+  const effectCapabilities = input.effects.map(normalizeEffectDefinition).map(createEffectCapability);
+  const candidateBundles = retrieveCandidatesForUnits(semanticPlan.units, effectCapabilities, input.project.aspectRatio, 8);
+  const selectionTrace = candidateBundles.map((bundle) => ({
+    visualUnitId: bundle.visualUnitId,
+    semanticIntent: semanticPlan.units.find((unit) => unit.visualUnitId === bundle.visualUnitId)?.semanticIntent ?? 'neutral',
+    retrievedCandidates: bundle.candidates.map((candidate) => `${candidate.familyId}:${candidate.variantId}`),
+    dataContractPassed: true,
+    durationContractPassed: true,
+  }));
+  return {
+    project: input.project,
+    transcript: input.transcript,
+    visualContext: input.visualContext,
+    effectCandidates: [],
+    motionCandidates: input.motions,
+    sfxCandidates: input.sfx.slice(0, 8),
+    preferences: input.preferences,
+    visualUnits: semanticPlan.units,
+    effectCapabilities,
+    candidateBundles,
+    selectionTrace,
+    semanticPlan,
+  };
+}
+
+function normalizeEffectDefinition(effect: EffectDefinition | Candidate): EffectDefinition {
+  if ('contentSlots' in effect && 'displayName' in effect && 'minDurationSec' in effect) return effect;
+  const [familyId, variantId = familyId] = effect.id.split(':');
+  return {
+    familyId: familyId ?? effect.id,
+    variantId: variantId ?? effect.id,
+    displayName: effect.id,
+    semanticTags: [...effect.tags],
+    contentSlots: effect.tags.includes('steps') || effect.tags.includes('list') ? ['items'] : ['text'],
+    minDurationSec: 0.1,
+    maxDurationSec: 8,
+    supportedAspectRatios: ['16:9', '9:16', '1:1'],
+    recommendedMotionCategories: [],
+    recommendedSfxIntents: [],
+  };
+}

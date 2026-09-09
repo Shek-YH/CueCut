@@ -24,6 +24,7 @@ describe('generation API route', () => {
         composition: createFixtureProject(),
         warnings: [`received:${fileName}:${bytes}`],
         usedFallback: false,
+        selectionTrace: [],
         asrRequestId: 'asr-1',
         asrDurationSec: 1,
       };

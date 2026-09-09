@@ -1,10 +1,113 @@
 {
   "schemaVersion": 2,
   "artifacts": [
-    {"id":"motion-inventory","path":"docs/audit/MOTION_PACK_INVENTORY.md","kind":"audit","status":"COMPLETED"},
-    {"id":"motion-install-report","path":"docs/audit/MOTION_PACK_INSTALL_REPORT.md","kind":"audit","status":"COMPLETED"},
-    {"id":"motion-install-evidence","path":"docs/evidence/MOTION_PACK_INSTALLATION.md","kind":"evidence","status":"COMPLETED"},
-    {"id":"p0-implementation-report","path":"docs/audit/CUECUT_P0_IMPLEMENTATION_REPORT.md","kind":"report","status":"COMPLETED"},
-    {"id":"release-readiness-report","path":"docs/audit/CUECUT_RELEASE_READINESS_REPORT.md","kind":"report","status":"COMPLETED"}
+    {
+      "id": "motion-inventory",
+      "path": "docs/audit/MOTION_PACK_INVENTORY.md",
+      "kind": "audit",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "motion-install-report",
+      "path": "docs/audit/MOTION_PACK_INSTALL_REPORT.md",
+      "kind": "audit",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "motion-install-evidence",
+      "path": "docs/evidence/MOTION_PACK_INSTALLATION.md",
+      "kind": "evidence",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "p0-implementation-report",
+      "path": "docs/audit/CUECUT_P0_IMPLEMENTATION_REPORT.md",
+      "kind": "report",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "release-readiness-report",
+      "path": "docs/audit/CUECUT_RELEASE_READINESS_REPORT.md",
+      "kind": "report",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "director-phase1-01",
+      "path": "docs/director-recovery/00_CURRENT_CALL_GRAPH.md",
+      "kind": "architecture-audit",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "director-phase1-02",
+      "path": "docs/director-recovery/01_REQUIREMENT_TRACEABILITY.md",
+      "kind": "architecture-audit",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "director-phase1-03",
+      "path": "docs/director-recovery/02_ROOT_CAUSE_REPORT.md",
+      "kind": "architecture-audit",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "director-phase1-04",
+      "path": "docs/director-recovery/03_DATA_FLOW_LOSS_MAP.md",
+      "kind": "architecture-audit",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "director-phase1-05",
+      "path": "docs/director-recovery/04_EFFECT_CAPABILITY_GAP.md",
+      "kind": "architecture-audit",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "director-phase1-06",
+      "path": "docs/director-recovery/05_RETRIEVAL_ARCHITECTURE_OPTIONS.md",
+      "kind": "architecture-audit",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "director-phase1-07",
+      "path": "docs/director-recovery/06_SELECTED_ARCHITECTURE.md",
+      "kind": "architecture-audit",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "director-phase1-08",
+      "path": "docs/director-recovery/07_FILE_BY_FILE_CHANGE_PLAN.md",
+      "kind": "architecture-audit",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "director-phase1-09",
+      "path": "docs/director-recovery/08_GOLDEN_TEST_PLAN.md",
+      "kind": "architecture-audit",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "director-phase1-10",
+      "path": "docs/director-recovery/09_RISK_REGISTER.md",
+      "kind": "architecture-audit",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "director-phase1-11",
+      "path": "docs/director-recovery/PHASE1_EXECUTION_LOG.md",
+      "kind": "architecture-audit",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "director-phase1-12",
+      "path": "docs/director-recovery/requirement-traceability.json",
+      "kind": "traceability",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "director-phase2-progress",
+      "path": "docs/director-recovery/PHASE2_PROGRESS.md",
+      "kind": "progress-report",
+      "status": "IN_PROGRESS"
+    }
   ]
 }

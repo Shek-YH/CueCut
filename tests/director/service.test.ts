@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createFixtureProject } from '../../src/project/fixtures';
 import { createDirectorService } from '../../src/director/service';
 import { createLocalFallbackComposition } from '../../src/director/localFallback';
+import { createEffectCapability } from '../../src/director/capabilities';
 
 describe('Director service', () => {
   it('uses one provider call and falls back locally when structured output is invalid', async () => {
@@ -124,5 +125,60 @@ describe('Director service', () => {
     expect(result.usedFallback).toBe(false);
     expect(result.composition.segments[0]!.endSec).toBeGreaterThan(result.composition.segments[0]!.startSec);
     expect(result.warnings).toContain('Director timing locally clamped');
+  });
+
+  it('does not treat a schema-valid but semantically invalid effect as Director success', async () => {
+    const composition = createFixtureProject();
+    composition.project.durationSec = 60;
+    composition.effects[0]!.familyId = 'numeric';
+    composition.effects[0]!.variantId = 'ring-a';
+    composition.effects[0]!.content = { label: '盲区定位', value: '盲区定位' };
+    composition.effects[0]!.time = { startSec: 0, endSec: 31 };
+    const capability = createEffectCapability({
+      familyId: 'numeric',
+      variantId: 'ring-a',
+      displayName: '指标环 A',
+      semanticTags: ['number'],
+      contentSlots: ['label', 'value'],
+      minDurationSec: 0.8,
+      maxDurationSec: 8,
+      supportedAspectRatios: ['16:9'],
+      recommendedMotionCategories: [],
+      recommendedSfxIntents: [],
+    });
+    const service = createDirectorService(async () => composition, () => createFixtureProject());
+
+    const result = await service.generate({
+      effectCapabilities: [capability],
+      candidateIndexes: {
+        effects: [
+          { familyId: 'numeric', variantId: 'ring-a' },
+          { familyId: 'quote', variantId: 'quote-b' },
+          { familyId: 'comparison', variantId: 'compare-a' },
+        ],
+        motions: ['spring-in', 'scale-fade-out'],
+        sfx: [],
+      },
+    });
+
+    expect(result.usedFallback).toBe(true);
+    expect(result.warnings.some((warning) => /linter|contract|duration/i.test(warning))).toBe(true);
+  });
+
+  it('returns the candidate selection trace without requiring another provider call', async () => {
+    const composition = createFixtureProject();
+    const service = createDirectorService(async () => composition, () => createFixtureProject());
+    const trace = [{
+      visualUnitId: 'vu-1',
+      semanticIntent: 'quote',
+      retrievedCandidates: ['quote:quote-b'],
+      selected: 'quote:quote-b',
+      dataContractPassed: true,
+      durationContractPassed: true,
+    }];
+
+    const result = await service.generate({ selectionTrace: trace });
+
+    expect(result.selectionTrace).toEqual(trace);
   });
 });

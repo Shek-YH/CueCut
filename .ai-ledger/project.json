@@ -4,12 +4,73 @@
   "name": "CueCut3",
   "rootPath": "F:\\CCPJ\\CueCut3",
   "createdAt": "2026-09-09T04:17:16.849Z",
-  "updatedAt": "2026-09-09T04:34:32.696Z",
+  "updatedAt": "2026-09-09T09:46:02.343Z",
   "phases": [
-    {"id":"phase-0","name":"Motion pack installation","status":"COMPLETED","progress":100,"completedAt":"2026-09-09T04:00:00.000Z"},
-    {"id":"phase-1","name":"Production host and media probe","status":"COMPLETED","progress":100,"completedAt":"2026-09-09T04:05:00.000Z"},
-    {"id":"phase-2","name":"Canonical project model","status":"COMPLETED","progress":100,"completedAt":"2026-09-09T04:10:00.000Z"},
-    {"id":"phase-3","name":"Unified renderer and actual export","status":"COMPLETED","progress":100,"completedAt":"2026-09-09T04:15:00.000Z"},
-    {"id":"phase-4","name":"Verification and release gates","status":"IN_PROGRESS","progress":90,"completedAt":null}
-  ]
+    {
+      "id": "phase-0",
+      "name": "Motion pack installation",
+      "status": "COMPLETED",
+      "progress": 100,
+      "completedAt": "2026-09-09T04:00:00.000Z"
+    },
+    {
+      "id": "phase-1",
+      "name": "Production host and media probe",
+      "status": "COMPLETED",
+      "progress": 100,
+      "completedAt": "2026-09-09T04:05:00.000Z"
+    },
+    {
+      "id": "phase-2",
+      "name": "Canonical project model",
+      "status": "COMPLETED",
+      "progress": 100,
+      "completedAt": "2026-09-09T04:10:00.000Z"
+    },
+    {
+      "id": "phase-3",
+      "name": "Unified renderer and actual export",
+      "status": "COMPLETED",
+      "progress": 100,
+      "completedAt": "2026-09-09T04:15:00.000Z"
+    },
+    {
+      "id": "phase-4",
+      "name": "Verification and release gates",
+      "status": "IN_PROGRESS",
+      "progress": 90,
+      "completedAt": null
+    },
+    {
+      "id": "director-phase-1",
+      "name": "Director Phase 1 — Architecture Recovery",
+      "status": "COMPLETED",
+      "progress": 100,
+      "completedAt": "2026-09-09T09:30:59.324Z"
+    },
+    {
+      "id": "director-phase-2",
+      "name": "Director Phase 2 — Core Architecture and Golden Path",
+      "status": "IN_PROGRESS",
+      "progress": 38,
+      "completedAt": null
+    },
+    {
+      "id": "director-phase-3",
+      "name": "Director Phase 3 — Production Expansion",
+      "status": "NOT_STARTED",
+      "progress": 0,
+      "completedAt": null
+    },
+    {
+      "id": "director-phase-4",
+      "name": "Director Phase 4 — Independent Review",
+      "status": "NOT_STARTED",
+      "progress": 0,
+      "completedAt": null
+    }
+  ],
+  "complexity": "COMPLEX",
+  "externalVerifierRequired": true,
+  "currentPhase": "director-phase-2"
 }

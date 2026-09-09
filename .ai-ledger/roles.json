@@ -1,14 +1,65 @@
 {
   "schemaVersion": 2,
   "roles": [
-    {"id":"R00","name":"Orchestrator","responsibility":"Golden Path coordination and final acceptance preparation"},
-    {"id":"R01","name":"Motion adapter owner","responsibility":"Formal motion catalog, adapters, registry/runtime parity"},
-    {"id":"R02","name":"Import and evidence owner","responsibility":"ZIP inventory, safe staging, provenance evidence"},
-    {"id":"R03","name":"Renderer owner","responsibility":"Deterministic SceneFrame and preview parity"},
-    {"id":"R04","name":"Host and export owner","responsibility":"FFprobe, FFmpeg, production host and export"},
-    {"id":"R05","name":"Timeline owner","responsibility":"Canonical timeline and project persistence"},
-    {"id":"R06","name":"License owner","responsibility":"Commercial license and no-remote-runtime audit"},
-    {"id":"R07","name":"QA owner","responsibility":"Portable, browser, real-media and regression verification"},
-    {"id":"R90","name":"Independent verifier","responsibility":"Independent evidence review before acceptance"}
+    {
+      "id": "R00",
+      "name": "Orchestrator",
+      "responsibility": "Golden Path coordination and final acceptance preparation"
+    },
+    {
+      "id": "R01",
+      "name": "Motion adapter owner",
+      "responsibility": "Formal motion catalog, adapters, registry/runtime parity"
+    },
+    {
+      "id": "R02",
+      "name": "Import and evidence owner",
+      "responsibility": "ZIP inventory, safe staging, provenance evidence"
+    },
+    {
+      "id": "R03",
+      "name": "Renderer owner",
+      "responsibility": "Deterministic SceneFrame and preview parity"
+    },
+    {
+      "id": "R04",
+      "name": "Host and export owner",
+      "responsibility": "FFprobe, FFmpeg, production host and export"
+    },
+    {
+      "id": "R05",
+      "name": "Timeline owner",
+      "responsibility": "Canonical timeline and project persistence"
+    },
+    {
+      "id": "R06",
+      "name": "License owner",
+      "responsibility": "Commercial license and no-remote-runtime audit"
+    },
+    {
+      "id": "R07",
+      "name": "QA owner",
+      "responsibility": "Portable, browser, real-media and regression verification"
+    },
+    {
+      "id": "R90",
+      "name": "Independent verifier",
+      "responsibility": "Independent evidence review before acceptance"
+    },
+    {
+      "id": "R-ARCH",
+      "name": "Director Architect",
+      "responsibility": "Phase 1 recovery, contracts, retrieval decision, and Core Freeze boundary"
+    },
+    {
+      "id": "R-BUILD",
+      "name": "Director Builder",
+      "responsibility": "Phase 2 core implementation and Phase 3 production expansion inside the freeze"
+    },
+    {
+      "id": "R-VERIFY",
+      "name": "Director Independent Verifier",
+      "responsibility": "Independent review of requirements, source, tests, artifacts, and real runtime evidence"
+    }
   ]
 }

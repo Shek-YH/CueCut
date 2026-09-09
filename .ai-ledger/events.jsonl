@@ -8,3 +8,60 @@
 {"ts":"2026-09-09T04:34:32.696Z","type":"ARTIFACT_CREATED","artifactId":"release-readiness-report","path":"docs/audit/CUECUT_RELEASE_READINESS_REPORT.md"}
 {"ts":"2026-09-09T04:34:32.696Z","type":"TEST_PASSED","command":"pnpm test --run","result":"120 passed; 2 skipped"}
 {"ts":"2026-09-09T04:34:32.696Z","type":"TEST_PASSED","command":"pnpm test:e2e","result":"9 passed; 3 skipped"}
+{"ts":"2026-09-09T09:22:28.664Z","type":"ARCHITECT_PHASE_STARTED","phaseId":"director-phase-1","taskId":"director-phase1-intake","executionRef":"codex-director-phase1-2026-09-09"}
+{"ts":"2026-09-09T09:22:28.665Z","type":"TASK_CREATED","taskId":"director-phase1-intake","phaseId":"director-phase-1","owner":"R-ARCH"}
+{"ts":"2026-09-09T09:22:28.665Z","type":"TASK_CREATED","taskId":"director-phase1-call-chain-audit","phaseId":"director-phase-1","owner":"R-ARCH"}
+{"ts":"2026-09-09T09:22:28.665Z","type":"TASK_CREATED","taskId":"director-phase1-capability-audit","phaseId":"director-phase-1","owner":"R-ARCH"}
+{"ts":"2026-09-09T09:22:28.666Z","type":"TASK_CREATED","taskId":"director-phase1-layout-context-audit","phaseId":"director-phase-1","owner":"R-ARCH"}
+{"ts":"2026-09-09T09:22:28.666Z","type":"TASK_CREATED","taskId":"director-phase1-retrieval-decision","phaseId":"director-phase-1","owner":"R-ARCH"}
+{"ts":"2026-09-09T09:22:28.666Z","type":"TASK_CREATED","taskId":"director-phase1-core-freeze-plan","phaseId":"director-phase-1","owner":"R-ARCH"}
+{"ts":"2026-09-09T09:22:28.667Z","type":"TASK_CREATED","taskId":"director-phase1-golden-plan","phaseId":"director-phase-1","owner":"R-ARCH"}
+{"ts":"2026-09-09T09:22:28.667Z","type":"TASK_CREATED","taskId":"director-phase1-gate","phaseId":"director-phase-1","owner":"R-ARCH"}
+{"ts":"2026-09-09T09:22:28.667Z","type":"TASK_CREATED","taskId":"director-phase2-semantic-planner","phaseId":"director-phase-2","owner":"R-BUILD"}
+{"ts":"2026-09-09T09:22:28.668Z","type":"TASK_CREATED","taskId":"director-phase2-visual-unit-contract","phaseId":"director-phase-2","owner":"R-BUILD"}
+{"ts":"2026-09-09T09:22:28.668Z","type":"TASK_CREATED","taskId":"director-phase2-capability-contract","phaseId":"director-phase-2","owner":"R-BUILD"}
+{"ts":"2026-09-09T09:22:28.668Z","type":"TASK_CREATED","taskId":"director-phase2-per-unit-retrieval","phaseId":"director-phase-2","owner":"R-BUILD"}
+{"ts":"2026-09-09T09:22:28.669Z","type":"TASK_CREATED","taskId":"director-phase2-data-contract-validation","phaseId":"director-phase-2","owner":"R-BUILD"}
+{"ts":"2026-09-09T09:22:28.669Z","type":"TASK_CREATED","taskId":"director-phase2-duration-validation","phaseId":"director-phase-2","owner":"R-BUILD"}
+{"ts":"2026-09-09T09:22:28.669Z","type":"TASK_CREATED","taskId":"director-phase2-selection-trace","phaseId":"director-phase-2","owner":"R-BUILD"}
+{"ts":"2026-09-09T09:22:28.670Z","type":"TASK_CREATED","taskId":"director-phase2-composition-linter","phaseId":"director-phase-2","owner":"R-BUILD"}
+{"ts":"2026-09-09T09:22:28.670Z","type":"TASK_CREATED","taskId":"director-phase2-fallback-contract","phaseId":"director-phase-2","owner":"R-BUILD"}
+{"ts":"2026-09-09T09:22:28.670Z","type":"TASK_CREATED","taskId":"director-phase2-golden-tests","phaseId":"director-phase-2","owner":"R-BUILD"}
+{"ts":"2026-09-09T09:22:28.670Z","type":"TASK_CREATED","taskId":"director-phase2-core-freeze","phaseId":"director-phase-2","owner":"R-BUILD"}
+{"ts":"2026-09-09T09:22:28.671Z","type":"TASK_CREATED","taskId":"director-phase3-runtime-migration","phaseId":"director-phase-3","owner":"R-BUILD"}
+{"ts":"2026-09-09T09:22:28.671Z","type":"TASK_CREATED","taskId":"director-phase3-trace-viewer","phaseId":"director-phase-3","owner":"R-BUILD"}
+{"ts":"2026-09-09T09:22:28.671Z","type":"TASK_CREATED","taskId":"director-phase3-real-regression","phaseId":"director-phase-3","owner":"R-BUILD"}
+{"ts":"2026-09-09T09:22:28.672Z","type":"TASK_CREATED","taskId":"director-phase3-acceptance","phaseId":"director-phase-3","owner":"R00"}
+{"ts":"2026-09-09T09:22:28.672Z","type":"TASK_CREATED","taskId":"director-phase4-independent-review","phaseId":"director-phase-4","owner":"R90"}
+{"ts":"2026-09-09T09:22:39.856Z","type":"REQUIREMENT_EXTENSION_BOOTSTRAPPED","complexity":"COMPLEX","projectId":"cuecut3-cecb1e53","extensionFiles":["requirements.json","verification.json","deviations.json","model-routing.json","core-freeze.json"]}
+{"ts":"2026-09-09T09:22:54.466Z","type":"TASK_CREATED","taskId":"director-phase2-layout-integration","phaseId":"director-phase-2","owner":"R-BUILD"}
+{"ts":"2026-09-09T09:23:04.991Z","type":"DASHBOARD_STARTING","url":"http://127.0.0.1:47832","runtimeVersion":"2.3.0"}
+{"ts":"2026-09-09T09:23:05.201Z","type":"DASHBOARD_STARTED","url":"http://127.0.0.1:47832","pid":50988,"runtimeVersion":"2.3.0"}
+{"ts":"2026-09-09T09:30:59.331Z","type":"ARCHITECT_PHASE_COMPLETED","phaseId":"director-phase-1","evidence":["docs/director-recovery/00_CURRENT_CALL_GRAPH.md","docs/director-recovery/01_REQUIREMENT_TRACEABILITY.md","docs/director-recovery/02_ROOT_CAUSE_REPORT.md","docs/director-recovery/03_DATA_FLOW_LOSS_MAP.md","docs/director-recovery/04_EFFECT_CAPABILITY_GAP.md","docs/director-recovery/05_RETRIEVAL_ARCHITECTURE_OPTIONS.md","docs/director-recovery/06_SELECTED_ARCHITECTURE.md","docs/director-recovery/07_FILE_BY_FILE_CHANGE_PLAN.md","docs/director-recovery/08_GOLDEN_TEST_PLAN.md","docs/director-recovery/09_RISK_REGISTER.md","docs/director-recovery/PHASE1_EXECUTION_LOG.md","docs/director-recovery/requirement-traceability.json"]}
+{"ts":"2026-09-09T09:30:59.332Z","type":"TASK_STATUS_CHANGED","taskId":"director-phase1-gate","status":"COMPLETED","progress":100,"evidence":"docs/director-recovery/PHASE1_EXECUTION_LOG.md"}
+{"ts":"2026-09-09T09:30:59.332Z","type":"TASK_STATUS_CHANGED","taskId":"director-phase2-semantic-planner","status":"IN_PROGRESS","progress":1}
+{"ts":"2026-09-09T09:43:16.604Z","type":"TASK_PROGRESS_CHANGED","taskId":"director-phase2-semantic-planner","status":"IN_PROGRESS","progress":80,"evidence":["src/director/semanticPlanner.ts","tests/director/semanticPlanner.test.ts","tests/generation/workflow.test.ts"]}
+{"ts":"2026-09-09T09:43:16.605Z","type":"TASK_PROGRESS_CHANGED","taskId":"director-phase2-visual-unit-contract","status":"IN_PROGRESS","progress":80,"evidence":["src/director/types.ts","src/director/contextBuilder.ts","tests/director/contextBuilderV2.test.ts"]}
+{"ts":"2026-09-09T09:43:16.605Z","type":"TASK_PROGRESS_CHANGED","taskId":"director-phase2-capability-contract","status":"IN_PROGRESS","progress":70,"evidence":["src/director/capabilities.ts","tests/director/capabilities.test.ts"]}
+{"ts":"2026-09-09T09:43:16.605Z","type":"TASK_PROGRESS_CHANGED","taskId":"director-phase2-per-unit-retrieval","status":"IN_PROGRESS","progress":70,"evidence":["src/director/retriever.ts","tests/director/perUnitRetriever.test.ts"]}
+{"ts":"2026-09-09T09:43:16.606Z","type":"TASK_PROGRESS_CHANGED","taskId":"director-phase2-data-contract-validation","status":"IN_PROGRESS","progress":55,"evidence":["src/director/compositionLinter.ts","src/director/service.ts","tests/director/compositionLinter.test.ts","tests/director/service.test.ts"]}
+{"ts":"2026-09-09T09:43:16.607Z","type":"TASK_PROGRESS_CHANGED","taskId":"director-phase2-duration-validation","status":"IN_PROGRESS","progress":55,"evidence":["src/director/compositionLinter.ts","src/director/service.ts","tests/director/compositionLinter.test.ts","tests/director/service.test.ts"]}
+{"ts":"2026-09-09T09:43:16.607Z","type":"TASK_PROGRESS_CHANGED","taskId":"director-phase2-composition-linter","status":"IN_PROGRESS","progress":65,"evidence":["src/director/compositionLinter.ts","src/director/service.ts","tests/director/compositionLinter.test.ts","tests/director/service.test.ts"]}
+{"ts":"2026-09-09T09:43:16.607Z","type":"TASK_PROGRESS_CHANGED","taskId":"director-phase2-selection-trace","status":"IN_PROGRESS","progress":65,"evidence":["src/director/service.ts","src/server/generationRoute.ts","tests/director/service.test.ts","tests/server/generationRoute.test.ts"]}
+{"ts":"2026-09-09T09:43:16.608Z","type":"TASK_PROGRESS_CHANGED","taskId":"director-phase2-fallback-contract","status":"IN_PROGRESS","progress":35,"evidence":["src/director/service.ts","tests/director/service.test.ts"]}
+{"ts":"2026-09-09T09:43:16.608Z","type":"REQUIREMENT_UPDATED","requirementId":"REQ-DIR-001","verificationStatus":"IN_PROGRESS","evidenceCount":4}
+{"ts":"2026-09-09T09:43:16.608Z","type":"REQUIREMENT_UPDATED","requirementId":"REQ-DIR-002","verificationStatus":"IN_PROGRESS","evidenceCount":4}
+{"ts":"2026-09-09T09:43:16.609Z","type":"REQUIREMENT_UPDATED","requirementId":"REQ-DIR-003","verificationStatus":"IN_PROGRESS","evidenceCount":3}
+{"ts":"2026-09-09T09:43:16.609Z","type":"REQUIREMENT_UPDATED","requirementId":"REQ-DIR-004","verificationStatus":"IN_PROGRESS","evidenceCount":3}
+{"ts":"2026-09-09T09:43:16.609Z","type":"REQUIREMENT_UPDATED","requirementId":"REQ-DIR-005","verificationStatus":"IN_PROGRESS","evidenceCount":5}
+{"ts":"2026-09-09T09:43:16.610Z","type":"REQUIREMENT_UPDATED","requirementId":"REQ-DIR-006","verificationStatus":"IN_PROGRESS","evidenceCount":5}
+{"ts":"2026-09-09T09:43:16.610Z","type":"REQUIREMENT_UPDATED","requirementId":"REQ-DIR-007","verificationStatus":"IN_PROGRESS","evidenceCount":5}
+{"ts":"2026-09-09T09:43:16.610Z","type":"REQUIREMENT_UPDATED","requirementId":"REQ-DIR-009","verificationStatus":"IN_PROGRESS","evidenceCount":4}
+{"ts":"2026-09-09T09:43:16.611Z","type":"REQUIREMENT_UPDATED","requirementId":"REQ-DIR-011","verificationStatus":"IN_PROGRESS","evidenceCount":5}
+{"ts":"2026-09-09T09:43:16.611Z","type":"REQUIREMENT_UPDATED","requirementId":"REQ-DIR-012","verificationStatus":"IN_PROGRESS","evidenceCount":5}
+{"ts":"2026-09-09T09:43:16.611Z","type":"REQUIREMENT_UPDATED","requirementId":"REQ-DIR-013","verificationStatus":"IN_PROGRESS","evidenceCount":5}
+{"ts":"2026-09-09T09:43:16.611Z","type":"REQUIREMENT_UPDATED","requirementId":"REQ-DIR-014","verificationStatus":"IN_PROGRESS","evidenceCount":5}
+{"ts":"2026-09-09T09:46:02.350Z","type":"ARTIFACT_CREATED","artifactId":"director-phase2-progress","path":"docs/director-recovery/PHASE2_PROGRESS.md"}
+{"ts":"2026-09-09T09:46:02.351Z","type":"TEST_PASSED","command":"pnpm test --run","result":"144 passed; 2 skipped"}
+{"ts":"2026-09-09T09:46:02.351Z","type":"TEST_PASSED","command":"pnpm test:e2e","result":"9 passed; 3 skipped"}
+{"ts":"2026-09-09T09:46:02.351Z","type":"TEST_PASSED","command":"pnpm lint && pnpm build && git diff --check","result":"all passed"}
