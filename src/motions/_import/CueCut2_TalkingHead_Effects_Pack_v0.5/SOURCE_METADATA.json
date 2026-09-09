@@ -1,0 +1,49 @@
+{
+  "pack": "CueCut2 Talking-Head Effects Pack",
+  "version": "0.5",
+  "created": "2026-09-08",
+  "focus": [
+    "icon pop",
+    "badge",
+    "tag chips",
+    "like/follow/subscribe",
+    "notification",
+    "success/error",
+    "loading",
+    "progress steps",
+    "cursor click",
+    "mouse click",
+    "keyboard shortcut",
+    "copy/paste",
+    "download/upload",
+    "link",
+    "AI spark"
+  ],
+  "originalCueCutCandidates": [
+    "cuecut-icon-pop",
+    "cuecut-badge-pulse",
+    "cuecut-tag-chips",
+    "cuecut-social-action",
+    "cuecut-engagement-stack",
+    "cuecut-notification-toast",
+    "cuecut-status-stamp",
+    "cuecut-loading-dots",
+    "cuecut-progress-steps",
+    "cuecut-cursor-click",
+    "cuecut-mouse-click",
+    "cuecut-keyboard-shortcut",
+    "cuecut-clipboard-action",
+    "cuecut-transfer-action",
+    "cuecut-link-reveal",
+    "cuecut-ai-spark",
+    "cuecut-ai-processing-badge"
+  ],
+  "thirdPartyReferences": [
+    {
+      "name": "lucide",
+      "repo": "https://github.com/lucide-icons/lucide",
+      "license": "ISC (with MIT notice for Feather-derived subset)",
+      "role": "optional icon provider reference"
+    }
+  ]
+}

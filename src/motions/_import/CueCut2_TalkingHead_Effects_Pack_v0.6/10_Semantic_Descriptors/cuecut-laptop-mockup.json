@@ -1,0 +1,20 @@
+{
+  "id": "cuecut-laptop-mockup",
+  "family": "LaptopMockup",
+  "file": "04_Device_Frames/CueCutLaptopMockup.tsx",
+  "useCases": [
+    "website/software presentation",
+    "screen-in-device composition"
+  ],
+  "avoidCases": [
+    "unnecessary decoration"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

@@ -1,9 +1,18 @@
 import { expect, test } from '@playwright/test';
 import { createFixtureProject } from '../../src/project/fixtures';
+import { execFileSync } from 'node:child_process';
+import path from 'node:path';
 
 test.use({ viewport: { width: 1920, height: 1080 } });
 
+const realMedia16x9 = process.env.CUECUT_REAL_MEDIA_16_9;
+const realMedia9x16 = process.env.CUECUT_REAL_MEDIA_9_16;
+const portableFixture = path.resolve('test-results/cuecut-e2e-fixture.mp4');
+
 test.describe('CueCut first vertical slice', () => {
+  test.beforeAll(() => {
+    execFileSync('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', 'scripts/create-test-video.ps1', '-OutputPath', portableFixture]);
+  });
   test('preserves the prototype layout at the required desktop widths', async ({ page }) => {
     for (const viewport of [
       { width: 1920, height: 1080 },
@@ -24,8 +33,9 @@ test.describe('CueCut first vertical slice', () => {
   });
 
   test('imports the supplied local 16:9 MP4 and reads host video metadata', async ({ page }) => {
+    test.skip(!realMedia16x9, 'Set CUECUT_REAL_MEDIA_16_9 to run the optional real-media test');
     await page.goto('/');
-    await page.getByTestId('video-input').setInputFiles('F:/CCPJ/CueCut3/测试素材与api/jj.mp4');
+    await page.getByTestId('video-input').setInputFiles(realMedia16x9!);
 
     await expect(page.locator('.file-name')).toContainText('jj.mp4');
     const video = page.getByTestId('preview-video');
@@ -39,10 +49,12 @@ test.describe('CueCut first vertical slice', () => {
   });
 
   test('seeks on the timeline while native video playback stays active', async ({ page }) => {
+    test.skip(!realMedia16x9, 'Set CUECUT_REAL_MEDIA_16_9 to run the optional real-media test');
     await page.goto('/');
-    await page.getByTestId('video-input').setInputFiles('F:/CCPJ/CueCut3/测试素材与api/jj.mp4');
+    await page.getByTestId('video-input').setInputFiles(realMedia16x9!);
     const video = page.getByTestId('preview-video');
     await expect.poll(async () => video.evaluate((element) => (element as HTMLVideoElement).readyState)).toBeGreaterThan(0);
+    await expect(page.locator('.time')).toContainText('222.10s');
     await page.keyboard.press('Space');
     await expect.poll(async () => video.evaluate((element) => (element as HTMLVideoElement).paused)).toBe(false);
 
@@ -57,8 +69,9 @@ test.describe('CueCut first vertical slice', () => {
   });
 
   test('imports the supplied local 9:16 MP4 and switches the Canvas aspect ratio', async ({ page }) => {
+    test.skip(!realMedia9x16, 'Set CUECUT_REAL_MEDIA_9_16 to run the optional real-media test');
     await page.goto('/');
-    await page.getByTestId('video-input').setInputFiles('F:/CCPJ/CueCut3/测试素材与api/ComfyUI_00001_qguot_1787042165.mp4');
+    await page.getByTestId('video-input').setInputFiles(realMedia9x16!);
 
     await expect(page.locator('.file-name')).toContainText('1787042165.mp4');
     const video = page.getByTestId('preview-video');
@@ -101,6 +114,9 @@ test.describe('CueCut first vertical slice', () => {
         }),
       });
     });
+    await page.route('**/api/probe-video', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ durationSec: 12, fps: 30, width: 1080, height: 1920 }) });
+    });
 
     await page.goto('/');
     await page.getByTestId('video-input').setInputFiles({ name: 'synthetic.mp4', mimeType: 'video/mp4', buffer: Buffer.from('synthetic-video') });
@@ -114,6 +130,7 @@ test.describe('CueCut first vertical slice', () => {
 
   test('seeks from SRT and keeps the Playhead independent from an Effect clip drag', async ({ page }) => {
     await page.goto('/');
+    await page.locator('#srt-file-input').setInputFiles({ name: 'fixture.srt', mimeType: 'text/plain', buffer: Buffer.from('1\n00:00:02,200 --> 00:00:05,700\nFixture subtitle\n') });
     await page.getByTestId('srt-s-1').locator('.srttop').click();
     await expect(page.locator('.time')).toContainText('2.20s');
 
@@ -209,4 +226,20 @@ test.describe('CueCut first vertical slice', () => {
     await page.getByRole('button', { name: 'Fit' }).click();
     await page.screenshot({ path: 'docs/evidence/screenshots/07-timeline-expanded.png', fullPage: true });
   });
+
+  test('downloads actual MP4 and transparent MOV through the export button', async ({ page }) => {
+    await page.goto('/');
+    await page.getByTestId('video-input').setInputFiles(portableFixture);
+    await expect(page.locator('.file-name')).toContainText('cuecut-e2e-fixture.mp4');
+    await expect(page.getByRole('button', { name: '导出', exact: true })).toBeEnabled();
+
+    const mp4Download = page.waitForEvent('download');
+    await page.getByRole('button', { name: '导出', exact: true }).click();
+    expect((await mp4Download).suggestedFilename()).toBe('cuecut-export.mp4');
+
+    await page.getByLabel('导出模式').selectOption('transparent-mov');
+    const movDownload = page.waitForEvent('download');
+    await page.getByRole('button', { name: '导出', exact: true }).click();
+    expect((await movDownload).suggestedFilename()).toBe('cuecut-overlay.mov');
+  }, 120_000);
 });

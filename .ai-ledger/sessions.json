@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 2,
+  "sessions": [
+    {"id":"session-2026-09-09-p0","startedAt":"2026-09-09T04:17:16.849Z","status":"IN_PROGRESS","note":"Autonomous execution from supplied P0 instruction; push remains disabled by project safety rules."}
+  ]
+}

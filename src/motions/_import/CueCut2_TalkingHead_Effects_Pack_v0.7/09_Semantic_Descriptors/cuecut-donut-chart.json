@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-donut-chart",
+  "family": "Distribution",
+  "file": "02_Ring_Distribution/CueCutDonutChart.tsx",
+  "useCases": [
+    "share of total",
+    "category composition"
+  ],
+  "avoidCases": [
+    "values not representing a total"
+  ],
+  "rendering": "progress-driven",
+  "requiresNumericData": true,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

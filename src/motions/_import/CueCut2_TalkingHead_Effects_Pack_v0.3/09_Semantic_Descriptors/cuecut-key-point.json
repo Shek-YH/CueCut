@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-key-point",
+  "family": "KeyPoint",
+  "file": "01_Quote_KeyPoint/CueCutKeyPoint.tsx",
+  "useCases": [
+    "core conclusion",
+    "punch line",
+    "important statement"
+  ],
+  "avoidCases": [
+    "ordinary filler sentence"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

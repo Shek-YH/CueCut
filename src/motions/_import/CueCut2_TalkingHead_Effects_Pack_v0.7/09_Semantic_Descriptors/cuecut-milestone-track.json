@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-milestone-track",
+  "family": "Milestone",
+  "file": "05_KPI_Goal/CueCutMilestoneTrack.tsx",
+  "useCases": [
+    "progress milestones",
+    "project stages"
+  ],
+  "avoidCases": [
+    "non-sequential concepts"
+  ],
+  "rendering": "progress-driven",
+  "requiresNumericData": true,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

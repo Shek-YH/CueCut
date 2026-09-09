@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-code-block",
+  "family": "CodeBlock",
+  "file": "03_Code/CueCutCodeBlock.tsx",
+  "useCases": [
+    "code explanation",
+    "snippet",
+    "developer tutorial"
+  ],
+  "avoidCases": [
+    "long full source file"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

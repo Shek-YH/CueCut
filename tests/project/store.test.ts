@@ -54,6 +54,14 @@ describe('canonical project store', () => {
     expect(store.getSnapshot().project.video).toEqual({ sourceFileName: 'talking-head.mp4', zIndex: 0, locked: true });
   });
 
+  it('persists a rebindable local media reference alongside the filename', () => {
+    const store = createProjectStore(createFixtureProject());
+
+    store.setVideoReference({ name: 'talking-head.mp4', size: 42, lastModified: 123, type: 'video/mp4' });
+
+    expect(store.getSnapshot().project.video.mediaReference).toEqual({ name: 'talking-head.mp4', size: 42, lastModified: 123, type: 'video/mp4' });
+  });
+
   it('supports redo after undoing one canonical transaction', () => {
     const store = createProjectStore(createFixtureProject());
     const draft = store.cloneEffectDraft('fx-ring');
@@ -66,6 +74,29 @@ describe('canonical project store', () => {
     expect(store.getSnapshot().effects[0]?.variantId).toBe('ring-b');
     expect(store.undoDepth()).toBe(1);
     expect(store.redoDepth()).toBe(0);
+  });
+
+  it('supports deleting and duplicating canonical effect clips', () => {
+    const store = createProjectStore(createFixtureProject());
+
+    store.duplicateEffect('fx-ring');
+    expect(store.getSnapshot().effects).toHaveLength(4);
+    expect(store.getSnapshot().effects.some((effect) => effect.effectId === 'fx-ring-copy')).toBe(true);
+
+    store.deleteEffect('fx-ring-copy');
+    expect(store.getSnapshot().effects).toHaveLength(3);
+    expect(store.undoDepth()).toBe(2);
+  });
+
+  it('supports canonical subtitle and SFX timeline updates', () => {
+    const store = createProjectStore(createFixtureProject());
+    store.setSubtitles([{ id: 's-1', startSec: 1, endSec: 2, text: 'caption' }]);
+    store.updateSubtitle('s-1', (subtitle) => ({ ...subtitle, startSec: 2, endSec: 3 }));
+    store.deleteSubtitle('s-1');
+    store.updateSoundEvent('sfx-1', () => ({ eventId: 'sfx-1', sfxId: 'soft-pop-03', timeSec: 2, gain: 0.5 }));
+
+    expect(store.getSnapshot().subtitles).toEqual([]);
+    expect(store.getSnapshot().soundEvents).toEqual([{ eventId: 'sfx-1', sfxId: 'soft-pop-03', timeSec: 2, gain: 0.5 }]);
   });
 
   it('stores host video metadata in the canonical project', () => {
@@ -81,6 +112,27 @@ describe('canonical project store', () => {
       canvasHeight: 1920,
       aspectRatio: '9:16',
     });
+  });
+
+  it('clamps canonical ranges when imported media is shorter than the draft', () => {
+    const store = createProjectStore(createFixtureProject());
+    store.setSubtitles([{ id: 's-1', startSec: 5, endSec: 9, text: 'caption' }]);
+
+    store.setVideoMetadata({ sourceFileName: 'short.mp4', durationSec: 6, fps: 30, canvasWidth: 320, canvasHeight: 180 });
+
+    expect(store.getSnapshot().effects.every((effect) => effect.time.endSec <= 6)).toBe(true);
+    expect(store.getSnapshot().segments.every((segment) => segment.endSec <= 6)).toBe(true);
+    expect(store.getSnapshot().subtitles.every((subtitle) => subtitle.endSec <= 6)).toBe(true);
+  });
+
+  it('stores subtitles in the canonical project with one undo transaction', () => {
+    const store = createProjectStore(createFixtureProject());
+    const subtitles = [{ id: 's-1', startSec: 0, endSec: 1.2, text: '中文 caption' }];
+
+    store.setSubtitles(subtitles);
+
+    expect(store.getSnapshot().subtitles).toEqual(subtitles);
+    expect(store.undoDepth()).toBe(1);
   });
 
   it('imports a validated generated composition as one canonical transaction', () => {

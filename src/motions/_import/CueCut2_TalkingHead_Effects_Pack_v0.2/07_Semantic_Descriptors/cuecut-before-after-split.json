@@ -1,0 +1,18 @@
+{
+  "id": "cuecut-before-after-split",
+  "family": "BeforeAfter",
+  "file": "03_Ranking_Comparison/CueCutBeforeAfterSplit.tsx",
+  "useCases": [
+    "before/after visual comparison",
+    "retouch",
+    "UI redesign",
+    "results"
+  ],
+  "avoidCases": [
+    "no two comparable images"
+  ],
+  "recommendedDurationSec": [
+    2.0,
+    8.0
+  ]
+}

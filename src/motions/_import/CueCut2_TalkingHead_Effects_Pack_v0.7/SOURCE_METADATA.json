@@ -1,0 +1,58 @@
+{
+  "pack": "CueCut2 Talking-Head Effects Pack",
+  "version": "0.7",
+  "created": "2026-09-08",
+  "focus": [
+    "line chart",
+    "area chart",
+    "sparkline",
+    "donut",
+    "multi ring",
+    "stacked bar",
+    "horizontal comparison",
+    "slope",
+    "funnel",
+    "waterfall",
+    "heatmap",
+    "goal vs actual",
+    "KPI",
+    "milestone",
+    "data callout",
+    "number trend"
+  ],
+  "originalCueCutCandidates": [
+    "cuecut-line-chart",
+    "cuecut-area-chart",
+    "cuecut-sparkline",
+    "cuecut-donut-chart",
+    "cuecut-multi-ring",
+    "cuecut-stacked-bar",
+    "cuecut-horizontal-comparison",
+    "cuecut-slope-chart",
+    "cuecut-funnel-chart",
+    "cuecut-waterfall-chart",
+    "cuecut-heatmap",
+    "cuecut-goal-vs-actual",
+    "cuecut-kpi-grid",
+    "cuecut-milestone-track",
+    "cuecut-data-callout",
+    "cuecut-number-trend"
+  ],
+  "thirdPartyReferences": [
+    {
+      "name": "recharts",
+      "license": "MIT",
+      "role": "reference/optional preview provider"
+    },
+    {
+      "name": "visx",
+      "license": "MIT",
+      "role": "reference/future geometry provider"
+    },
+    {
+      "name": "tremor",
+      "license": "Apache-2.0 + upstream subcomponent notices",
+      "role": "visual reference"
+    }
+  ]
+}

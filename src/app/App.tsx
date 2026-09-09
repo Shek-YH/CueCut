@@ -13,6 +13,11 @@ import { SfxLibrary } from '../editor/sfx/SfxLibrary';
 import type { TranscriptSegment } from '../subtitles/srt';
 import { createPreferenceEngine } from '../preferences/engine';
 import { createPreferenceProfile } from '../preferences/profile';
+import { createProjectPersistence } from '../project/persistence';
+import { effectRegistry } from '../effects/registry';
+import { findMotion, motionRegistry } from '../motions/registry';
+import { evaluateMotion } from '../motions/runtime';
+import { evaluateSceneAtTime } from '../render/scene';
 
 type ViewId = 'edit' | 'lab' | 'sfx' | 'learn';
 
@@ -39,7 +44,7 @@ function labelForEffect(effect: EffectInstance): string {
   if (effect.familyId === 'numeric') return '指标环 ' + effect.variantId.replace('ring-', '').toUpperCase();
   if (effect.familyId === 'quote') return '金句卡 ' + effect.variantId.replace('quote-', '').toUpperCase();
   if (effect.familyId === 'comparison') return '对比卡 ' + effect.variantId.replace('compare-', '').toUpperCase();
-  return effect.familyId;
+  return findMotion(effect.variantId)?.displayName ?? effect.familyId;
 }
 
 function EditView({
@@ -66,7 +71,7 @@ function EditView({
   onSeek: (timeSec: number) => void;
   subtitleItems?: TranscriptSegment[];
   onSubtitleItemsChange: (items: TranscriptSegment[]) => void;
-  onVideoMetadata: (metadata: { durationSec: number; fps: number; canvasWidth: number; canvasHeight: number }) => void;
+  onVideoMetadata: (metadata: { durationSec: number; canvasWidth: number; canvasHeight: number }) => void;
   onOpenLab: () => void;
 }) {
   return (
@@ -161,6 +166,28 @@ function EffectLabView({
     setReplayKey((key) => key + 1);
   };
 
+  const sameFamilyVariants = effectRegistry.filter((effect) => effect.familyId === source.familyId);
+  const installedPackVariants = effectRegistry.filter((effect) => effect.sourceRef?.provider.startsWith('CueCut2_'));
+  const enterMotions = motionRegistry.filter((motion) => motion.role === 'both' || motion.role === 'enter');
+  const exitMotions = motionRegistry.filter((motion) => motion.role === 'both' || motion.role === 'exit');
+  const previewRole = previewMode === 'exit' ? 'exit' : 'enter';
+  const previewMotion = draft.motion[previewRole];
+  const previewFrame = evaluateMotion(previewMotion.motionId, previewRole, previewMode === 'full' ? 0.72 : 0.5);
+  const previewTransform = `translate(${previewFrame.translateX}px, ${previewFrame.translateY}px) scale(${previewFrame.scale}) rotate(${previewFrame.rotationDeg}deg)`;
+  const previewProject = { ...project, effects: project.effects.map((effect) => effect.effectId === draft.effectId ? draft : effect) };
+  const previewTime = previewMode === 'exit'
+    ? Math.max(draft.time.startSec, draft.time.endSec - draft.motion.exit.durationSec / 2)
+    : draft.time.startSec + Math.min(draft.motion.enter.durationSec / 2, (draft.time.endSec - draft.time.startSec) / 2);
+  const previewItem = evaluateSceneAtTime(previewProject, previewTime).items.find((item) => item.effectId === draft.effectId);
+  const previewItemTransform = previewItem ? `translate(${previewItem.translate.x}px, ${previewItem.translate.y}px) scale(${previewItem.scale}) rotate(${previewItem.rotation}deg)` : previewTransform;
+  const contentForVariant = (variant: (typeof effectRegistry)[number], current: EffectInstance['content']): EffectInstance['content'] => {
+    if (variant.contentSlots.includes('items')) return { items: ['First step', '第二步'] };
+    if (variant.contentSlots.includes('value')) return { label: variant.displayName, value: '92.4', maximum: '100' };
+    if (variant.contentSlots.includes('headline')) return { headline: variant.displayName };
+    return current;
+  };
+  const selectVariant = (variant: (typeof effectRegistry)[number]) => setDraft((current) => current ? { ...current, familyId: variant.familyId, variantId: variant.variantId, content: variant.familyId === source.familyId ? current.content : contentForVariant(variant, current.content) } : current);
+
   return (
     <div className="view lab active" data-testid="effect-lab">
       <aside className="labcol">
@@ -178,38 +205,48 @@ function EffectLabView({
             </p>
           </div>
           <input className="search" placeholder="搜索同类动效…" />
-          <div className="family">
+          <div className="family" data-testid="registry-family">
             <div className="familytop">
               <div className="thumb ring" />
               <div>
-                <div className="f-title">指标环 Family</div>
-                <div className="f-meta">KPI · 比例 · 数据</div>
+                <div className="f-title">{source.familyId} Family</div>
+                <div className="f-meta">Registry · {sameFamilyVariants.length} variants</div>
               </div>
             </div>
             <div className="variants">
-              {['ring-a', 'ring-b', 'ring-c'].map((variantId) => (
+              {sameFamilyVariants.map((variant) => (
                 <button
-                  className={'vbtn' + (draft.variantId === variantId ? ' on' : '')}
-                  key={variantId}
-                  onClick={() => setDraft((current) => (current ? { ...current, variantId } : current))}
+                  className={'vbtn' + (draft.variantId === variant.variantId ? ' on' : '')}
+                  data-testid={'registry-variant-' + variant.variantId}
+                  key={`${variant.familyId}:${variant.variantId}`}
+                  onClick={() => selectVariant(variant)}
                   type="button"
                 >
-                  {variantId.replace('ring-', '').toUpperCase()}
+                  {variant.familyId === source.familyId ? variant.variantId.split('-').at(-1)?.toUpperCase() ?? variant.displayName : variant.displayName}
                 </button>
               ))}
             </div>
           </div>
-          <div className="family">
+          <div className="family" data-testid="registry-effect-library">
             <div className="familytop">
               <div className="thumb quote" />
               <div>
-                <div className="f-title">数字强调 Family</div>
-                <div className="f-meta">兼容当前内容 · 可无损迁移</div>
+                <div className="f-title">正式动效库</div>
+                <div className="f-meta">六套本地 Pack · lazy button preview</div>
               </div>
             </div>
             <div className="variants">
-              <button className="vbtn" type="button">Number A</button>
-              <button className="vbtn" type="button">Number B</button>
+              {installedPackVariants.map((variant) => (
+                <button
+                  className={'vbtn' + (draft.variantId === variant.variantId ? ' on' : '')}
+                  data-testid={'registry-effect-' + variant.variantId}
+                  key={`${variant.familyId}:${variant.variantId}`}
+                  onClick={() => selectVariant(variant)}
+                  type="button"
+                >
+                  {variant.displayName}
+                </button>
+              ))}
             </div>
           </div>
           <div className="summary">Preview Draft 独立于主 Project。<br />只有点击「应用」才会产生一次 Undo Transaction。</div>
@@ -229,14 +266,19 @@ function EffectLabView({
           <div className={'previewCanvas preview-' + previewMode} key={replayKey}>
             <div className="previewPerson" />
             <span className="draftBadge">PREVIEW DRAFT · 不影响主项目</span>
-            <div className="previewCard">
-              <div className="previewRing" style={{ borderColor: draft.appearance.accent, borderLeftColor: '#364154' }}>
-                {String(draft.content.value ?? '92.4')}
-              </div>
-              <div className="previewCopy">
-                <b>{String(draft.content.headline ?? '比例指标')}</b>
-                <span>圆环注水到这个比例</span>
-              </div>
+            <div className="previewCard" data-testid="preview-content" style={{ opacity: previewItem?.opacity ?? previewFrame.opacity, transform: previewItemTransform, filter: previewItem?.blur ? `blur(${previewItem.blur}px)` : undefined }}>
+              {previewItem?.content.kind === 'number' ? (
+                <>
+                  <div className="previewRing" data-testid="preview-ring" style={{ borderColor: draft.appearance.accent, borderLeftColor: '#364154' }}>{String(previewItem.content.value)}</div>
+                  <div className="previewCopy"><b>{previewItem.content.label}</b><span>Registry number content</span></div>
+                </>
+              ) : previewItem?.content.kind === 'list' ? (
+                <div className="previewCopy"><b>List / Steps</b><span>{previewItem.content.items.join(' · ')}</span></div>
+              ) : previewItem?.content.kind === 'text' ? (
+                <div className="previewCopy"><b>{previewItem.content.text}</b><span>{draft.variantId}</span></div>
+              ) : (
+                <div className="previewCopy"><b>{previewItem?.content.label ?? draft.familyId}</b><span>{draft.variantId}</span></div>
+              )}
             </div>
           </div>
         </div>
@@ -255,16 +297,9 @@ function EffectLabView({
         <div className="labbody">
           <div className="groupTitle">进场 Enter</div>
           <div className="motionGrid">
-            {[
-              ['spring-in', 'Spring In', '轻微弹性'],
-              ['fly-right', '从右侧飞入', '画面外 → 目标'],
-              ['spin-360', '旋转 360°', '旋转 + 缩放'],
-              ['spin-720', '旋转 720°', '高强度 · 谨慎'],
-              ['pop', 'Pop', '快速强调'],
-              ['fade', 'Fade', '克制'],
-            ].map(([motionId, title, detail]) => (
-              <button className={'motionBtn' + (draft.motion.enter.motionId === motionId ? ' on' : '')} key={motionId} onClick={() => setEnter(motionId)} type="button">
-                {title}<small>{detail}</small>
+            {enterMotions.map((motion) => (
+              <button className={'motionBtn' + (draft.motion.enter.motionId === motion.motionId ? ' on' : '')} key={motion.motionId} onClick={() => setEnter(motion.motionId)} type="button">
+                {motion.displayName ?? motion.motionId}<small>{motion.category}</small>
               </button>
             ))}
           </div>
@@ -275,14 +310,9 @@ function EffectLabView({
 
           <div className="groupTitle">出场 Exit</div>
           <div className="motionGrid">
-            {[
-              ['scale-fade-out', 'Scale Fade', 'AI 推荐'],
-              ['fly-left', '向左飞出', '离开画面'],
-              ['shrink', 'Shrink', '缩小消失'],
-              ['spin-out', 'Spin Out', '旋转退场'],
-            ].map(([motionId, title, detail]) => (
-              <button className={'motionBtn' + (draft.motion.exit.motionId === motionId ? ' on' : '')} key={motionId} onClick={() => setExit(motionId)} type="button">
-                {title}<small>{detail}</small>
+            {exitMotions.map((motion) => (
+              <button className={'motionBtn' + (draft.motion.exit.motionId === motion.motionId ? ' on' : '')} key={motion.motionId} onClick={() => setExit(motion.motionId)} type="button">
+                {motion.displayName ?? motion.motionId}<small>{motion.category}</small>
               </button>
             ))}
           </div>
@@ -332,11 +362,11 @@ function LearnView() {
         {['总览', '坐标偏好', 'Variant 偏好', 'Motion 偏好', 'SFX 偏好', '成功案例', 'Director 规则'].map((label, index) => <button className={'learnItem' + (index === 0 ? ' active' : '')} key={label} type="button">{label}</button>)}
       </aside>
       <main className="learnMain">
-        <div className="metrics"><div className="metric"><b>23</b><span>有效导出样本</span></div><div className="metric"><b>0.041</b><span>坐标误差</span></div><div className="metric"><b>74%</b><span>Motion 保留率</span></div><div className="metric"><b>81%</b><span>SFX 保留率</span></div></div>
+        <div className="metrics"><div className="metric"><b>—</b><span>暂无真实学习样本</span></div><div className="metric"><b>—</b><span>坐标误差</span></div><div className="metric"><b>—</b><span>Motion 保留率</span></div><div className="metric"><b>—</b><span>SFX 保留率</span></div></div>
         <div className="family"><div className="ititle"><span>Semantic Preference · 坐标热区</span><span className="tiny">9:16 · NUMERIC · SUBJECT CENTER</span></div><div className="heat"><div className="target" /></div><div className="variants"><button className="choice on" type="button">X 0.735</button><button className="choice" type="button">Y 0.182</button><button className="choice" type="button">Scale .91</button><button className="choice" type="button">Confidence .87</button></div></div>
-        <div className="family"><div className="ititle"><span>Episodic Memory · 最近成功样本</span><span className="tiny">EXPORT CONFIRMED</span></div><div className="log"><span>09/07</span><span>AI工具教程 · Ring A → B · Fly Right 保留</span><span className="delta">SIM 0.91</span></div><div className="log"><span>09/06</span><span>观点口播 · Quote C · Spring In</span><span className="delta">SIM 0.84</span></div><div className="log"><span>09/04</span><span>教程 · Compare B · Studio Whoosh</span><span className="delta">SIM 0.79</span></div></div>
+        <div className="family"><div className="ititle"><span>Episodic Memory · 最近成功样本</span><span className="tiny">DEMO DATA</span></div><div className="log"><span>—</span><span>暂无真实学习样本</span><span className="delta">—</span></div></div>
       </main>
-      <aside className="rules"><div className="phead learn-head"><strong>Procedural Rules</strong><span className="tiny">DIRECTOR PROFILE</span></div><div className="rule">9:16 数字卡优先右上，但先避开人物扩展区。<div className="confidence">confidence .88 · 17 samples</div></div><div className="rule">普通解释段减少强旋转；Spin 720 只在高重要度钩子候选中出现。<div className="confidence">confidence .81 · 12 samples</div></div><div className="rule">Studio 风格 SFX 权重高；收藏音效只在 intent 匹配时加权。<div className="confidence">confidence .76 · 14 samples</div></div><div className="rule">目标密度约 8~10 FX/min；连续说明段允许留白。<div className="confidence">confidence .83 · 19 samples</div></div></aside>
+      <aside className="rules"><div className="phead learn-head"><strong>Procedural Rules</strong><span className="tiny">DEMO DATA</span></div><div className="rule">暂无真实学习规则。<div className="confidence">等待导出样本</div></div></aside>
     </div>
   );
 }
@@ -351,9 +381,16 @@ export function App() {
   const [selectedEffectId, setSelectedEffectId] = useState(project.effects[0]?.effectId ?? '');
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
   const [sourceVideoFile, setSourceVideoFile] = useState<File | null>(null);
-  const [subtitleItems, setSubtitleItems] = useState<TranscriptSegment[] | null>(null);
   const [generationState, setGenerationState] = useState<'idle' | 'generating' | 'success' | 'error'>('idle');
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [exportMode, setExportMode] = useState<'full-video' | 'transparent-mov'>('full-video');
+  const [exportState, setExportState] = useState<'idle' | 'exporting' | 'success' | 'error'>('idle');
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [exportAbortController, setExportAbortController] = useState<AbortController | null>(null);
+  const [mediaProbeState, setMediaProbeState] = useState<'idle' | 'probing' | 'ready' | 'error'>('idle');
+  const [mediaProbeError, setMediaProbeError] = useState<string | null>(null);
+  const [projectStatus, setProjectStatus] = useState<string | null>(null);
+  const [persistence] = useState(() => createProjectPersistence(window.localStorage));
   const [videoSourceManager] = useState(() => createVideoSourceManager({
     createObjectUrl: (file) => URL.createObjectURL(file),
     revokeObjectUrl: (url) => URL.revokeObjectURL(url),
@@ -398,11 +435,36 @@ export function App() {
     const file = event.target.files?.[0];
     if (!file) return;
     setSourceVideoFile(file);
-    setSubtitleItems(null);
+    setMediaProbeState('probing');
+    setMediaProbeError(null);
     setGenerationState('idle');
     setGenerationError(null);
     setVideoSrc(videoSourceManager.replace(file));
-    store.setVideoSourceName(file.name);
+    const importedProject = createFixtureProject();
+    importedProject.project.video.sourceFileName = file.name;
+    importedProject.effects = [];
+    importedProject.segments = [];
+    importedProject.subtitles = [];
+    importedProject.soundEvents = [];
+    store.replaceComposition(importedProject);
+    setSelectedEffectId('');
+    store.setVideoReference({ name: file.name, size: file.size, lastModified: file.lastModified, type: file.type });
+    void fetch('/api/probe-video', {
+      method: 'POST',
+      headers: { 'Content-Type': file.type || 'video/mp4', 'X-CueCut-Filename': encodeURIComponent(file.name) },
+      body: file,
+    }).then(async (response) => {
+      if (!response.ok) throw new Error('FFprobe failed');
+      const metadata = await response.json() as { durationSec: number; fps: number; width: number; height: number };
+      if (!Number.isFinite(metadata.durationSec) || !Number.isFinite(metadata.fps) || !metadata.width || !metadata.height) throw new Error('FFprobe returned incomplete metadata');
+      store.setVideoMetadata({ sourceFileName: file.name, durationSec: metadata.durationSec, fps: metadata.fps, canvasWidth: metadata.width, canvasHeight: metadata.height });
+      clock.setDuration(metadata.durationSec, metadata.fps);
+    }).then(() => {
+      setMediaProbeState('ready');
+    }).catch(() => {
+      setMediaProbeState('error');
+      setMediaProbeError('视频元数据读取失败，请重试或检查 FFprobe 配置');
+    });
   };
 
   const preferenceProfile = useMemo(
@@ -411,7 +473,7 @@ export function App() {
   );
 
   const handleGenerateEffects = async () => {
-    if (!sourceVideoFile || generationState === 'generating') return;
+    if (!sourceVideoFile || mediaProbeState !== 'ready' || generationState === 'generating') return;
     setGenerationState('generating');
     setGenerationError(null);
     try {
@@ -428,8 +490,7 @@ export function App() {
       if (!response.ok || !payload.composition || !payload.transcript) {
         throw new Error(payload.message ?? ('生成失败（HTTP ' + response.status + '）'));
       }
-      store.replaceComposition(payload.composition);
-      setSubtitleItems(payload.transcript);
+      store.replaceComposition({ ...payload.composition, subtitles: payload.transcript });
       clock.setDuration(payload.composition.project.durationSec, payload.composition.project.fps);
       clock.setTime(0);
       setSelectedEffectId(payload.composition.effects[0]?.effectId ?? '');
@@ -439,6 +500,68 @@ export function App() {
       setGenerationState('error');
       setGenerationError(error instanceof Error ? error.message : '生成失败');
     }
+  };
+
+  const handleExport = async () => {
+    if (exportState === 'exporting' || mediaProbeState !== 'ready' || (exportMode === 'full-video' && !sourceVideoFile)) return;
+    setExportState('exporting');
+    setExportError(null);
+    const abortController = new AbortController();
+    setExportAbortController(abortController);
+    try {
+      const response = await fetch('/api/export', {
+        method: 'POST',
+        headers: {
+          'Content-Type': sourceVideoFile?.type || 'application/octet-stream',
+          'X-CueCut-Export-Mode': exportMode,
+          'X-CueCut-Filename': encodeURIComponent(sourceVideoFile?.name ?? 'cuecut-overlay.mov'),
+          'X-CueCut-Composition': encodeURIComponent(JSON.stringify(project)),
+        },
+        body: exportMode === 'full-video' ? sourceVideoFile : undefined,
+        signal: abortController.signal,
+      });
+      if (!response.ok) {
+        const payload = await response.json() as { message?: string };
+        throw new Error(payload.message ?? ('导出失败（HTTP ' + response.status + '）'));
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = exportMode === 'transparent-mov' ? 'cuecut-overlay.mov' : 'cuecut-export.mp4';
+      anchor.click();
+      URL.revokeObjectURL(url);
+      setExportState('success');
+    } catch (error) {
+      if (abortController.signal.aborted) {
+        setExportState('idle');
+        return;
+      }
+      setExportState('error');
+      setExportError(error instanceof Error ? error.message : '导出失败');
+    } finally {
+      setExportAbortController(null);
+    }
+  };
+
+  const handleCancelExport = () => exportAbortController?.abort();
+
+  const handleSaveProject = () => {
+    persistence.save(project);
+    setProjectStatus('项目已保存');
+  };
+
+  const handleContinueProject = () => {
+    const saved = persistence.continueProject();
+    if (!saved) {
+      setProjectStatus('暂无已保存项目');
+      return;
+    }
+    store.replaceComposition(saved);
+    clock.setDuration(saved.project.durationSec, saved.project.fps);
+    clock.setTime(0);
+    setSelectedEffectId(saved.effects[0]?.effectId ?? '');
+    setProjectStatus(saved.project.video.mediaReference ? '已继续上次项目，请重新导入媒体' : '已继续上次项目');
   };
 
   const onSelect = (effectId: string) => setSelectedEffectId(effectId);
@@ -456,15 +579,28 @@ export function App() {
         <input accept="video/*" className="file-input" data-testid="video-input" id="video-input" onChange={handleVideoImport} type="file" />
         <label className="btn" htmlFor="video-input">导入视频</label>
         <span className="file-name">{project.project.video.sourceFileName ?? '未导入视频'}</span>
-        <button className="btn primary" disabled={!sourceVideoFile || generationState === 'generating' || generationState === 'success'} onClick={() => void handleGenerateEffects()} type="button">
+        <button className="btn primary" disabled={!sourceVideoFile || mediaProbeState !== 'ready' || generationState === 'generating' || generationState === 'success'} onClick={() => void handleGenerateEffects()} type="button">
           {generationState === 'generating' ? '生成中…' : generationState === 'success' ? '已生成并载入' : '开始生成动效'}
         </button>
         {generationState === 'generating' && <span className="tiny" data-testid="generation-status">提取音频 → ASR → Director → Workspace</span>}
         {generationState === 'success' && <span className="tiny" data-testid="generation-status">已载入 Workspace</span>}
         {generationError && <span className="tiny error" role="alert">{generationError}</span>}
+        {mediaProbeError && <span className="tiny error" role="alert">{mediaProbeError}</span>}
         <button className="btn" disabled={store.undoDepth() === 0} onClick={() => store.undo()} type="button">↶</button>
         <button className="btn" disabled={store.redoDepth() === 0} onClick={() => store.redo()} type="button">↷</button>
-        <button className="btn primary" type="button">导出</button>
+        <select aria-label="导出模式" className="search export-mode" value={exportMode} onChange={(event) => setExportMode(event.target.value as typeof exportMode)}>
+          <option value="full-video">MP4 · 完整视频</option>
+          <option value="transparent-mov">MOV · 透明叠加</option>
+        </select>
+        <button className="btn primary" disabled={exportState === 'exporting' || mediaProbeState !== 'ready' || (exportMode === 'full-video' && !sourceVideoFile)} onClick={() => void handleExport()} type="button">
+          {exportState === 'exporting' ? '导出中…' : '导出'}
+        </button>
+        {exportState === 'exporting' && <button className="btn" onClick={handleCancelExport} type="button">取消导出</button>}
+        {exportState === 'success' && <span className="tiny" data-testid="export-status">已生成本地文件</span>}
+        {exportError && <span className="tiny error" role="alert">{exportError}</span>}
+        <button className="btn" onClick={handleSaveProject} type="button">保存</button>
+        <button className="btn" onClick={handleContinueProject} type="button">继续</button>
+        {projectStatus && <span className="tiny" data-testid="project-status">{projectStatus}</span>}
       </header>
       <section className="workspace">
         <nav className="nav" aria-label="主导航">
@@ -475,7 +611,7 @@ export function App() {
           ))}
         </nav>
         <div className="views">
-          {view === 'edit' && <EditView project={project} store={store} currentTime={clockSnapshot.currentTime} selectedEffectId={selectedEffectId} videoSrc={videoSrc} playing={clockSnapshot.playing} onSelect={onSelect} onSeek={onSeek} subtitleItems={subtitleItems ?? undefined} onSubtitleItemsChange={setSubtitleItems} onVideoMetadata={(metadata) => { store.setVideoMetadata({ sourceFileName: store.getSnapshot().project.video.sourceFileName ?? 'local-video', ...metadata }); clock.setDuration(metadata.durationSec, metadata.fps); }} onOpenLab={() => setView('lab')} />}
+          {view === 'edit' && <EditView project={project} store={store} currentTime={clockSnapshot.currentTime} selectedEffectId={selectedEffectId} videoSrc={videoSrc} playing={clockSnapshot.playing} onSelect={onSelect} onSeek={onSeek} subtitleItems={project.subtitles} onSubtitleItemsChange={(items) => store.setSubtitles(items)} onVideoMetadata={() => undefined} onOpenLab={() => setView('lab')} />}
           {view === 'lab' && <EffectLabView project={project} store={store} selectedEffectId={selectedEffectId} onClose={() => setView('edit')} />}
           {view === 'sfx' && <SfxLibrary store={store} selectedEffectId={selectedEffectId} />}
           {view === 'learn' && <LearnView />}

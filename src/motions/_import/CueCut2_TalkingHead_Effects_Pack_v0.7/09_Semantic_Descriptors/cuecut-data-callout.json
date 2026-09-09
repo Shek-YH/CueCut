@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-data-callout",
+  "family": "DataCallout",
+  "file": "06_Data_Callout/CueCutDataCallout.tsx",
+  "useCases": [
+    "single hero metric",
+    "data proof"
+  ],
+  "avoidCases": [
+    "multiple competing metrics"
+  ],
+  "rendering": "progress-driven",
+  "requiresNumericData": true,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

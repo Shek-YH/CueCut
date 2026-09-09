@@ -88,6 +88,7 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .fx.ring { display: grid; grid-template-columns: 46% 1fr; gap: 5px; align-items: center; padding: 8px; background: #101720ee; }
 .fx.comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 6px; background: #111720ee; }
 .fx strong { font-size: 10px; }
+.canvas-subtitle { position: absolute; display: flex; align-items: center; justify-content: center; padding: 5px 8px; border: 1px solid #7868ff88; border-radius: 6px; background: #10141ccc; color: #fff; font-size: 10px; line-height: 1.2; text-align: center; pointer-events: none; }
 .fxtag { position: absolute; left: 5px; top: -16px; padding: 3px 5px; border: 1px solid #564d9c; border-radius: 4px; background: #272345; color: #dedaff; font: 800 6px ui-monospace, SFMono-Regular, Consolas, monospace; white-space: nowrap; }
 .resize-handle { position: absolute; width: 10px; height: 10px; border: 1px solid #fff; border-radius: 2px; background: #7868ff; opacity: 0; }
 .resize-handle.top-left { top: -4px; left: -4px; cursor: nwse-resize; }
@@ -113,6 +114,7 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .tick { position: absolute; top: 0; height: 27px; padding: 7px 0 0 4px; border-left: 1px solid #394254; color: #778398; font: 6px ui-monospace, SFMono-Regular, Consolas, monospace; }
 .track { position: relative; height: var(--track); border-bottom: 1px solid #181e28; }
 .clip { position: absolute; top: 6px; min-width: 18px; height: 18px; padding: 4px 7px; border: 1px solid #59617a; border-radius: 5px; color: #dbe2f1; font: 800 6px ui-monospace, SFMono-Regular, Consolas, monospace; cursor: grab; user-select: none; touch-action: none; }
+.clip-action { margin-left: 4px; padding: 0 2px; border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; }
 .clip.numeric { background: #15372f; border-color: #378171; }
 .clip.quote { background: #342e5e; border-color: #675db7; }
 .clip.comparison { background: #293650; border-color: #56719d; }
@@ -158,9 +160,6 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .previewCopy b { font-size: 10px; }
 .previewCopy span { display: block; margin-top: 4px; color: #909bb0; font-size: 7px; }
 .draftBadge { position: absolute; left: 10px; top: 10px; padding: 4px 6px; border: 1px solid #504890; border-radius: 5px; background: #211e3ddd; color: #dcd7ff; font: 800 7px ui-monospace, SFMono-Regular, Consolas, monospace; }
-.preview-full .previewCard { animation: lab-enter 650ms cubic-bezier(.2,.9,.25,1) both; }
-.preview-enter .previewCard { animation: lab-enter 650ms cubic-bezier(.2,.9,.25,1) both; }
-.preview-exit .previewCard { animation: lab-exit 520ms cubic-bezier(.4,0,.6,1) both; }
 @keyframes lab-enter { from { transform: translateY(24px) scale(.75); opacity: 0; } 72% { transform: translateY(-7px) scale(1.05); opacity: 1; } to { transform: translateY(0) scale(1); opacity: 1; } }
 @keyframes lab-exit { from { transform: scale(1); opacity: 1; } to { transform: scale(.72); opacity: 0; } }
 .previewFooter { height: 50px; flex: 0 0 50px; display: flex; align-items: center; justify-content: center; gap: 8px; border-top: 1px solid var(--line); background: #0d1118; }

@@ -1,9 +1,7 @@
 import type { ProjectComposition } from '../project/schema';
+import type { SceneFrame } from './scene';
 
-export interface RenderFrame {
-  timeSec: number;
-  activeEffectIds: string[];
-}
+export type RenderFrame = SceneFrame;
 
 export interface Renderer {
   evaluate(timeSec: number): RenderFrame;
@@ -11,4 +9,3 @@ export interface Renderer {
 }
 
 export type RendererFactory = (project: ProjectComposition) => Renderer;
-

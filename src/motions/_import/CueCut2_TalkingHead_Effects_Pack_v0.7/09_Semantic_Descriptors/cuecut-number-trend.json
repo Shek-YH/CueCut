@@ -1,0 +1,20 @@
+{
+  "id": "cuecut-number-trend",
+  "family": "NumberTrend",
+  "file": "06_Data_Callout/CueCutNumberTrend.tsx",
+  "useCases": [
+    "headline number plus trend context"
+  ],
+  "avoidCases": [
+    "distribution across many categories"
+  ],
+  "rendering": "progress-driven",
+  "requiresNumericData": true,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

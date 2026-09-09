@@ -1,0 +1,22 @@
+{
+  "id": "cuecut-reaction-badge",
+  "family": "ReactionBadge",
+  "file": "04_Emoji_Reaction/CueCutReactionBadge.tsx",
+  "useCases": [
+    "reaction summary",
+    "hot/trending badge",
+    "social proof cue"
+  ],
+  "avoidCases": [
+    "complex comparison"
+  ],
+  "rendering": "progress-driven",
+  "supportsElementCue": false,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

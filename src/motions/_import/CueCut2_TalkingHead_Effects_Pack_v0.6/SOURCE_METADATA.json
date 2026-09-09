@@ -1,0 +1,55 @@
+{
+  "pack": "CueCut2 Talking-Head Effects Pack",
+  "version": "0.6",
+  "created": "2026-09-08",
+  "focus": [
+    "browser window",
+    "app window",
+    "terminal",
+    "command line",
+    "code block",
+    "code typing",
+    "code highlight",
+    "mobile device",
+    "laptop mockup",
+    "camera frame",
+    "screen recording",
+    "lower third",
+    "chapter marker"
+  ],
+  "originalCueCutCandidates": [
+    "cuecut-browser-window",
+    "cuecut-app-window",
+    "cuecut-desktop-window",
+    "cuecut-terminal-panel",
+    "cuecut-command-line",
+    "cuecut-code-block",
+    "cuecut-code-typing",
+    "cuecut-code-highlight",
+    "cuecut-mobile-device",
+    "cuecut-laptop-mockup",
+    "cuecut-camera-frame",
+    "cuecut-screen-recording-frame",
+    "cuecut-ui-callout-panel",
+    "cuecut-lower-third",
+    "cuecut-name-plate",
+    "cuecut-chapter-marker"
+  ],
+  "thirdPartyReferences": [
+    {
+      "name": "react-device-frameset",
+      "license": "MIT",
+      "role": "reference"
+    },
+    {
+      "name": "shiki",
+      "license": "MIT",
+      "role": "optional syntax provider"
+    },
+    {
+      "name": "xterm.js",
+      "license": "MIT-style permissive",
+      "role": "future terminal provider"
+    }
+  ]
+}

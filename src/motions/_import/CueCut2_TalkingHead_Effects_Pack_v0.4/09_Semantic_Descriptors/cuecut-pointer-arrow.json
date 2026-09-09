@@ -1,0 +1,22 @@
+{
+  "id": "cuecut-pointer-arrow",
+  "family": "PointerArrow",
+  "file": "05_Callout_Pointer/CueCutPointerArrow.tsx",
+  "useCases": [
+    "point at UI object",
+    "direct attention",
+    "show relationship"
+  ],
+  "avoidCases": [
+    "unanchored decoration"
+  ],
+  "rendering": "progress-driven",
+  "supportsElementCue": false,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

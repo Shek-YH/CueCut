@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-loading-dots",
+  "family": "Loading",
+  "file": "04_Loading_Progress/CueCutLoadingDots.tsx",
+  "useCases": [
+    "AI processing",
+    "waiting",
+    "loading metaphor"
+  ],
+  "avoidCases": [
+    "long duration without progress"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

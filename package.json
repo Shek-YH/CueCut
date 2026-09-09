@@ -6,7 +6,7 @@
   "packageManager": "pnpm@11.19.0",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && vite build --ssr src/server/productionHost.ts --outDir dist-server",
     "test": "vitest",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
@@ -14,7 +14,12 @@
     "workflow:check": "node scripts/workflow.mjs check",
     "workflow:next": "node scripts/workflow.mjs next",
     "workflow:golden": "node scripts/workflow.mjs golden",
-    "workflow:readiness": "node scripts/workflow.mjs readiness"
+    "workflow:readiness": "node scripts/workflow.mjs readiness",
+    "workflow:release": "node scripts/workflow.mjs release",
+    "motion:audit": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/motion-pack-audit.ps1 -Extract",
+    "motion:audit:finalize": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/motion-pack-audit.ps1 -Finalize",
+    "motion:catalog": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/generate-motion-catalog.ps1",
+    "start:host": "node scripts/start-production-server.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",

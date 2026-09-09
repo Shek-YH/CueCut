@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-highlight-swipe",
+  "family": "Highlight",
+  "file": "02_Text_Annotations/CueCutHighlightSwipe.tsx",
+  "useCases": [
+    "marker highlight",
+    "keyword background emphasis"
+  ],
+  "avoidCases": [
+    "full-screen scene"
+  ],
+  "rendering": "progress-driven",
+  "supportsElementCue": false,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

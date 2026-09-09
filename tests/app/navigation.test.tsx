@@ -22,6 +22,7 @@ describe('CueCut prototype navigation', () => {
     expect(screen.getByTestId('video-layer')).toHaveTextContent('原始视频');
     expect(screen.getByTestId('video-layer')).toHaveTextContent('z0');
     expect(screen.getByTestId('video-layer')).toHaveTextContent('🔒');
+    expect(screen.queryByText('字幕1')).not.toBeInTheDocument();
   });
 
   it('renders Special inspector controls before Common controls', () => {
@@ -39,5 +40,14 @@ describe('CueCut prototype navigation', () => {
     await waitFor(() => expect(screen.getByTestId('sfx-view')).toBeVisible());
 
     expect(screen.getByTestId('timeline')).toBeVisible();
+  });
+
+  it('browses formal pack variants from the effect registry', async () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: /动效库/ }));
+    await waitFor(() => expect(screen.getByTestId('registry-effect-library')).toBeVisible());
+
+    expect(screen.getAllByTestId(/^registry-effect-pack:/)).toHaveLength(87);
   });
 });

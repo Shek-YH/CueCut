@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-progress-steps",
+  "family": "ProgressSteps",
+  "file": "04_Loading_Progress/CueCutProgressSteps.tsx",
+  "useCases": [
+    "multi-stage processing",
+    "setup wizard",
+    "workflow completion"
+  ],
+  "avoidCases": [
+    "unordered list"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

@@ -1,0 +1,45 @@
+{
+  "pack": "CueCut2 Talking-Head Effects Pack",
+  "version": "0.4",
+  "created": "2026-09-08",
+  "focus": [
+    "karaoke captions",
+    "keyword highlight",
+    "hand-drawn annotations",
+    "emoji/reaction",
+    "callout/pointer",
+    "spotlight",
+    "focus zoom"
+  ],
+  "originalCueCutCandidates": [
+    "cuecut-karaoke-caption",
+    "cuecut-caption-pill",
+    "cuecut-marker-underline",
+    "cuecut-circle-focus",
+    "cuecut-highlight-swipe",
+    "cuecut-bracket-callout",
+    "cuecut-keyword-pop",
+    "cuecut-attention-burst",
+    "cuecut-emoji-pop",
+    "cuecut-reaction-badge",
+    "cuecut-callout-bubble",
+    "cuecut-pointer-arrow",
+    "cuecut-spotlight-box",
+    "cuecut-focus-zoom",
+    "cuecut-focus-reticle"
+  ],
+  "thirdPartyReferences": [
+    {
+      "name": "magicui",
+      "file": "apps/www/registry/magicui/highlighter.tsx",
+      "license": "MIT",
+      "role": "reference"
+    },
+    {
+      "name": "rough-notation",
+      "repo": "https://github.com/rough-stuff/rough-notation",
+      "license": "MIT",
+      "role": "reference"
+    }
+  ]
+}

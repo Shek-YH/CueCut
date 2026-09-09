@@ -21,5 +21,6 @@
   "decision": "R90 PASS; R00 auto-accepted WI-015 because its audit/import/license/deletion-safety evidence is complete and no P0 blocker remains",
   "artifacts": ["docs/effect-migration/EFFECT_LIBRARY_AUDIT.md", "docs/effect-migration/OLD_EFFECT_DELETE_PLAN.md", "docs/effect-migration/NEW_EFFECT_IMPORT_PLAN.md", "docs/THIRD_PARTY_MOTIONS.md", "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.1", "src/motions/_import/licenses/README.md", "src/motions/licenses/motion-primitives-LICENCE.md", "src/motions/licenses/magicui-LICENSE.md"],
   "evidence": ["docs/evidence/WI-015.md", "docs/evidence/WI-015-VERIFIER.md"],
+  "gates": {"automatedTests": "PASS", "realTest": "PASS", "independentVerifier": "PASS"},
   "next": "Dispatch WI-016 and WI-020"
 }

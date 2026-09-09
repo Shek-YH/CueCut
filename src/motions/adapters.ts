@@ -1,4 +1,5 @@
 import { evaluateMotion, type MotionFrame } from './runtime';
+import { packMotionCatalog } from './packCatalog';
 import {
   defaultCommonMotionParams,
   defaultListMotionParams,
@@ -186,7 +187,23 @@ const motionLayerAdapters: CueCutMotionAdapter[] = motionLayerPresetIds.map((id)
 
 export const contentMotionAdapterRegistry: CueCutMotionAdapter[] = [...textAdapters, ...numberAdapters, ...listAdapters];
 export const motionLayerAdapterRegistry: CueCutMotionAdapter[] = motionLayerAdapters;
-export const motionAdapterRegistry: CueCutMotionAdapter[] = [...contentMotionAdapterRegistry, ...motionLayerAdapterRegistry];
+const packDefaultProps = normalizeMotionParams({
+  common: { ...defaultCommonMotionParams },
+  text: { ...defaultTextMotionParams },
+  number: { ...defaultNumberMotionParams },
+  list: { ...defaultListMotionParams },
+});
+
+const packMotionAdapters: CueCutMotionAdapter[] = packMotionCatalog.map((entry) =>
+  createAdapter(entry.adapterId, 'pack-effect', packDefaultProps, (_id, params, context) => ({
+    text: params.text?.text ?? '',
+    items: params.list?.items ?? [],
+    visibleItemCount: context.progress <= 0 ? 0 : params.list?.items.length ?? 0,
+  })),
+);
+
+export const packMotionAdapterRegistry: CueCutMotionAdapter[] = packMotionAdapters;
+export const motionAdapterRegistry: CueCutMotionAdapter[] = [...contentMotionAdapterRegistry, ...motionLayerAdapterRegistry, ...packMotionAdapterRegistry];
 
 export function findMotionAdapter(adapterId: string): CueCutMotionAdapter | undefined {
   return motionAdapterRegistry.find((adapter) => adapter.id === adapterId);

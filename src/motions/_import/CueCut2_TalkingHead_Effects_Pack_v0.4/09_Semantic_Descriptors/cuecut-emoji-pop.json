@@ -1,0 +1,22 @@
+{
+  "id": "cuecut-emoji-pop",
+  "family": "EmojiPop",
+  "file": "04_Emoji_Reaction/CueCutEmojiPop.tsx",
+  "useCases": [
+    "emotion cue",
+    "reaction",
+    "informal short-form video"
+  ],
+  "avoidCases": [
+    "formal enterprise tone"
+  ],
+  "rendering": "progress-driven",
+  "supportsElementCue": false,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

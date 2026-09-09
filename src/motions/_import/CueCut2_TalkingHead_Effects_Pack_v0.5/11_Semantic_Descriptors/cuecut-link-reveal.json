@@ -1,0 +1,20 @@
+{
+  "id": "cuecut-link-reveal",
+  "family": "Link",
+  "file": "07_File_Clipboard_Link/CueCutLinkReveal.tsx",
+  "useCases": [
+    "URL/domain mention",
+    "resource link"
+  ],
+  "avoidCases": [
+    "brand logo replacement"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

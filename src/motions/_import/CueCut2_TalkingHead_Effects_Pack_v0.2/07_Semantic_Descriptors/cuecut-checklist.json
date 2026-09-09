@@ -1,0 +1,24 @@
+{
+  "id": "cuecut-checklist",
+  "family": "Checklist",
+  "file": "01_Checklist_Steps/CueCutChecklist.tsx",
+  "useCases": [
+    "verification",
+    "requirements",
+    "completion",
+    "things to check"
+  ],
+  "avoidCases": [
+    "pure chronological process without completion semantics",
+    "single metric"
+  ],
+  "recommendedItemCount": [
+    3,
+    6
+  ],
+  "recommendedDurationSec": [
+    3.0,
+    12.0
+  ],
+  "timingModel": "normalized progress now; future item-level SRT cue override"
+}

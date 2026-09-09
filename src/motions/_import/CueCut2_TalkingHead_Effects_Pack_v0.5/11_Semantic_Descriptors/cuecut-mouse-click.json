@@ -1,0 +1,20 @@
+{
+  "id": "cuecut-mouse-click",
+  "family": "MouseClick",
+  "file": "05_Interaction_Cursor/CueCutMouseClick.tsx",
+  "useCases": [
+    "left/right click explanation",
+    "tutorial action"
+  ],
+  "avoidCases": [
+    "decorative use"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

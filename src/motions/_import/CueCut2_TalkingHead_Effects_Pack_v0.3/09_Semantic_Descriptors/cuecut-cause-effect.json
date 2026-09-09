@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-cause-effect",
+  "family": "CauseEffect",
+  "file": "06_Delta_CauseEffect/CueCutCauseEffect.tsx",
+  "useCases": [
+    "because therefore",
+    "cause and outcome",
+    "problem consequence"
+  ],
+  "avoidCases": [
+    "unordered list"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

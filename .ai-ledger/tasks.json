@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 2,
+  "projectId": "cuecut3-cecb1e53",
+  "updatedAt": "2026-09-09T04:18:20.000Z",
+  "tasks": [
+    {"id":"motion-packs","title":"Install and normalize six remaining motion packs","phaseId":"phase-0","status":"COMPLETED","progress":100,"owner":"R01","verifier":"R90","dependencies":[],"evidence":["docs/audit/MOTION_PACK_INVENTORY.md","docs/audit/MOTION_PACK_INSTALL_REPORT.md","docs/evidence/MOTION_PACK_INSTALLATION.md"],"completedAt":"2026-09-09T04:00:00.000Z"},
+    {"id":"host-probe","title":"Establish production host and FFprobe media metadata","phaseId":"phase-1","status":"COMPLETED","progress":100,"owner":"R04","verifier":"R90","dependencies":["motion-packs"],"evidence":["src/server/productionHost.ts","src/server/probeRoute.ts","tests/media/video-probe.test.ts"],"completedAt":"2026-09-09T04:05:00.000Z"},
+    {"id":"canonical-project","title":"Canonicalize subtitles, timeline, persistence, and migration","phaseId":"phase-2","status":"COMPLETED","progress":100,"owner":"R05","verifier":"R90","dependencies":["host-probe"],"evidence":["src/project/schema.ts","src/project/store.ts","src/project/persistence.ts","tests/project"],"completedAt":"2026-09-09T04:10:00.000Z"},
+    {"id":"scene-renderer","title":"Unify SceneFrame preview and export rendering","phaseId":"phase-3","status":"COMPLETED","progress":100,"owner":"R03","verifier":"R90","dependencies":["canonical-project"],"evidence":["src/render/scene.ts","src/render/canvasRenderer.ts","tests/render"],"completedAt":"2026-09-09T04:12:00.000Z"},
+    {"id":"actual-export","title":"Wire actual MP4 and transparent MOV export","phaseId":"phase-3","status":"COMPLETED","progress":100,"owner":"R04","verifier":"R90","dependencies":["scene-renderer"],"evidence":["src/export/controller.ts","src/server/exportRoute.ts","tests/export/portable-export.test.ts"],"completedAt":"2026-09-09T04:15:00.000Z"},
+    {"id":"verification-gates","title":"Complete regression, reports, independent verification, and release readiness","phaseId":"phase-4","status":"IN_PROGRESS","progress":90,"owner":"R00","verifier":"R90","dependencies":["actual-export"],"evidence":["docs/audit/CUECUT_P0_IMPLEMENTATION_REPORT.md","docs/audit/CUECUT_RELEASE_READINESS_REPORT.md"],"completedAt":null}
+  ]
+}

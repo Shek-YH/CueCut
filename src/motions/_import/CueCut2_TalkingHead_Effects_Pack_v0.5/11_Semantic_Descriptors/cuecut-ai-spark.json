@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-ai-spark",
+  "family": "AISpark",
+  "file": "08_AI_Spark/CueCutAISpark.tsx",
+  "useCases": [
+    "AI generation",
+    "model/tool emphasis",
+    "AI magic moment"
+  ],
+  "avoidCases": [
+    "non-AI content"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

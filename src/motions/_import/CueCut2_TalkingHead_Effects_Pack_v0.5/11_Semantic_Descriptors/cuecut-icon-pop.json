@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-icon-pop",
+  "family": "IconPop",
+  "file": "01_Icon_Badge_Tag/CueCutIconPop.tsx",
+  "useCases": [
+    "single icon emphasis",
+    "concept icon",
+    "micro visual beat"
+  ],
+  "avoidCases": [
+    "data chart"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

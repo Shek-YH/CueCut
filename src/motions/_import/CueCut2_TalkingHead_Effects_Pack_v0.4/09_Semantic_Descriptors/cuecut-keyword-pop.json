@@ -1,0 +1,22 @@
+{
+  "id": "cuecut-keyword-pop",
+  "family": "KeywordPop",
+  "file": "03_Keyword_Attention/CueCutKeywordPop.tsx",
+  "useCases": [
+    "punch keyword",
+    "hook word",
+    "important noun"
+  ],
+  "avoidCases": [
+    "ordinary word"
+  ],
+  "rendering": "progress-driven",
+  "supportsElementCue": false,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

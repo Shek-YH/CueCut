@@ -1,0 +1,20 @@
+{
+  "id": "cuecut-mobile-device",
+  "family": "MobileDevice",
+  "file": "04_Device_Frames/CueCutMobileDevice.tsx",
+  "useCases": [
+    "mobile app demo",
+    "vertical screenshot"
+  ],
+  "avoidCases": [
+    "desktop-only UI"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

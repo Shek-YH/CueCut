@@ -1,0 +1,19 @@
+{
+  "id": "cuecut-ring-metric",
+  "family": "Percentage",
+  "file": "02_Ring_Gauge_Progress/CueCutRingMetric.tsx",
+  "useCases": [
+    "single percentage",
+    "completion rate",
+    "conversion rate",
+    "accuracy"
+  ],
+  "avoidCases": [
+    "multiple values comparison",
+    "trend over time"
+  ],
+  "recommendedDurationSec": [
+    1.5,
+    5.0
+  ]
+}

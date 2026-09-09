@@ -1,0 +1,20 @@
+{
+  "id": "cuecut-keyboard-shortcut",
+  "family": "KeyboardShortcut",
+  "file": "06_Keyboard_Shortcut/CueCutKeyboardShortcut.tsx",
+  "useCases": [
+    "shortcut teaching",
+    "hotkey tutorial"
+  ],
+  "avoidCases": [
+    "plain subtitle"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

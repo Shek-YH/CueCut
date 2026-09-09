@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-chapter-marker",
+  "family": "ChapterMarker",
+  "file": "07_Chapter_Markers/CueCutChapterMarker.tsx",
+  "useCases": [
+    "chapter transition",
+    "section start",
+    "topic shift"
+  ],
+  "avoidCases": [
+    "sentence-level emphasis"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

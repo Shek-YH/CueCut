@@ -1,4 +1,4 @@
-export type MotionCategory = 'text' | 'number' | 'list' | 'motion-layer' | 'legacy';
+export type MotionCategory = 'text' | 'number' | 'list' | 'motion-layer' | 'pack-effect' | 'legacy';
 export type MotionRole = 'enter' | 'exit';
 export type TextAlign = 'left' | 'center' | 'right';
 export type NumberDirection = 'up' | 'down';

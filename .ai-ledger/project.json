@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "projectId": "cuecut3-cecb1e53",
+  "name": "CueCut3",
+  "rootPath": "F:\\CCPJ\\CueCut3",
+  "createdAt": "2026-09-09T04:17:16.849Z",
+  "updatedAt": "2026-09-09T04:34:32.696Z",
+  "phases": [
+    {"id":"phase-0","name":"Motion pack installation","status":"COMPLETED","progress":100,"completedAt":"2026-09-09T04:00:00.000Z"},
+    {"id":"phase-1","name":"Production host and media probe","status":"COMPLETED","progress":100,"completedAt":"2026-09-09T04:05:00.000Z"},
+    {"id":"phase-2","name":"Canonical project model","status":"COMPLETED","progress":100,"completedAt":"2026-09-09T04:10:00.000Z"},
+    {"id":"phase-3","name":"Unified renderer and actual export","status":"COMPLETED","progress":100,"completedAt":"2026-09-09T04:15:00.000Z"},
+    {"id":"phase-4","name":"Verification and release gates","status":"IN_PROGRESS","progress":90,"completedAt":null}
+  ]
+}

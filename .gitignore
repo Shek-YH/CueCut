@@ -1,5 +1,6 @@
 node_modules/
 dist/
+dist-server/
 build/
 coverage/
 .playwright/
@@ -33,3 +34,20 @@ worktrees/
 *.webm
 .gstack/
 graphify-out/
+
+# >>> AI Autonomous Project Ledger Skill managed
+.env
+.env.*
+!.env.example
+!.env.sample
+*.key
+*.pem
+*.p12
+*.pfx
+.ai-ledger/*.tmp
+.ai-ledger-dashboard/node_modules/
+.ai-ledger-dashboard/*.log
+.ai-ledger-dashboard/*.pid
+.DS_Store
+Thumbs.db
+# <<< AI Autonomous Project Ledger Skill managed

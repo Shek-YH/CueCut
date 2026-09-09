@@ -1,0 +1,22 @@
+{
+  "id": "cuecut-caption-pill",
+  "family": "CaptionPill",
+  "file": "01_Caption_Karaoke/CueCutCaptionPill.tsx",
+  "useCases": [
+    "short subtitle",
+    "hook phrase",
+    "single sentence emphasis"
+  ],
+  "avoidCases": [
+    "long paragraph"
+  ],
+  "rendering": "progress-driven",
+  "supportsElementCue": false,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

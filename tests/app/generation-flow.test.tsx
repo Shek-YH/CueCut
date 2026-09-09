@@ -14,20 +14,26 @@ describe('video to Workspace generation flow', () => {
     composition.project.video.sourceFileName = 'portrait.mp4';
     composition.effects = [composition.effects[0]!];
     composition.effects[0]!.time = { startSec: 1, endSec: 4 };
-    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({
-      transcript: [{ id: 's-real-1', startSec: 0, endSec: 2.5, text: 'ASR字幕' }],
-      composition,
-      warnings: [],
-      usedFallback: false,
-      asrRequestId: 'asr-1',
-      asrDurationSec: 12,
-    }), { status: 200, headers: { 'content-type': 'application/json' } }));
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      if (input === '/api/probe-video') {
+        return new Response(JSON.stringify({ durationSec: 12, fps: 30, width: 1080, height: 1920 }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+      return new Response(JSON.stringify({
+        transcript: [{ id: 's-real-1', startSec: 0, endSec: 2.5, text: 'ASR字幕' }],
+        composition,
+        warnings: [],
+        usedFallback: false,
+        asrRequestId: 'asr-1',
+        asrDurationSec: 12,
+      }), { status: 200, headers: { 'content-type': 'application/json' } });
+    });
     const video = new File(['video-bytes'], 'portrait.mp4', { type: 'video/mp4' });
 
     render(<App />);
     fireEvent.change(screen.getByTestId('video-input'), { target: { files: [video] } });
 
     const generateButton = screen.getByRole('button', { name: '开始生成动效' });
+    await waitFor(() => expect(generateButton).toBeEnabled());
     expect(generateButton).toBeEnabled();
     fireEvent.click(generateButton);
     expect(screen.getByRole('button', { name: '生成中…' })).toBeDisabled();
@@ -36,7 +42,7 @@ describe('video to Workspace generation flow', () => {
     expect(screen.getAllByText('portrait.mp4')).not.toHaveLength(0);
     expect(screen.queryByTestId('effect-card-fx-quote')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '已生成并载入' })).toBeDisabled();
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(fetchMock).toHaveBeenCalledWith('/api/generate-effects', expect.objectContaining({ body: video }));
 
     fetchMock.mockRestore();

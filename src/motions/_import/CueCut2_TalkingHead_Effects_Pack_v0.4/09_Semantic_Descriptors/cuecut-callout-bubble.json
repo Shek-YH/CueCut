@@ -1,0 +1,22 @@
+{
+  "id": "cuecut-callout-bubble",
+  "family": "CalloutBubble",
+  "file": "05_Callout_Pointer/CueCutCalloutBubble.tsx",
+  "useCases": [
+    "side explanation",
+    "quick note",
+    "UI commentary"
+  ],
+  "avoidCases": [
+    "timeline"
+  ],
+  "rendering": "progress-driven",
+  "supportsElementCue": false,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

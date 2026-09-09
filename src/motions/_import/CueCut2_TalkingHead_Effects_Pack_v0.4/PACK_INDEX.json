@@ -1,0 +1,50 @@
+{
+  "version": "0.4",
+  "families": {
+    "KaraokeCaption": [
+      "CueCutKaraokeCaption"
+    ],
+    "CaptionPill": [
+      "CueCutCaptionPill"
+    ],
+    "Underline": [
+      "CueCutMarkerUnderline"
+    ],
+    "CircleFocus": [
+      "CueCutCircleFocus"
+    ],
+    "Highlight": [
+      "CueCutHighlightSwipe"
+    ],
+    "Bracket": [
+      "CueCutBracketCallout"
+    ],
+    "KeywordPop": [
+      "CueCutKeywordPop"
+    ],
+    "AttentionBurst": [
+      "CueCutAttentionBurst"
+    ],
+    "EmojiPop": [
+      "CueCutEmojiPop"
+    ],
+    "ReactionBadge": [
+      "CueCutReactionBadge"
+    ],
+    "CalloutBubble": [
+      "CueCutCalloutBubble"
+    ],
+    "PointerArrow": [
+      "CueCutPointerArrow"
+    ],
+    "SpotlightBox": [
+      "CueCutSpotlightBox"
+    ],
+    "FocusZoom": [
+      "CueCutFocusZoom"
+    ],
+    "FocusReticle": [
+      "CueCutFocusReticle"
+    ]
+  }
+}

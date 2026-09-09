@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-goal-vs-actual",
+  "family": "GoalVsActual",
+  "file": "05_KPI_Goal/CueCutGoalVsActual.tsx",
+  "useCases": [
+    "target progress",
+    "quota attainment"
+  ],
+  "avoidCases": [
+    "no explicit goal/target"
+  ],
+  "rendering": "progress-driven",
+  "requiresNumericData": true,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

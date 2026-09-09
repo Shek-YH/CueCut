@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-feature-grid",
+  "family": "FeatureList",
+  "file": "03_ProsCons_Features/CueCutFeatureGrid.tsx",
+  "useCases": [
+    "feature overview",
+    "benefits",
+    "capabilities"
+  ],
+  "avoidCases": [
+    "single number"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

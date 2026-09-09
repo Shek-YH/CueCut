@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-price-card",
+  "family": "Price",
+  "file": "05_Commercial_Time/CueCutPriceCard.tsx",
+  "useCases": [
+    "price",
+    "subscription",
+    "discount"
+  ],
+  "avoidCases": [
+    "non-price metric"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

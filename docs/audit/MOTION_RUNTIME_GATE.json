@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "catalogCount": 87,
+  "formalMotionCount": 106,
+  "formalEffectCount": 106,
+  "runtimeCapableCount": 106,
+  "runtimeMismatchCount": 0,
+  "licenseGate": "PASS",
+  "verifiedBy": [
+    "tests/motions/pack-catalog.test.ts",
+    "tests/motions/installation-gate.test.ts",
+    "pnpm lint",
+    "pnpm test --run"
+  ],
+  "notes": "v0.2-v0.7 use CueCut-local deterministic adapters; third-party reference folders are provenance-only."
+}

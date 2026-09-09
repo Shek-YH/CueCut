@@ -1,0 +1,20 @@
+{
+  "id": "cuecut-notification-toast",
+  "family": "Notification",
+  "file": "03_Status_Notification/CueCutNotificationToast.tsx",
+  "useCases": [
+    "success/info/warning/error toast",
+    "system event"
+  ],
+  "avoidCases": [
+    "ordinary sentence"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

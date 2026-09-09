@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-heatmap",
+  "family": "Heatmap",
+  "file": "04_Advanced_Data_Story/CueCutHeatmap.tsx",
+  "useCases": [
+    "matrix intensity",
+    "day/hour/category density"
+  ],
+  "avoidCases": [
+    "small 2-item comparison"
+  ],
+  "rendering": "progress-driven",
+  "requiresNumericData": true,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

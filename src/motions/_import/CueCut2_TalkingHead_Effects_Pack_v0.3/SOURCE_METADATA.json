@@ -1,0 +1,49 @@
+{
+  "pack": "CueCut2 Talking-Head Effects Pack",
+  "version": "0.3",
+  "created": "2026-09-08",
+  "focus": [
+    "quote",
+    "key point",
+    "term",
+    "definition",
+    "alert",
+    "pros-cons",
+    "features",
+    "tool card",
+    "product card",
+    "price",
+    "date",
+    "delta",
+    "cause-effect"
+  ],
+  "originalCueCutCandidates": [
+    "cuecut-quote-card",
+    "cuecut-key-point",
+    "cuecut-term-card",
+    "cuecut-definition-card",
+    "cuecut-alert-card",
+    "cuecut-pros-cons",
+    "cuecut-feature-grid",
+    "cuecut-tool-card",
+    "cuecut-product-card",
+    "cuecut-price-card",
+    "cuecut-date-card",
+    "cuecut-delta-metric",
+    "cuecut-cause-effect"
+  ],
+  "thirdPartyReferences": [
+    {
+      "name": "motion-primitives",
+      "file": "components/core/border-trail.tsx",
+      "license": "MIT",
+      "role": "reference"
+    },
+    {
+      "name": "magicui",
+      "file": "apps/www/registry/magicui/border-beam.tsx",
+      "license": "MIT",
+      "role": "reference"
+    }
+  ]
+}

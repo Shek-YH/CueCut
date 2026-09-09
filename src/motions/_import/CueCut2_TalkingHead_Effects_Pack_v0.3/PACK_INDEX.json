@@ -1,0 +1,44 @@
+{
+  "version": "0.3",
+  "families": {
+    "Quote": [
+      "CueCutQuoteCard"
+    ],
+    "KeyPoint": [
+      "CueCutKeyPoint"
+    ],
+    "Term": [
+      "CueCutTermCard"
+    ],
+    "Definition": [
+      "CueCutDefinitionCard"
+    ],
+    "Alert": [
+      "CueCutAlertCard"
+    ],
+    "ProsCons": [
+      "CueCutProsCons"
+    ],
+    "FeatureList": [
+      "CueCutFeatureGrid"
+    ],
+    "AppTool": [
+      "CueCutToolCard"
+    ],
+    "Product": [
+      "CueCutProductCard"
+    ],
+    "Price": [
+      "CueCutPriceCard"
+    ],
+    "Date": [
+      "CueCutDateCard"
+    ],
+    "Delta": [
+      "CueCutDeltaMetric"
+    ],
+    "CauseEffect": [
+      "CueCutCauseEffect"
+    ]
+  }
+}

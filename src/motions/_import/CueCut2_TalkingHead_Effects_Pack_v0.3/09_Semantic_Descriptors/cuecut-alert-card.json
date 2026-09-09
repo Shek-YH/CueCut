@@ -1,0 +1,22 @@
+{
+  "id": "cuecut-alert-card",
+  "family": "Alert",
+  "file": "02_Term_Definition_Alert/CueCutAlertCard.tsx",
+  "useCases": [
+    "warning",
+    "success",
+    "error",
+    "important note"
+  ],
+  "avoidCases": [
+    "neutral paragraph"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

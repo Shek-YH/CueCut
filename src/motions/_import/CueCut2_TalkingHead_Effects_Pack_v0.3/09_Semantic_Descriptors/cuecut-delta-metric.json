@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-delta-metric",
+  "family": "Delta",
+  "file": "06_Delta_CauseEffect/CueCutDeltaMetric.tsx",
+  "useCases": [
+    "growth",
+    "decline",
+    "before vs current metric"
+  ],
+  "avoidCases": [
+    "multiple category ranking"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

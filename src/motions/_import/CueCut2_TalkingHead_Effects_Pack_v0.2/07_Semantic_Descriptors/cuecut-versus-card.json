@@ -1,0 +1,18 @@
+{
+  "id": "cuecut-versus-card",
+  "family": "Versus",
+  "file": "03_Ranking_Comparison/CueCutVersusCard.tsx",
+  "useCases": [
+    "A vs B",
+    "product/model comparison",
+    "before decision"
+  ],
+  "avoidCases": [
+    "3+ candidates",
+    "chronological process"
+  ],
+  "recommendedDurationSec": [
+    2.0,
+    8.0
+  ]
+}

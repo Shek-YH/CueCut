@@ -1,0 +1,56 @@
+{
+  "version": "0.5",
+  "families": {
+    "IconPop": [
+      "CueCutIconPop"
+    ],
+    "Badge": [
+      "CueCutBadgePulse"
+    ],
+    "TagChips": [
+      "CueCutTagChips"
+    ],
+    "SocialAction": [
+      "CueCutSocialAction"
+    ],
+    "EngagementStack": [
+      "CueCutEngagementStack"
+    ],
+    "Notification": [
+      "CueCutNotificationToast"
+    ],
+    "StatusStamp": [
+      "CueCutStatusStamp"
+    ],
+    "Loading": [
+      "CueCutLoadingDots"
+    ],
+    "ProgressSteps": [
+      "CueCutProgressSteps"
+    ],
+    "CursorClick": [
+      "CueCutCursorClick"
+    ],
+    "MouseClick": [
+      "CueCutMouseClick"
+    ],
+    "KeyboardShortcut": [
+      "CueCutKeyboardShortcut"
+    ],
+    "ClipboardAction": [
+      "CueCutClipboardAction"
+    ],
+    "TransferAction": [
+      "CueCutTransferAction"
+    ],
+    "Link": [
+      "CueCutLinkReveal"
+    ],
+    "AISpark": [
+      "CueCutAISpark"
+    ],
+    "AIProcessing": [
+      "CueCutAIProcessingBadge"
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "id": "cuecut-focus-zoom",
+  "family": "FocusZoom",
+  "file": "06_Focus_Zoom/CueCutFocusZoom.tsx",
+  "useCases": [
+    "zoom image/screen content to point of interest"
+  ],
+  "avoidCases": [
+    "text-only overlay"
+  ],
+  "rendering": "progress-driven",
+  "supportsElementCue": false,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

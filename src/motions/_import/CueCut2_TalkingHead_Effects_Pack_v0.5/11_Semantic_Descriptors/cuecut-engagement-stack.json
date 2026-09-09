@@ -1,0 +1,19 @@
+{
+  "id": "cuecut-engagement-stack",
+  "family": "EngagementStack",
+  "file": "02_Social_Actions/CueCutEngagementStack.tsx",
+  "useCases": [
+    "short-form CTA sequence"
+  ],
+  "avoidCases": [
+    "formal professional content unless enabled"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

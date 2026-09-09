@@ -49,6 +49,8 @@ function effect(
 export function createFixtureProject(): ProjectComposition {
   return {
     schema: 'cuecut.composition/1',
+    schemaVersion: 1,
+    subtitles: [],
     project: {
       projectId: 'fixture',
       durationSec: 30,

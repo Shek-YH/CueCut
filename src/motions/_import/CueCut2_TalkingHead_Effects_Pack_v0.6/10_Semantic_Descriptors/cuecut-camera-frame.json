@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-camera-frame",
+  "family": "CameraFrame",
+  "file": "04_Device_Frames/CueCutCameraFrame.tsx",
+  "useCases": [
+    "camera footage",
+    "recording cue",
+    "creator content"
+  ],
+  "avoidCases": [
+    "plain graphic"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

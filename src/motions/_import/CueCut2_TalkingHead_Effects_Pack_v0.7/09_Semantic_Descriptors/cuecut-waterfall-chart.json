@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-waterfall-chart",
+  "family": "Waterfall",
+  "file": "04_Advanced_Data_Story/CueCutWaterfallChart.tsx",
+  "useCases": [
+    "drivers of increase/decrease",
+    "change decomposition"
+  ],
+  "avoidCases": [
+    "data without additive relationship"
+  ],
+  "rendering": "progress-driven",
+  "requiresNumericData": true,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

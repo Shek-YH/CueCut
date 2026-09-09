@@ -1,4 +1,4 @@
-import { motionRegistry, type MotionDefinition, type MotionSourceReference } from '../motions/registry';
+import { motionRegistry, type MotionDefinition, type MotionSourceReference, type MotionLicense } from '../motions/registry';
 import type { MotionParameterSet } from '../motions/format';
 
 export interface EffectDefinition {
@@ -9,6 +9,7 @@ export interface EffectDefinition {
   category?: string;
   adapterId?: string;
   semanticTags: string[];
+  visualTags?: string[];
   contentSlots: string[];
   minDurationSec: number;
   maxDurationSec: number;
@@ -16,7 +17,7 @@ export interface EffectDefinition {
   recommendedMotionCategories: string[];
   recommendedSfxIntents: string[];
   assetSource?: string;
-  license?: 'MIT';
+  license?: MotionLicense;
   defaultProps?: MotionParameterSet;
   useCases?: string[];
   avoidCases?: string[];
@@ -45,10 +46,16 @@ const legacyEffectRegistry: EffectDefinition[] = [
   { familyId: 'numeric', variantId: 'ring-c', displayName: '指标环 C', semanticTags: ['number', 'ratio', 'kpi'], contentSlots: ['label', 'value', 'maximum', 'decimals'], minDurationSec: 0.8, maxDurationSec: 8, supportedAspectRatios: ['16:9', '9:16'], recommendedMotionCategories: ['spring', 'pop'], recommendedSfxIntents: ['data'] },
 ];
 
-function contentSlotsFor(category: string): string[] {
+function contentSlotsFor(category: string, visualTags: string[] = []): string[] {
   if (category === 'text') return ['text'];
   if (category === 'number') return ['value', 'startValue', 'decimalPlaces', 'prefix', 'suffix'];
   if (category === 'list') return ['items', 'itemGap', 'stagger'];
+  if (category === 'pack-effect') {
+    if (visualTags.includes('Chart') || visualTags.includes('Metric')) return ['label', 'value', 'maximum'];
+    if (visualTags.includes('List') || visualTags.includes('Steps')) return ['items'];
+    if (visualTags.includes('Badge') || visualTags.includes('Icon')) return ['label', 'icon'];
+    return ['headline'];
+  }
   return [];
 }
 
@@ -63,13 +70,14 @@ function asFormalEffect(motion: MotionDefinition): EffectDefinition {
   const category = motion.category;
   return {
     id: motion.id,
-    familyId: category,
+    familyId: motion.effectFamilyId ?? category,
     variantId: motion.motionId,
     displayName: motion.displayName ?? motion.motionId,
     category,
     adapterId: motion.adapterId,
     semanticTags: motion.semanticTags ?? [],
-    contentSlots: contentSlotsFor(category),
+    visualTags: motion.visualTags,
+    contentSlots: contentSlotsFor(category, motion.visualTags),
     minDurationSec: motion.durationRangeSec[0],
     maxDurationSec: motion.durationRangeSec[1],
     supportedAspectRatios: motion.supportedAspectRatios ?? ['16:9', '9:16', '1:1'],

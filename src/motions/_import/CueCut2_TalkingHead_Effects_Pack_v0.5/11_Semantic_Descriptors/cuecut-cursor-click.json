@@ -1,0 +1,20 @@
+{
+  "id": "cuecut-cursor-click",
+  "family": "CursorClick",
+  "file": "05_Interaction_Cursor/CueCutCursorClick.tsx",
+  "useCases": [
+    "screen tutorial click target",
+    "UI demonstration"
+  ],
+  "avoidCases": [
+    "talking-head-only content"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

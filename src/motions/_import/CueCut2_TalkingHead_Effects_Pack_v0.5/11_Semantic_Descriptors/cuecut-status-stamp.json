@@ -1,0 +1,20 @@
+{
+  "id": "cuecut-status-stamp",
+  "family": "StatusStamp",
+  "file": "03_Status_Notification/CueCutStatusStamp.tsx",
+  "useCases": [
+    "success/error result",
+    "verification"
+  ],
+  "avoidCases": [
+    "neutral information"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

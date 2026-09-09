@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-circle-focus",
+  "family": "CircleFocus",
+  "file": "02_Text_Annotations/CueCutCircleFocus.tsx",
+  "useCases": [
+    "circle a word",
+    "call attention to a short keyword"
+  ],
+  "avoidCases": [
+    "long multi-line paragraph"
+  ],
+  "rendering": "progress-driven",
+  "supportsElementCue": false,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

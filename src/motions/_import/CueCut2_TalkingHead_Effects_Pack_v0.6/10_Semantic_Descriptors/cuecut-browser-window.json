@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-browser-window",
+  "family": "BrowserWindow",
+  "file": "01_Window_Frames/CueCutBrowserWindow.tsx",
+  "useCases": [
+    "website demo",
+    "web tool tutorial",
+    "browser UI"
+  ],
+  "avoidCases": [
+    "plain subtitle"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

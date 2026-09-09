@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-bracket-callout",
+  "family": "Bracket",
+  "file": "02_Text_Annotations/CueCutBracketCallout.tsx",
+  "useCases": [
+    "paragraph/phrase bracket annotation",
+    "side note"
+  ],
+  "avoidCases": [
+    "single metric"
+  ],
+  "rendering": "progress-driven",
+  "supportsElementCue": false,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

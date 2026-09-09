@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { findMotion } from '../motions/registry';
 
 const hexColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be a six-digit hex color');
 
@@ -34,6 +35,15 @@ const motionPartSchema = z.object({
   intensity: z.number().finite().min(0).max(1),
 });
 
+const subtitleSchema = z.object({
+  id: z.string().min(1),
+  startSec: z.number().finite().min(0),
+  endSec: z.number().finite().positive(),
+  text: z.string(),
+}).superRefine((value, context) => {
+  if (value.endSec <= value.startSec) context.addIssue({ code: 'custom', path: ['endSec'], message: 'subtitle endSec must be greater than startSec' });
+});
+
 const effectSchema = z.object({
   effectId: z.string().min(1),
   segmentId: z.string().min(1),
@@ -67,6 +77,8 @@ const effectSchema = z.object({
 
 export const projectCompositionSchema = z.object({
   schema: z.literal('cuecut.composition/1'),
+  schemaVersion: z.literal(1).default(1),
+  subtitles: z.array(subtitleSchema).default([]),
   project: z.object({
     projectId: z.string().min(1),
     durationSec: z.number().finite().positive(),
@@ -82,6 +94,7 @@ export const projectCompositionSchema = z.object({
     }),
     video: z.object({
       sourceFileName: z.string().nullable(),
+      mediaReference: z.object({ name: z.string().min(1), size: z.number().finite().nonnegative(), lastModified: z.number().finite().nonnegative(), type: z.string() }).optional(),
       zIndex: z.literal(0),
       locked: z.literal(true),
     }).default({ sourceFileName: null, zIndex: 0, locked: true }),
@@ -121,6 +134,9 @@ export const projectCompositionSchema = z.object({
         message: 'effect endSec must not exceed project duration',
       });
     }
+    for (const role of ['enter', 'exit'] as const) {
+      if (!findMotion(effect.motion[role].motionId)) context.addIssue({ code: 'custom', path: ['effects', index, 'motion', role, 'motionId'], message: `motion must be registered: ${effect.motion[role].motionId}` });
+    }
   });
   value.segments.forEach((segment, index) => {
     if (segment.endSec > value.project.durationSec) {
@@ -130,6 +146,12 @@ export const projectCompositionSchema = z.object({
         message: 'segment endSec must not exceed project duration',
       });
     }
+  });
+  value.subtitles.forEach((subtitle, index) => {
+    if (subtitle.endSec > value.project.durationSec) context.addIssue({ code: 'custom', path: ['subtitles', index, 'endSec'], message: 'subtitle endSec must not exceed project duration' });
+  });
+  value.soundEvents.forEach((event, index) => {
+    if (event.timeSec > value.project.durationSec) context.addIssue({ code: 'custom', path: ['soundEvents', index, 'timeSec'], message: 'sound event timeSec must not exceed project duration' });
   });
 });
 

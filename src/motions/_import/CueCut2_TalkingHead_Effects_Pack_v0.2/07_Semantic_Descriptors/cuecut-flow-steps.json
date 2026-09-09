@@ -1,0 +1,23 @@
+{
+  "id": "cuecut-flow-steps",
+  "family": "Flow",
+  "file": "04_Timeline_Flow/CueCutFlowSteps.tsx",
+  "useCases": [
+    "workflow",
+    "pipeline",
+    "input-to-output",
+    "architecture-lite"
+  ],
+  "avoidCases": [
+    "deep architecture graph",
+    "unrelated bullets"
+  ],
+  "recommendedItemCount": [
+    3,
+    5
+  ],
+  "recommendedDurationSec": [
+    3.0,
+    12.0
+  ]
+}

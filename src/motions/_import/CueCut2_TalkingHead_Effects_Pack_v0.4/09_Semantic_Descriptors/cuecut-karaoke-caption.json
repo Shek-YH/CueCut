@@ -1,0 +1,22 @@
+{
+  "id": "cuecut-karaoke-caption",
+  "family": "KaraokeCaption",
+  "file": "01_Caption_Karaoke/CueCutKaraokeCaption.tsx",
+  "useCases": [
+    "word-level subtitle emphasis",
+    "caption syncing",
+    "short-form retention"
+  ],
+  "avoidCases": [
+    "non-caption information card"
+  ],
+  "rendering": "progress-driven",
+  "supportsElementCue": true,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

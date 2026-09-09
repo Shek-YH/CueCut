@@ -1,0 +1,3424 @@
+[
+    {
+        "id":  "cuecut-before-after-split",
+        "displayName":  "Before After Split",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.2",
+        "packVersion":  "0.2",
+        "family":  "BeforeAfter",
+        "effectFamilyId":  "pack-0-2-beforeafter",
+        "semanticTags":  [
+                             "beforeafter",
+                             "before",
+                             "after",
+                             "split"
+                         ],
+        "visualTags":  [
+                           "List",
+                           "Steps"
+                       ],
+        "motionCategory":  "ListStagger",
+        "adapterId":  "pack:cuecut-before-after-split",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 2,
+                                 8
+                             ],
+        "useCases":  [
+                         "before/after visual comparison",
+                         "retouch",
+                         "UI redesign",
+                         "results"
+                     ],
+        "avoidCases":  [
+                           "no two comparable images"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.2/07_Semantic_Descriptors/cuecut-before-after-split.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-checklist",
+        "displayName":  "Checklist",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.2",
+        "packVersion":  "0.2",
+        "family":  "Checklist",
+        "effectFamilyId":  "pack-0-2-checklist",
+        "semanticTags":  [
+                             "checklist"
+                         ],
+        "visualTags":  [
+                           "List",
+                           "Steps"
+                       ],
+        "motionCategory":  "ListStagger",
+        "adapterId":  "pack:cuecut-checklist",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 3,
+                                 12
+                             ],
+        "useCases":  [
+                         "verification",
+                         "requirements",
+                         "completion",
+                         "things to check"
+                     ],
+        "avoidCases":  [
+                           "pure chronological process without completion semantics",
+                           "single metric"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.2/07_Semantic_Descriptors/cuecut-checklist.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-flow-steps",
+        "displayName":  "Flow Steps",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.2",
+        "packVersion":  "0.2",
+        "family":  "Flow",
+        "effectFamilyId":  "pack-0-2-flow",
+        "semanticTags":  [
+                             "flow",
+                             "steps"
+                         ],
+        "visualTags":  [
+                           "List",
+                           "Steps"
+                       ],
+        "motionCategory":  "ListStagger",
+        "adapterId":  "pack:cuecut-flow-steps",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 3,
+                                 12
+                             ],
+        "useCases":  [
+                         "workflow",
+                         "pipeline",
+                         "input-to-output",
+                         "architecture-lite"
+                     ],
+        "avoidCases":  [
+                           "deep architecture graph",
+                           "unrelated bullets"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.2/07_Semantic_Descriptors/cuecut-flow-steps.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-gauge-metric",
+        "displayName":  "Gauge Metric",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.2",
+        "packVersion":  "0.2",
+        "family":  "Gauge",
+        "effectFamilyId":  "pack-0-2-gauge",
+        "semanticTags":  [
+                             "gauge",
+                             "metric"
+                         ],
+        "visualTags":  [
+                           "Chart",
+                           "Metric"
+                       ],
+        "motionCategory":  "Scale",
+        "adapterId":  "pack:cuecut-gauge-metric",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 1.5,
+                                 5
+                             ],
+        "useCases":  [
+                         "bounded score",
+                         "health score",
+                         "speed/intensity",
+                         "rating"
+                     ],
+        "avoidCases":  [
+                           "unbounded raw counts",
+                           "categorical comparison"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.2/07_Semantic_Descriptors/cuecut-gauge-metric.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-process-timeline",
+        "displayName":  "Process Timeline",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.2",
+        "packVersion":  "0.2",
+        "family":  "Timeline",
+        "effectFamilyId":  "pack-0-2-timeline",
+        "semanticTags":  [
+                             "timeline",
+                             "process"
+                         ],
+        "visualTags":  [
+                           "List",
+                           "Steps"
+                       ],
+        "motionCategory":  "ListStagger",
+        "adapterId":  "pack:cuecut-process-timeline",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 3,
+                                 14
+                             ],
+        "useCases":  [
+                         "chronology",
+                         "milestones",
+                         "history",
+                         "evolution"
+                     ],
+        "avoidCases":  [
+                           "checklist completion",
+                           "single metric"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.2/07_Semantic_Descriptors/cuecut-process-timeline.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-progress-metric",
+        "displayName":  "Progress Metric",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.2",
+        "packVersion":  "0.2",
+        "family":  "Progress",
+        "effectFamilyId":  "pack-0-2-progress",
+        "semanticTags":  [
+                             "progress",
+                             "metric"
+                         ],
+        "visualTags":  [
+                           "Chart",
+                           "Metric"
+                       ],
+        "motionCategory":  "Scale",
+        "adapterId":  "pack:cuecut-progress-metric",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 1.2,
+                                 5
+                             ],
+        "useCases":  [
+                         "task progress",
+                         "completion",
+                         "loading metaphor",
+                         "goal"
+                     ],
+        "avoidCases":  [
+                           "share of total across multiple categories"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.2/07_Semantic_Descriptors/cuecut-progress-metric.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-ranking-bars",
+        "displayName":  "Ranking Bars",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.2",
+        "packVersion":  "0.2",
+        "family":  "Ranking",
+        "effectFamilyId":  "pack-0-2-ranking",
+        "semanticTags":  [
+                             "ranking",
+                             "bars"
+                         ],
+        "visualTags":  [
+                           "Chart",
+                           "Metric",
+                           "List",
+                           "Steps"
+                       ],
+        "motionCategory":  "Scale",
+        "adapterId":  "pack:cuecut-ranking-bars",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 2.5,
+                                 10
+                             ],
+        "useCases":  [
+                         "Top N",
+                         "leaderboard",
+                         "numeric comparison"
+                     ],
+        "avoidCases":  [
+                           "single number",
+                           "non-comparable units"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.2/07_Semantic_Descriptors/cuecut-ranking-bars.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-ring-metric",
+        "displayName":  "Ring Metric",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.2",
+        "packVersion":  "0.2",
+        "family":  "Percentage",
+        "effectFamilyId":  "pack-0-2-percentage",
+        "semanticTags":  [
+                             "percentage",
+                             "ring",
+                             "metric"
+                         ],
+        "visualTags":  [
+                           "Chart",
+                           "Metric"
+                       ],
+        "motionCategory":  "Scale",
+        "adapterId":  "pack:cuecut-ring-metric",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 1.5,
+                                 5
+                             ],
+        "useCases":  [
+                         "single percentage",
+                         "completion rate",
+                         "conversion rate",
+                         "accuracy"
+                     ],
+        "avoidCases":  [
+                           "multiple values comparison",
+                           "trend over time"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.2/07_Semantic_Descriptors/cuecut-ring-metric.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-step-timeline",
+        "displayName":  "Step Timeline",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.2",
+        "packVersion":  "0.2",
+        "family":  "Steps",
+        "effectFamilyId":  "pack-0-2-steps",
+        "semanticTags":  [
+                             "steps",
+                             "step",
+                             "timeline"
+                         ],
+        "visualTags":  [
+                           "List",
+                           "Steps"
+                       ],
+        "motionCategory":  "ListStagger",
+        "adapterId":  "pack:cuecut-step-timeline",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 3,
+                                 14
+                             ],
+        "useCases":  [
+                         "ordered procedure",
+                         "tutorial steps",
+                         "sequence"
+                     ],
+        "avoidCases":  [
+                           "unordered checklist",
+                           "multi-series data"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.2/07_Semantic_Descriptors/cuecut-step-timeline.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-versus-card",
+        "displayName":  "Versus Card",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.2",
+        "packVersion":  "0.2",
+        "family":  "Versus",
+        "effectFamilyId":  "pack-0-2-versus",
+        "semanticTags":  [
+                             "versus",
+                             "card"
+                         ],
+        "visualTags":  [
+                           "List",
+                           "Steps"
+                       ],
+        "motionCategory":  "ListStagger",
+        "adapterId":  "pack:cuecut-versus-card",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 2,
+                                 8
+                             ],
+        "useCases":  [
+                         "A vs B",
+                         "product/model comparison",
+                         "before decision"
+                     ],
+        "avoidCases":  [
+                           "3+ candidates",
+                           "chronological process"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.2/07_Semantic_Descriptors/cuecut-versus-card.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-alert-card",
+        "displayName":  "Alert Card",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.3",
+        "packVersion":  "0.3",
+        "family":  "Alert",
+        "effectFamilyId":  "pack-0-3-alert",
+        "semanticTags":  [
+                             "alert",
+                             "card"
+                         ],
+        "visualTags":  [
+                           "Text",
+                           "Card"
+                       ],
+        "motionCategory":  "Pop",
+        "adapterId":  "pack:cuecut-alert-card",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "warning",
+                         "success",
+                         "error",
+                         "important note"
+                     ],
+        "avoidCases":  [
+                           "neutral paragraph"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.3/09_Semantic_Descriptors/cuecut-alert-card.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-cause-effect",
+        "displayName":  "Cause Effect",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.3",
+        "packVersion":  "0.3",
+        "family":  "CauseEffect",
+        "effectFamilyId":  "pack-0-3-causeeffect",
+        "semanticTags":  [
+                             "causeeffect",
+                             "cause",
+                             "effect"
+                         ],
+        "visualTags":  [
+                           "Card"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-cause-effect",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "because therefore",
+                         "cause and outcome",
+                         "problem consequence"
+                     ],
+        "avoidCases":  [
+                           "unordered list"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.3/09_Semantic_Descriptors/cuecut-cause-effect.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-date-card",
+        "displayName":  "Date Card",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.3",
+        "packVersion":  "0.3",
+        "family":  "Date",
+        "effectFamilyId":  "pack-0-3-date",
+        "semanticTags":  [
+                             "date",
+                             "card"
+                         ],
+        "visualTags":  [
+                           "Text",
+                           "Card"
+                       ],
+        "motionCategory":  "Pop",
+        "adapterId":  "pack:cuecut-date-card",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "date",
+                         "launch day",
+                         "deadline"
+                     ],
+        "avoidCases":  [
+                           "duration only"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.3/09_Semantic_Descriptors/cuecut-date-card.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-definition-card",
+        "displayName":  "Definition Card",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.3",
+        "packVersion":  "0.3",
+        "family":  "Definition",
+        "effectFamilyId":  "pack-0-3-definition",
+        "semanticTags":  [
+                             "definition",
+                             "card"
+                         ],
+        "visualTags":  [
+                           "Text",
+                           "Card"
+                       ],
+        "motionCategory":  "Pop",
+        "adapterId":  "pack:cuecut-definition-card",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "what is X",
+                         "concept definition",
+                         "explanation"
+                     ],
+        "avoidCases":  [
+                           "ranking"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.3/09_Semantic_Descriptors/cuecut-definition-card.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-delta-metric",
+        "displayName":  "Delta Metric",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.3",
+        "packVersion":  "0.3",
+        "family":  "Delta",
+        "effectFamilyId":  "pack-0-3-delta",
+        "semanticTags":  [
+                             "delta",
+                             "metric"
+                         ],
+        "visualTags":  [
+                           "Chart",
+                           "Metric"
+                       ],
+        "motionCategory":  "Scale",
+        "adapterId":  "pack:cuecut-delta-metric",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "growth",
+                         "decline",
+                         "before vs current metric"
+                     ],
+        "avoidCases":  [
+                           "multiple category ranking"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.3/09_Semantic_Descriptors/cuecut-delta-metric.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-feature-grid",
+        "displayName":  "Feature Grid",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.3",
+        "packVersion":  "0.3",
+        "family":  "FeatureList",
+        "effectFamilyId":  "pack-0-3-featurelist",
+        "semanticTags":  [
+                             "featurelist",
+                             "feature",
+                             "grid"
+                         ],
+        "visualTags":  [
+                           "Card"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-feature-grid",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "feature overview",
+                         "benefits",
+                         "capabilities"
+                     ],
+        "avoidCases":  [
+                           "single number"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.3/09_Semantic_Descriptors/cuecut-feature-grid.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-key-point",
+        "displayName":  "Key Point",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.3",
+        "packVersion":  "0.3",
+        "family":  "KeyPoint",
+        "effectFamilyId":  "pack-0-3-keypoint",
+        "semanticTags":  [
+                             "keypoint",
+                             "key",
+                             "point"
+                         ],
+        "visualTags":  [
+                           "Text",
+                           "Card"
+                       ],
+        "motionCategory":  "Pop",
+        "adapterId":  "pack:cuecut-key-point",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "core conclusion",
+                         "punch line",
+                         "important statement"
+                     ],
+        "avoidCases":  [
+                           "ordinary filler sentence"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.3/09_Semantic_Descriptors/cuecut-key-point.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-price-card",
+        "displayName":  "Price Card",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.3",
+        "packVersion":  "0.3",
+        "family":  "Price",
+        "effectFamilyId":  "pack-0-3-price",
+        "semanticTags":  [
+                             "price",
+                             "card"
+                         ],
+        "visualTags":  [
+                           "Text",
+                           "Card"
+                       ],
+        "motionCategory":  "Pop",
+        "adapterId":  "pack:cuecut-price-card",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "price",
+                         "subscription",
+                         "discount"
+                     ],
+        "avoidCases":  [
+                           "non-price metric"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.3/09_Semantic_Descriptors/cuecut-price-card.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-product-card",
+        "displayName":  "Product Card",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.3",
+        "packVersion":  "0.3",
+        "family":  "Product",
+        "effectFamilyId":  "pack-0-3-product",
+        "semanticTags":  [
+                             "product",
+                             "card"
+                         ],
+        "visualTags":  [
+                           "Text",
+                           "Card"
+                       ],
+        "motionCategory":  "Pop",
+        "adapterId":  "pack:cuecut-product-card",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "product introduction",
+                         "physical/digital product"
+                     ],
+        "avoidCases":  [
+                           "timeline"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.3/09_Semantic_Descriptors/cuecut-product-card.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-pros-cons",
+        "displayName":  "Pros Cons",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.3",
+        "packVersion":  "0.3",
+        "family":  "ProsCons",
+        "effectFamilyId":  "pack-0-3-proscons",
+        "semanticTags":  [
+                             "proscons",
+                             "pros",
+                             "cons"
+                         ],
+        "visualTags":  [
+                           "List",
+                           "Steps"
+                       ],
+        "motionCategory":  "ListStagger",
+        "adapterId":  "pack:cuecut-pros-cons",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "advantages and disadvantages",
+                         "tradeoffs"
+                     ],
+        "avoidCases":  [
+                           "chronological process"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.3/09_Semantic_Descriptors/cuecut-pros-cons.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-quote-card",
+        "displayName":  "Quote Card",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.3",
+        "packVersion":  "0.3",
+        "family":  "Quote",
+        "effectFamilyId":  "pack-0-3-quote",
+        "semanticTags":  [
+                             "quote",
+                             "card"
+                         ],
+        "visualTags":  [
+                           "Text",
+                           "Card"
+                       ],
+        "motionCategory":  "Pop",
+        "adapterId":  "pack:cuecut-quote-card",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "quotation",
+                         "testimonial",
+                         "memorable sentence"
+                     ],
+        "avoidCases":  [
+                           "long paragraph",
+                           "numeric comparison"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.3/09_Semantic_Descriptors/cuecut-quote-card.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-term-card",
+        "displayName":  "Term Card",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.3",
+        "packVersion":  "0.3",
+        "family":  "Term",
+        "effectFamilyId":  "pack-0-3-term",
+        "semanticTags":  [
+                             "term",
+                             "card"
+                         ],
+        "visualTags":  [
+                           "Text",
+                           "Card"
+                       ],
+        "motionCategory":  "Pop",
+        "adapterId":  "pack:cuecut-term-card",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "technical term",
+                         "abbreviation",
+                         "concept label"
+                     ],
+        "avoidCases":  [
+                           "multi-step process"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.3/09_Semantic_Descriptors/cuecut-term-card.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-tool-card",
+        "displayName":  "Tool Card",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.3",
+        "packVersion":  "0.3",
+        "family":  "AppTool",
+        "effectFamilyId":  "pack-0-3-apptool",
+        "semanticTags":  [
+                             "apptool",
+                             "tool",
+                             "card"
+                         ],
+        "visualTags":  [
+                           "Text",
+                           "Card"
+                       ],
+        "motionCategory":  "Pop",
+        "adapterId":  "pack:cuecut-tool-card",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "AI tool",
+                         "software",
+                         "app introduction"
+                     ],
+        "avoidCases":  [
+                           "person profile"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.3/09_Semantic_Descriptors/cuecut-tool-card.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-attention-burst",
+        "displayName":  "Attention Burst",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.4",
+        "packVersion":  "0.4",
+        "family":  "AttentionBurst",
+        "effectFamilyId":  "pack-0-4-attentionburst",
+        "semanticTags":  [
+                             "attentionburst",
+                             "attention",
+                             "burst"
+                         ],
+        "visualTags":  [
+                           "Card"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-attention-burst",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "strong surprise",
+                         "warning hook",
+                         "big reveal"
+                     ],
+        "avoidCases":  [
+                           "calm informational paragraph"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.4/09_Semantic_Descriptors/cuecut-attention-burst.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-bracket-callout",
+        "displayName":  "Bracket Callout",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.4",
+        "packVersion":  "0.4",
+        "family":  "Bracket",
+        "effectFamilyId":  "pack-0-4-bracket",
+        "semanticTags":  [
+                             "bracket",
+                             "callout"
+                         ],
+        "visualTags":  [
+                           "Text",
+                           "Card"
+                       ],
+        "motionCategory":  "Pop",
+        "adapterId":  "pack:cuecut-bracket-callout",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "paragraph/phrase bracket annotation",
+                         "side note"
+                     ],
+        "avoidCases":  [
+                           "single metric"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.4/09_Semantic_Descriptors/cuecut-bracket-callout.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-callout-bubble",
+        "displayName":  "Callout Bubble",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.4",
+        "packVersion":  "0.4",
+        "family":  "CalloutBubble",
+        "effectFamilyId":  "pack-0-4-calloutbubble",
+        "semanticTags":  [
+                             "calloutbubble",
+                             "callout",
+                             "bubble"
+                         ],
+        "visualTags":  [
+                           "Text",
+                           "Card"
+                       ],
+        "motionCategory":  "Pop",
+        "adapterId":  "pack:cuecut-callout-bubble",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "side explanation",
+                         "quick note",
+                         "UI commentary"
+                     ],
+        "avoidCases":  [
+                           "timeline"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.4/09_Semantic_Descriptors/cuecut-callout-bubble.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-caption-pill",
+        "displayName":  "Caption Pill",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.4",
+        "packVersion":  "0.4",
+        "family":  "CaptionPill",
+        "effectFamilyId":  "pack-0-4-captionpill",
+        "semanticTags":  [
+                             "captionpill",
+                             "caption",
+                             "pill"
+                         ],
+        "visualTags":  [
+                           "Text",
+                           "Card"
+                       ],
+        "motionCategory":  "Pop",
+        "adapterId":  "pack:cuecut-caption-pill",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "short subtitle",
+                         "hook phrase",
+                         "single sentence emphasis"
+                     ],
+        "avoidCases":  [
+                           "long paragraph"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.4/09_Semantic_Descriptors/cuecut-caption-pill.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-circle-focus",
+        "displayName":  "Circle Focus",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.4",
+        "packVersion":  "0.4",
+        "family":  "CircleFocus",
+        "effectFamilyId":  "pack-0-4-circlefocus",
+        "semanticTags":  [
+                             "circlefocus",
+                             "circle",
+                             "focus"
+                         ],
+        "visualTags":  [
+                           "Pointer",
+                           "Highlight"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-circle-focus",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "circle a word",
+                         "call attention to a short keyword"
+                     ],
+        "avoidCases":  [
+                           "long multi-line paragraph"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.4/09_Semantic_Descriptors/cuecut-circle-focus.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-emoji-pop",
+        "displayName":  "Emoji Pop",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.4",
+        "packVersion":  "0.4",
+        "family":  "EmojiPop",
+        "effectFamilyId":  "pack-0-4-emojipop",
+        "semanticTags":  [
+                             "emojipop",
+                             "emoji",
+                             "pop"
+                         ],
+        "visualTags":  [
+                           "Badge",
+                           "Icon"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-emoji-pop",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "emotion cue",
+                         "reaction",
+                         "informal short-form video"
+                     ],
+        "avoidCases":  [
+                           "formal enterprise tone"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.4/09_Semantic_Descriptors/cuecut-emoji-pop.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-focus-reticle",
+        "displayName":  "Focus Reticle",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.4",
+        "packVersion":  "0.4",
+        "family":  "FocusReticle",
+        "effectFamilyId":  "pack-0-4-focusreticle",
+        "semanticTags":  [
+                             "focusreticle",
+                             "focus",
+                             "reticle"
+                         ],
+        "visualTags":  [
+                           "Pointer",
+                           "Highlight"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-focus-reticle",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "screen focus target",
+                         "UI demonstration"
+                     ],
+        "avoidCases":  [
+                           "decorative-only use"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.4/09_Semantic_Descriptors/cuecut-focus-reticle.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-focus-zoom",
+        "displayName":  "Focus Zoom",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.4",
+        "packVersion":  "0.4",
+        "family":  "FocusZoom",
+        "effectFamilyId":  "pack-0-4-focuszoom",
+        "semanticTags":  [
+                             "focuszoom",
+                             "focus",
+                             "zoom"
+                         ],
+        "visualTags":  [
+                           "Pointer",
+                           "Highlight"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-focus-zoom",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "zoom image/screen content to point of interest"
+                     ],
+        "avoidCases":  [
+                           "text-only overlay"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.4/09_Semantic_Descriptors/cuecut-focus-zoom.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-highlight-swipe",
+        "displayName":  "Highlight Swipe",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.4",
+        "packVersion":  "0.4",
+        "family":  "Highlight",
+        "effectFamilyId":  "pack-0-4-highlight",
+        "semanticTags":  [
+                             "highlight",
+                             "swipe"
+                         ],
+        "visualTags":  [
+                           "Pointer",
+                           "Highlight"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-highlight-swipe",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "marker highlight",
+                         "keyword background emphasis"
+                     ],
+        "avoidCases":  [
+                           "full-screen scene"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.4/09_Semantic_Descriptors/cuecut-highlight-swipe.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-karaoke-caption",
+        "displayName":  "Karaoke Caption",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.4",
+        "packVersion":  "0.4",
+        "family":  "KaraokeCaption",
+        "effectFamilyId":  "pack-0-4-karaokecaption",
+        "semanticTags":  [
+                             "karaokecaption",
+                             "karaoke",
+                             "caption"
+                         ],
+        "visualTags":  [
+                           "Text",
+                           "Card"
+                       ],
+        "motionCategory":  "Pop",
+        "adapterId":  "pack:cuecut-karaoke-caption",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "word-level subtitle emphasis",
+                         "caption syncing",
+                         "short-form retention"
+                     ],
+        "avoidCases":  [
+                           "non-caption information card"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.4/09_Semantic_Descriptors/cuecut-karaoke-caption.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-keyword-pop",
+        "displayName":  "Keyword Pop",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.4",
+        "packVersion":  "0.4",
+        "family":  "KeywordPop",
+        "effectFamilyId":  "pack-0-4-keywordpop",
+        "semanticTags":  [
+                             "keywordpop",
+                             "keyword",
+                             "pop"
+                         ],
+        "visualTags":  [
+                           "Pointer",
+                           "Highlight"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-keyword-pop",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "punch keyword",
+                         "hook word",
+                         "important noun"
+                     ],
+        "avoidCases":  [
+                           "ordinary word"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.4/09_Semantic_Descriptors/cuecut-keyword-pop.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-marker-underline",
+        "displayName":  "Marker Underline",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.4",
+        "packVersion":  "0.4",
+        "family":  "Underline",
+        "effectFamilyId":  "pack-0-4-underline",
+        "semanticTags":  [
+                             "underline",
+                             "marker"
+                         ],
+        "visualTags":  [
+                           "Pointer",
+                           "Highlight"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-marker-underline",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "keyword underline",
+                         "hand-drawn emphasis"
+                     ],
+        "avoidCases":  [
+                           "numeric chart"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.4/09_Semantic_Descriptors/cuecut-marker-underline.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-pointer-arrow",
+        "displayName":  "Pointer Arrow",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.4",
+        "packVersion":  "0.4",
+        "family":  "PointerArrow",
+        "effectFamilyId":  "pack-0-4-pointerarrow",
+        "semanticTags":  [
+                             "pointerarrow",
+                             "pointer",
+                             "arrow"
+                         ],
+        "visualTags":  [
+                           "Pointer",
+                           "Highlight"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-pointer-arrow",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "point at UI object",
+                         "direct attention",
+                         "show relationship"
+                     ],
+        "avoidCases":  [
+                           "unanchored decoration"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.4/09_Semantic_Descriptors/cuecut-pointer-arrow.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-reaction-badge",
+        "displayName":  "Reaction Badge",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.4",
+        "packVersion":  "0.4",
+        "family":  "ReactionBadge",
+        "effectFamilyId":  "pack-0-4-reactionbadge",
+        "semanticTags":  [
+                             "reactionbadge",
+                             "reaction",
+                             "badge"
+                         ],
+        "visualTags":  [
+                           "Badge",
+                           "Icon"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-reaction-badge",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "reaction summary",
+                         "hot/trending badge",
+                         "social proof cue"
+                     ],
+        "avoidCases":  [
+                           "complex comparison"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.4/09_Semantic_Descriptors/cuecut-reaction-badge.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-spotlight-box",
+        "displayName":  "Spotlight Box",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.4",
+        "packVersion":  "0.4",
+        "family":  "SpotlightBox",
+        "effectFamilyId":  "pack-0-4-spotlightbox",
+        "semanticTags":  [
+                             "spotlightbox",
+                             "spotlight",
+                             "box"
+                         ],
+        "visualTags":  [
+                           "Pointer",
+                           "Highlight"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-spotlight-box",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "highlight screen region",
+                         "UI tutorial target"
+                     ],
+        "avoidCases":  [
+                           "plain subtitle"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.4/09_Semantic_Descriptors/cuecut-spotlight-box.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-ai-processing-badge",
+        "displayName":  "Ai Processing Badge",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.5",
+        "packVersion":  "0.5",
+        "family":  "AIProcessing",
+        "effectFamilyId":  "pack-0-5-aiprocessing",
+        "semanticTags":  [
+                             "aiprocessing",
+                             "ai",
+                             "processing",
+                             "badge"
+                         ],
+        "visualTags":  [
+                           "Badge",
+                           "Icon"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-ai-processing-badge",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "AI processing state",
+                         "agent executing task"
+                     ],
+        "avoidCases":  [
+                           "generic loading unrelated to AI"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.5/11_Semantic_Descriptors/cuecut-ai-processing-badge.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-ai-spark",
+        "displayName":  "Ai Spark",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.5",
+        "packVersion":  "0.5",
+        "family":  "AISpark",
+        "effectFamilyId":  "pack-0-5-aispark",
+        "semanticTags":  [
+                             "aispark",
+                             "ai",
+                             "spark"
+                         ],
+        "visualTags":  [
+                           "Badge",
+                           "Icon"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-ai-spark",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "AI generation",
+                         "model/tool emphasis",
+                         "AI magic moment"
+                     ],
+        "avoidCases":  [
+                           "non-AI content"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.5/11_Semantic_Descriptors/cuecut-ai-spark.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-badge-pulse",
+        "displayName":  "Badge Pulse",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.5",
+        "packVersion":  "0.5",
+        "family":  "Badge",
+        "effectFamilyId":  "pack-0-5-badge",
+        "semanticTags":  [
+                             "badge",
+                             "pulse"
+                         ],
+        "visualTags":  [
+                           "Badge",
+                           "Icon"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-badge-pulse",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "status label",
+                         "live/new/hot cue",
+                         "compact metadata"
+                     ],
+        "avoidCases":  [
+                           "long explanation"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.5/11_Semantic_Descriptors/cuecut-badge-pulse.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-clipboard-action",
+        "displayName":  "Clipboard Action",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.5",
+        "packVersion":  "0.5",
+        "family":  "ClipboardAction",
+        "effectFamilyId":  "pack-0-5-clipboardaction",
+        "semanticTags":  [
+                             "clipboardaction",
+                             "clipboard",
+                             "action"
+                         ],
+        "visualTags":  [
+                           "Badge",
+                           "Icon"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-clipboard-action",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "copy/paste instruction"
+                     ],
+        "avoidCases":  [
+                           "unrelated text"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.5/11_Semantic_Descriptors/cuecut-clipboard-action.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-cursor-click",
+        "displayName":  "Cursor Click",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.5",
+        "packVersion":  "0.5",
+        "family":  "CursorClick",
+        "effectFamilyId":  "pack-0-5-cursorclick",
+        "semanticTags":  [
+                             "cursorclick",
+                             "cursor",
+                             "click"
+                         ],
+        "visualTags":  [
+                           "Pointer",
+                           "Highlight"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-cursor-click",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "screen tutorial click target",
+                         "UI demonstration"
+                     ],
+        "avoidCases":  [
+                           "talking-head-only content"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.5/11_Semantic_Descriptors/cuecut-cursor-click.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-engagement-stack",
+        "displayName":  "Engagement Stack",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.5",
+        "packVersion":  "0.5",
+        "family":  "EngagementStack",
+        "effectFamilyId":  "pack-0-5-engagementstack",
+        "semanticTags":  [
+                             "engagementstack",
+                             "engagement",
+                             "stack"
+                         ],
+        "visualTags":  [
+                           "Card"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-engagement-stack",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "short-form CTA sequence"
+                     ],
+        "avoidCases":  [
+                           "formal professional content unless enabled"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.5/11_Semantic_Descriptors/cuecut-engagement-stack.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-icon-pop",
+        "displayName":  "Icon Pop",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.5",
+        "packVersion":  "0.5",
+        "family":  "IconPop",
+        "effectFamilyId":  "pack-0-5-iconpop",
+        "semanticTags":  [
+                             "iconpop",
+                             "icon",
+                             "pop"
+                         ],
+        "visualTags":  [
+                           "Badge",
+                           "Icon"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-icon-pop",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "single icon emphasis",
+                         "concept icon",
+                         "micro visual beat"
+                     ],
+        "avoidCases":  [
+                           "data chart"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.5/11_Semantic_Descriptors/cuecut-icon-pop.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-keyboard-shortcut",
+        "displayName":  "Keyboard Shortcut",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.5",
+        "packVersion":  "0.5",
+        "family":  "KeyboardShortcut",
+        "effectFamilyId":  "pack-0-5-keyboardshortcut",
+        "semanticTags":  [
+                             "keyboardshortcut",
+                             "keyboard",
+                             "shortcut"
+                         ],
+        "visualTags":  [
+                           "Badge",
+                           "Icon"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-keyboard-shortcut",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "shortcut teaching",
+                         "hotkey tutorial"
+                     ],
+        "avoidCases":  [
+                           "plain subtitle"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.5/11_Semantic_Descriptors/cuecut-keyboard-shortcut.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-link-reveal",
+        "displayName":  "Link Reveal",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.5",
+        "packVersion":  "0.5",
+        "family":  "Link",
+        "effectFamilyId":  "pack-0-5-link",
+        "semanticTags":  [
+                             "link",
+                             "reveal"
+                         ],
+        "visualTags":  [
+                           "Badge",
+                           "Icon"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-link-reveal",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "URL/domain mention",
+                         "resource link"
+                     ],
+        "avoidCases":  [
+                           "brand logo replacement"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.5/11_Semantic_Descriptors/cuecut-link-reveal.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-loading-dots",
+        "displayName":  "Loading Dots",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.5",
+        "packVersion":  "0.5",
+        "family":  "Loading",
+        "effectFamilyId":  "pack-0-5-loading",
+        "semanticTags":  [
+                             "loading",
+                             "dots"
+                         ],
+        "visualTags":  [
+                           "Badge",
+                           "Icon"
+                       ],
+        "motionCategory":  "Ticker",
+        "adapterId":  "pack:cuecut-loading-dots",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "AI processing",
+                         "waiting",
+                         "loading metaphor"
+                     ],
+        "avoidCases":  [
+                           "long duration without progress"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.5/11_Semantic_Descriptors/cuecut-loading-dots.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-mouse-click",
+        "displayName":  "Mouse Click",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.5",
+        "packVersion":  "0.5",
+        "family":  "MouseClick",
+        "effectFamilyId":  "pack-0-5-mouseclick",
+        "semanticTags":  [
+                             "mouseclick",
+                             "mouse",
+                             "click"
+                         ],
+        "visualTags":  [
+                           "Card"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-mouse-click",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "left/right click explanation",
+                         "tutorial action"
+                     ],
+        "avoidCases":  [
+                           "decorative use"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.5/11_Semantic_Descriptors/cuecut-mouse-click.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-notification-toast",
+        "displayName":  "Notification Toast",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.5",
+        "packVersion":  "0.5",
+        "family":  "Notification",
+        "effectFamilyId":  "pack-0-5-notification",
+        "semanticTags":  [
+                             "notification",
+                             "toast"
+                         ],
+        "visualTags":  [
+                           "Badge",
+                           "Icon"
+                       ],
+        "motionCategory":  "Ticker",
+        "adapterId":  "pack:cuecut-notification-toast",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "success/info/warning/error toast",
+                         "system event"
+                     ],
+        "avoidCases":  [
+                           "ordinary sentence"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.5/11_Semantic_Descriptors/cuecut-notification-toast.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-progress-steps",
+        "displayName":  "Progress Steps",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.5",
+        "packVersion":  "0.5",
+        "family":  "ProgressSteps",
+        "effectFamilyId":  "pack-0-5-progresssteps",
+        "semanticTags":  [
+                             "progresssteps",
+                             "progress",
+                             "steps"
+                         ],
+        "visualTags":  [
+                           "Chart",
+                           "Metric",
+                           "List",
+                           "Steps"
+                       ],
+        "motionCategory":  "Scale",
+        "adapterId":  "pack:cuecut-progress-steps",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "multi-stage processing",
+                         "setup wizard",
+                         "workflow completion"
+                     ],
+        "avoidCases":  [
+                           "unordered list"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.5/11_Semantic_Descriptors/cuecut-progress-steps.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-social-action",
+        "displayName":  "Social Action",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.5",
+        "packVersion":  "0.5",
+        "family":  "SocialAction",
+        "effectFamilyId":  "pack-0-5-socialaction",
+        "semanticTags":  [
+                             "socialaction",
+                             "social",
+                             "action"
+                         ],
+        "visualTags":  [
+                           "Badge",
+                           "Icon"
+                       ],
+        "motionCategory":  "Ticker",
+        "adapterId":  "pack:cuecut-social-action",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "generic like/follow/subscribe CTA"
+                     ],
+        "avoidCases":  [
+                           "brand-specific fake UI"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.5/11_Semantic_Descriptors/cuecut-social-action.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-status-stamp",
+        "displayName":  "Status Stamp",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.5",
+        "packVersion":  "0.5",
+        "family":  "StatusStamp",
+        "effectFamilyId":  "pack-0-5-statusstamp",
+        "semanticTags":  [
+                             "statusstamp",
+                             "status",
+                             "stamp"
+                         ],
+        "visualTags":  [
+                           "Badge",
+                           "Icon"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-status-stamp",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "success/error result",
+                         "verification"
+                     ],
+        "avoidCases":  [
+                           "neutral information"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.5/11_Semantic_Descriptors/cuecut-status-stamp.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-tag-chips",
+        "displayName":  "Tag Chips",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.5",
+        "packVersion":  "0.5",
+        "family":  "TagChips",
+        "effectFamilyId":  "pack-0-5-tagchips",
+        "semanticTags":  [
+                             "tagchips",
+                             "tag",
+                             "chips"
+                         ],
+        "visualTags":  [
+                           "Card"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-tag-chips",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "keywords",
+                         "topics",
+                         "entities",
+                         "feature tags"
+                     ],
+        "avoidCases":  [
+                           "ordered procedure"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.5/11_Semantic_Descriptors/cuecut-tag-chips.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-transfer-action",
+        "displayName":  "Transfer Action",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.5",
+        "packVersion":  "0.5",
+        "family":  "TransferAction",
+        "effectFamilyId":  "pack-0-5-transferaction",
+        "semanticTags":  [
+                             "transferaction",
+                             "transfer",
+                             "action"
+                         ],
+        "visualTags":  [
+                           "Badge",
+                           "Icon"
+                       ],
+        "motionCategory":  "Ticker",
+        "adapterId":  "pack:cuecut-transfer-action",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "download/upload progress",
+                         "file transfer"
+                     ],
+        "avoidCases":  [
+                           "single static fact"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.5/11_Semantic_Descriptors/cuecut-transfer-action.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-app-window",
+        "displayName":  "App Window",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.6",
+        "packVersion":  "0.6",
+        "family":  "AppWindow",
+        "effectFamilyId":  "pack-0-6-appwindow",
+        "semanticTags":  [
+                             "appwindow",
+                             "app",
+                             "window"
+                         ],
+        "visualTags":  [
+                           "Card",
+                           "MotionLayer"
+                       ],
+        "motionCategory":  "Slide",
+        "adapterId":  "pack:cuecut-app-window",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "desktop app demo",
+                         "tool UI presentation"
+                     ],
+        "avoidCases":  [
+                           "mobile-only screenshot"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.6/10_Semantic_Descriptors/cuecut-app-window.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-browser-window",
+        "displayName":  "Browser Window",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.6",
+        "packVersion":  "0.6",
+        "family":  "BrowserWindow",
+        "effectFamilyId":  "pack-0-6-browserwindow",
+        "semanticTags":  [
+                             "browserwindow",
+                             "browser",
+                             "window"
+                         ],
+        "visualTags":  [
+                           "Card",
+                           "MotionLayer"
+                       ],
+        "motionCategory":  "Slide",
+        "adapterId":  "pack:cuecut-browser-window",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "website demo",
+                         "web tool tutorial",
+                         "browser UI"
+                     ],
+        "avoidCases":  [
+                           "plain subtitle"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.6/10_Semantic_Descriptors/cuecut-browser-window.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-camera-frame",
+        "displayName":  "Camera Frame",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.6",
+        "packVersion":  "0.6",
+        "family":  "CameraFrame",
+        "effectFamilyId":  "pack-0-6-cameraframe",
+        "semanticTags":  [
+                             "cameraframe",
+                             "camera",
+                             "frame"
+                         ],
+        "visualTags":  [
+                           "Card",
+                           "MotionLayer"
+                       ],
+        "motionCategory":  "Slide",
+        "adapterId":  "pack:cuecut-camera-frame",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "camera footage",
+                         "recording cue",
+                         "creator content"
+                     ],
+        "avoidCases":  [
+                           "plain graphic"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.6/10_Semantic_Descriptors/cuecut-camera-frame.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-chapter-marker",
+        "displayName":  "Chapter Marker",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.6",
+        "packVersion":  "0.6",
+        "family":  "ChapterMarker",
+        "effectFamilyId":  "pack-0-6-chaptermarker",
+        "semanticTags":  [
+                             "chaptermarker",
+                             "chapter",
+                             "marker"
+                         ],
+        "visualTags":  [
+                           "Pointer",
+                           "Highlight"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-chapter-marker",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "chapter transition",
+                         "section start",
+                         "topic shift"
+                     ],
+        "avoidCases":  [
+                           "sentence-level emphasis"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.6/10_Semantic_Descriptors/cuecut-chapter-marker.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-code-block",
+        "displayName":  "Code Block",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.6",
+        "packVersion":  "0.6",
+        "family":  "CodeBlock",
+        "effectFamilyId":  "pack-0-6-codeblock",
+        "semanticTags":  [
+                             "codeblock",
+                             "code",
+                             "block"
+                         ],
+        "visualTags":  [
+                           "Card",
+                           "MotionLayer"
+                       ],
+        "motionCategory":  "Slide",
+        "adapterId":  "pack:cuecut-code-block",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "code explanation",
+                         "snippet",
+                         "developer tutorial"
+                     ],
+        "avoidCases":  [
+                           "long full source file"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.6/10_Semantic_Descriptors/cuecut-code-block.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-code-highlight",
+        "displayName":  "Code Highlight",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.6",
+        "packVersion":  "0.6",
+        "family":  "CodeHighlight",
+        "effectFamilyId":  "pack-0-6-codehighlight",
+        "semanticTags":  [
+                             "codehighlight",
+                             "code",
+                             "highlight"
+                         ],
+        "visualTags":  [
+                           "Pointer",
+                           "Highlight",
+                           "Card",
+                           "MotionLayer"
+                       ],
+        "motionCategory":  "Slide",
+        "adapterId":  "pack:cuecut-code-highlight",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "focus specific code lines",
+                         "bug fix explanation"
+                     ],
+        "avoidCases":  [
+                           "unstyled prose"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.6/10_Semantic_Descriptors/cuecut-code-highlight.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-code-typing",
+        "displayName":  "Code Typing",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.6",
+        "packVersion":  "0.6",
+        "family":  "CodeTyping",
+        "effectFamilyId":  "pack-0-6-codetyping",
+        "semanticTags":  [
+                             "codetyping",
+                             "code",
+                             "typing"
+                         ],
+        "visualTags":  [
+                           "Card",
+                           "MotionLayer"
+                       ],
+        "motionCategory":  "Slide",
+        "adapterId":  "pack:cuecut-code-typing",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "type a short snippet",
+                         "prompt/code reveal"
+                     ],
+        "avoidCases":  [
+                           "large codebase"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.6/10_Semantic_Descriptors/cuecut-code-typing.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-command-line",
+        "displayName":  "Command Line",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.6",
+        "packVersion":  "0.6",
+        "family":  "CommandLine",
+        "effectFamilyId":  "pack-0-6-commandline",
+        "semanticTags":  [
+                             "commandline",
+                             "command",
+                             "line"
+                         ],
+        "visualTags":  [
+                           "Card",
+                           "MotionLayer"
+                       ],
+        "motionCategory":  "Slide",
+        "adapterId":  "pack:cuecut-command-line",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "single CLI command",
+                         "installation command",
+                         "developer tutorial"
+                     ],
+        "avoidCases":  [
+                           "long logs"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.6/10_Semantic_Descriptors/cuecut-command-line.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-desktop-window",
+        "displayName":  "Desktop Window",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.6",
+        "packVersion":  "0.6",
+        "family":  "DesktopWindow",
+        "effectFamilyId":  "pack-0-6-desktopwindow",
+        "semanticTags":  [
+                             "desktopwindow",
+                             "desktop",
+                             "window"
+                         ],
+        "visualTags":  [
+                           "Card",
+                           "MotionLayer"
+                       ],
+        "motionCategory":  "Slide",
+        "adapterId":  "pack:cuecut-desktop-window",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "generic desktop window",
+                         "file/tool demonstration"
+                     ],
+        "avoidCases":  [
+                           "brand-specific app imitation"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.6/10_Semantic_Descriptors/cuecut-desktop-window.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-laptop-mockup",
+        "displayName":  "Laptop Mockup",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.6",
+        "packVersion":  "0.6",
+        "family":  "LaptopMockup",
+        "effectFamilyId":  "pack-0-6-laptopmockup",
+        "semanticTags":  [
+                             "laptopmockup",
+                             "laptop",
+                             "mockup"
+                         ],
+        "visualTags":  [
+                           "Card",
+                           "MotionLayer"
+                       ],
+        "motionCategory":  "Slide",
+        "adapterId":  "pack:cuecut-laptop-mockup",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "website/software presentation",
+                         "screen-in-device composition"
+                     ],
+        "avoidCases":  [
+                           "unnecessary decoration"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.6/10_Semantic_Descriptors/cuecut-laptop-mockup.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-lower-third",
+        "displayName":  "Lower Third",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.6",
+        "packVersion":  "0.6",
+        "family":  "LowerThird",
+        "effectFamilyId":  "pack-0-6-lowerthird",
+        "semanticTags":  [
+                             "lowerthird",
+                             "lower",
+                             "third"
+                         ],
+        "visualTags":  [
+                           "Text",
+                           "Card"
+                       ],
+        "motionCategory":  "Pop",
+        "adapterId":  "pack:cuecut-lower-third",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "speaker identity",
+                         "role/company",
+                         "interview"
+                     ],
+        "avoidCases":  [
+                           "anonymous content where identity not needed"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.6/10_Semantic_Descriptors/cuecut-lower-third.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-mobile-device",
+        "displayName":  "Mobile Device",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.6",
+        "packVersion":  "0.6",
+        "family":  "MobileDevice",
+        "effectFamilyId":  "pack-0-6-mobiledevice",
+        "semanticTags":  [
+                             "mobiledevice",
+                             "mobile",
+                             "device"
+                         ],
+        "visualTags":  [
+                           "Card",
+                           "MotionLayer"
+                       ],
+        "motionCategory":  "Slide",
+        "adapterId":  "pack:cuecut-mobile-device",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "mobile app demo",
+                         "vertical screenshot"
+                     ],
+        "avoidCases":  [
+                           "desktop-only UI"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.6/10_Semantic_Descriptors/cuecut-mobile-device.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-name-plate",
+        "displayName":  "Name Plate",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.6",
+        "packVersion":  "0.6",
+        "family":  "NamePlate",
+        "effectFamilyId":  "pack-0-6-nameplate",
+        "semanticTags":  [
+                             "nameplate",
+                             "name",
+                             "plate"
+                         ],
+        "visualTags":  [
+                           "Text",
+                           "Card"
+                       ],
+        "motionCategory":  "Pop",
+        "adapterId":  "pack:cuecut-name-plate",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "compact title/name label",
+                         "role/topic"
+                     ],
+        "avoidCases":  [
+                           "long explanation"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.6/10_Semantic_Descriptors/cuecut-name-plate.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-screen-recording-frame",
+        "displayName":  "Screen Recording Frame",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.6",
+        "packVersion":  "0.6",
+        "family":  "ScreenRecordingFrame",
+        "effectFamilyId":  "pack-0-6-screenrecordingframe",
+        "semanticTags":  [
+                             "screenrecordingframe",
+                             "screen",
+                             "recording",
+                             "frame"
+                         ],
+        "visualTags":  [
+                           "Card",
+                           "MotionLayer"
+                       ],
+        "motionCategory":  "Slide",
+        "adapterId":  "pack:cuecut-screen-recording-frame",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "screen capture presentation",
+                         "software walkthrough"
+                     ],
+        "avoidCases":  [
+                           "raw talking-head only"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.6/10_Semantic_Descriptors/cuecut-screen-recording-frame.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-terminal-panel",
+        "displayName":  "Terminal Panel",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.6",
+        "packVersion":  "0.6",
+        "family":  "Terminal",
+        "effectFamilyId":  "pack-0-6-terminal",
+        "semanticTags":  [
+                             "terminal",
+                             "panel"
+                         ],
+        "visualTags":  [
+                           "Text",
+                           "Card",
+                           "MotionLayer"
+                       ],
+        "motionCategory":  "Pop",
+        "adapterId":  "pack:cuecut-terminal-panel",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "terminal tutorial",
+                         "CLI output",
+                         "developer content"
+                     ],
+        "avoidCases":  [
+                           "non-technical talking-head"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.6/10_Semantic_Descriptors/cuecut-terminal-panel.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-ui-callout-panel",
+        "displayName":  "Ui Callout Panel",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.6",
+        "packVersion":  "0.6",
+        "family":  "UICalloutPanel",
+        "effectFamilyId":  "pack-0-6-uicalloutpanel",
+        "semanticTags":  [
+                             "uicalloutpanel",
+                             "ui",
+                             "callout",
+                             "panel"
+                         ],
+        "visualTags":  [
+                           "Text",
+                           "Card",
+                           "MotionLayer"
+                       ],
+        "motionCategory":  "Pop",
+        "adapterId":  "pack:cuecut-ui-callout-panel",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "explain UI target",
+                         "code/UI note"
+                     ],
+        "avoidCases":  [
+                           "full tutorial sequence"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.6/10_Semantic_Descriptors/cuecut-ui-callout-panel.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-area-chart",
+        "displayName":  "Area Chart",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.7",
+        "packVersion":  "0.7",
+        "family":  "TrendArea",
+        "effectFamilyId":  "pack-0-7-trendarea",
+        "semanticTags":  [
+                             "trendarea",
+                             "area",
+                             "chart"
+                         ],
+        "visualTags":  [
+                           "Chart",
+                           "Metric"
+                       ],
+        "motionCategory":  "Scale",
+        "adapterId":  "pack:cuecut-area-chart",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "volume over time",
+                         "cumulative-feeling trend"
+                     ],
+        "avoidCases":  [
+                           "unordered categories"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.7/09_Semantic_Descriptors/cuecut-area-chart.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-data-callout",
+        "displayName":  "Data Callout",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.7",
+        "packVersion":  "0.7",
+        "family":  "DataCallout",
+        "effectFamilyId":  "pack-0-7-datacallout",
+        "semanticTags":  [
+                             "datacallout",
+                             "data",
+                             "callout"
+                         ],
+        "visualTags":  [
+                           "Text",
+                           "Card"
+                       ],
+        "motionCategory":  "Pop",
+        "adapterId":  "pack:cuecut-data-callout",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "single hero metric",
+                         "data proof"
+                     ],
+        "avoidCases":  [
+                           "multiple competing metrics"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.7/09_Semantic_Descriptors/cuecut-data-callout.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-donut-chart",
+        "displayName":  "Donut Chart",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.7",
+        "packVersion":  "0.7",
+        "family":  "Distribution",
+        "effectFamilyId":  "pack-0-7-distribution",
+        "semanticTags":  [
+                             "distribution",
+                             "donut",
+                             "chart"
+                         ],
+        "visualTags":  [
+                           "Chart",
+                           "Metric"
+                       ],
+        "motionCategory":  "Scale",
+        "adapterId":  "pack:cuecut-donut-chart",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "share of total",
+                         "category composition"
+                     ],
+        "avoidCases":  [
+                           "values not representing a total"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.7/09_Semantic_Descriptors/cuecut-donut-chart.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-funnel-chart",
+        "displayName":  "Funnel Chart",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.7",
+        "packVersion":  "0.7",
+        "family":  "Funnel",
+        "effectFamilyId":  "pack-0-7-funnel",
+        "semanticTags":  [
+                             "funnel",
+                             "chart"
+                         ],
+        "visualTags":  [
+                           "Chart",
+                           "Metric"
+                       ],
+        "motionCategory":  "Scale",
+        "adapterId":  "pack:cuecut-funnel-chart",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "conversion funnel",
+                         "stage dropoff"
+                     ],
+        "avoidCases":  [
+                           "unordered lists"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.7/09_Semantic_Descriptors/cuecut-funnel-chart.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-goal-vs-actual",
+        "displayName":  "Goal Vs Actual",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.7",
+        "packVersion":  "0.7",
+        "family":  "GoalVsActual",
+        "effectFamilyId":  "pack-0-7-goalvsactual",
+        "semanticTags":  [
+                             "goalvsactual",
+                             "goal",
+                             "vs",
+                             "actual"
+                         ],
+        "visualTags":  [
+                           "Chart",
+                           "Metric"
+                       ],
+        "motionCategory":  "Scale",
+        "adapterId":  "pack:cuecut-goal-vs-actual",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "target progress",
+                         "quota attainment"
+                     ],
+        "avoidCases":  [
+                           "no explicit goal/target"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.7/09_Semantic_Descriptors/cuecut-goal-vs-actual.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-heatmap",
+        "displayName":  "Heatmap",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.7",
+        "packVersion":  "0.7",
+        "family":  "Heatmap",
+        "effectFamilyId":  "pack-0-7-heatmap",
+        "semanticTags":  [
+                             "heatmap"
+                         ],
+        "visualTags":  [
+                           "Chart",
+                           "Metric"
+                       ],
+        "motionCategory":  "Scale",
+        "adapterId":  "pack:cuecut-heatmap",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "matrix intensity",
+                         "day/hour/category density"
+                     ],
+        "avoidCases":  [
+                           "small 2-item comparison"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.7/09_Semantic_Descriptors/cuecut-heatmap.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-horizontal-comparison",
+        "displayName":  "Horizontal Comparison",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.7",
+        "packVersion":  "0.7",
+        "family":  "ComparisonBars",
+        "effectFamilyId":  "pack-0-7-comparisonbars",
+        "semanticTags":  [
+                             "comparisonbars",
+                             "horizontal",
+                             "comparison"
+                         ],
+        "visualTags":  [
+                           "List",
+                           "Steps"
+                       ],
+        "motionCategory":  "ListStagger",
+        "adapterId":  "pack:cuecut-horizontal-comparison",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "multi-category numeric comparison",
+                         "benchmark"
+                     ],
+        "avoidCases":  [
+                           "chronological process"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.7/09_Semantic_Descriptors/cuecut-horizontal-comparison.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-kpi-grid",
+        "displayName":  "Kpi Grid",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.7",
+        "packVersion":  "0.7",
+        "family":  "KPI",
+        "effectFamilyId":  "pack-0-7-kpi",
+        "semanticTags":  [
+                             "kpi",
+                             "grid"
+                         ],
+        "visualTags":  [
+                           "Chart",
+                           "Metric"
+                       ],
+        "motionCategory":  "Scale",
+        "adapterId":  "pack:cuecut-kpi-grid",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "multiple headline metrics",
+                         "summary dashboard"
+                     ],
+        "avoidCases":  [
+                           "paragraph-heavy content"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.7/09_Semantic_Descriptors/cuecut-kpi-grid.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-line-chart",
+        "displayName":  "Line Chart",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.7",
+        "packVersion":  "0.7",
+        "family":  "Trend",
+        "effectFamilyId":  "pack-0-7-trend",
+        "semanticTags":  [
+                             "trend",
+                             "line",
+                             "chart"
+                         ],
+        "visualTags":  [
+                           "Chart",
+                           "Metric"
+                       ],
+        "motionCategory":  "Scale",
+        "adapterId":  "pack:cuecut-line-chart",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "time series",
+                         "trend direction",
+                         "growth over time"
+                     ],
+        "avoidCases":  [
+                           "single static value"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.7/09_Semantic_Descriptors/cuecut-line-chart.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-milestone-track",
+        "displayName":  "Milestone Track",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.7",
+        "packVersion":  "0.7",
+        "family":  "Milestone",
+        "effectFamilyId":  "pack-0-7-milestone",
+        "semanticTags":  [
+                             "milestone",
+                             "track"
+                         ],
+        "visualTags":  [
+                           "Chart",
+                           "Metric"
+                       ],
+        "motionCategory":  "Scale",
+        "adapterId":  "pack:cuecut-milestone-track",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "progress milestones",
+                         "project stages"
+                     ],
+        "avoidCases":  [
+                           "non-sequential concepts"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.7/09_Semantic_Descriptors/cuecut-milestone-track.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-multi-ring",
+        "displayName":  "Multi Ring",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.7",
+        "packVersion":  "0.7",
+        "family":  "MultiMetricRing",
+        "effectFamilyId":  "pack-0-7-multimetricring",
+        "semanticTags":  [
+                             "multimetricring",
+                             "multi",
+                             "ring"
+                         ],
+        "visualTags":  [
+                           "Chart",
+                           "Metric"
+                       ],
+        "motionCategory":  "Scale",
+        "adapterId":  "pack:cuecut-multi-ring",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "multiple bounded metrics",
+                         "score dashboard"
+                     ],
+        "avoidCases":  [
+                           "unbounded raw counts without normalization"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.7/09_Semantic_Descriptors/cuecut-multi-ring.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-number-trend",
+        "displayName":  "Number Trend",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.7",
+        "packVersion":  "0.7",
+        "family":  "NumberTrend",
+        "effectFamilyId":  "pack-0-7-numbertrend",
+        "semanticTags":  [
+                             "numbertrend",
+                             "number",
+                             "trend"
+                         ],
+        "visualTags":  [
+                           "Chart",
+                           "Metric"
+                       ],
+        "motionCategory":  "Scale",
+        "adapterId":  "pack:cuecut-number-trend",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "headline number plus trend context"
+                     ],
+        "avoidCases":  [
+                           "distribution across many categories"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.7/09_Semantic_Descriptors/cuecut-number-trend.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-slope-chart",
+        "displayName":  "Slope Chart",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.7",
+        "packVersion":  "0.7",
+        "family":  "SlopeChart",
+        "effectFamilyId":  "pack-0-7-slopechart",
+        "semanticTags":  [
+                             "slopechart",
+                             "slope",
+                             "chart"
+                         ],
+        "visualTags":  [
+                           "Chart",
+                           "Metric"
+                       ],
+        "motionCategory":  "Scale",
+        "adapterId":  "pack:cuecut-slope-chart",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "before vs after across multiple categories"
+                     ],
+        "avoidCases":  [
+                           "more than two time endpoints"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.7/09_Semantic_Descriptors/cuecut-slope-chart.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-sparkline",
+        "displayName":  "Sparkline",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.7",
+        "packVersion":  "0.7",
+        "family":  "Sparkline",
+        "effectFamilyId":  "pack-0-7-sparkline",
+        "semanticTags":  [
+                             "sparkline"
+                         ],
+        "visualTags":  [
+                           "Badge",
+                           "Icon"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-sparkline",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "compact KPI trend",
+                         "inline metric"
+                     ],
+        "avoidCases":  [
+                           "long detailed chart explanation"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.7/09_Semantic_Descriptors/cuecut-sparkline.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-stacked-bar",
+        "displayName":  "Stacked Bar",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.7",
+        "packVersion":  "0.7",
+        "family":  "StackedBar",
+        "effectFamilyId":  "pack-0-7-stackedbar",
+        "semanticTags":  [
+                             "stackedbar",
+                             "stacked",
+                             "bar"
+                         ],
+        "visualTags":  [
+                           "Card"
+                       ],
+        "motionCategory":  "Fade",
+        "adapterId":  "pack:cuecut-stacked-bar",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "composition",
+                         "category proportions"
+                     ],
+        "avoidCases":  [
+                           "unrelated units"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.7/09_Semantic_Descriptors/cuecut-stacked-bar.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    },
+    {
+        "id":  "cuecut-waterfall-chart",
+        "displayName":  "Waterfall Chart",
+        "packId":  "CueCut2_TalkingHead_Effects_Pack_v0.7",
+        "packVersion":  "0.7",
+        "family":  "Waterfall",
+        "effectFamilyId":  "pack-0-7-waterfall",
+        "semanticTags":  [
+                             "waterfall",
+                             "chart"
+                         ],
+        "visualTags":  [
+                           "Chart",
+                           "Metric"
+                       ],
+        "motionCategory":  "Scale",
+        "adapterId":  "pack:cuecut-waterfall-chart",
+        "supportedAspectRatios":  [
+                                      "16:9",
+                                      "9:16",
+                                      "1:1"
+                                  ],
+        "durationRangeSec":  [
+                                 0.4,
+                                 2
+                             ],
+        "useCases":  [
+                         "drivers of increase/decrease",
+                         "change decomposition"
+                     ],
+        "avoidCases":  [
+                           "data without additive relationship"
+                       ],
+        "source":  "CueCut original pack adapter",
+        "sourceRef":  "src/motions/_import/CueCut2_TalkingHead_Effects_Pack_v0.7/09_Semantic_Descriptors/cuecut-waterfall-chart.json",
+        "license":  "PROJECT-LOCAL",
+        "licenseRef":  "docs/audit/MOTION_PACK_INSTALL_REPORT.md"
+    }
+]

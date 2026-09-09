@@ -1,0 +1,22 @@
+{
+  "id": "cuecut-attention-burst",
+  "family": "AttentionBurst",
+  "file": "03_Keyword_Attention/CueCutAttentionBurst.tsx",
+  "useCases": [
+    "strong surprise",
+    "warning hook",
+    "big reveal"
+  ],
+  "avoidCases": [
+    "calm informational paragraph"
+  ],
+  "rendering": "progress-driven",
+  "supportsElementCue": false,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

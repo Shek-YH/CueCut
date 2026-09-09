@@ -1,0 +1,20 @@
+{
+  "id": "cuecut-ui-callout-panel",
+  "family": "UICalloutPanel",
+  "file": "05_UI_Presentation/CueCutUICalloutPanel.tsx",
+  "useCases": [
+    "explain UI target",
+    "code/UI note"
+  ],
+  "avoidCases": [
+    "full tutorial sequence"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

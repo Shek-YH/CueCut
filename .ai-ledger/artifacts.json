@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 2,
+  "artifacts": [
+    {"id":"motion-inventory","path":"docs/audit/MOTION_PACK_INVENTORY.md","kind":"audit","status":"COMPLETED"},
+    {"id":"motion-install-report","path":"docs/audit/MOTION_PACK_INSTALL_REPORT.md","kind":"audit","status":"COMPLETED"},
+    {"id":"motion-install-evidence","path":"docs/evidence/MOTION_PACK_INSTALLATION.md","kind":"evidence","status":"COMPLETED"},
+    {"id":"p0-implementation-report","path":"docs/audit/CUECUT_P0_IMPLEMENTATION_REPORT.md","kind":"report","status":"COMPLETED"},
+    {"id":"release-readiness-report","path":"docs/audit/CUECUT_RELEASE_READINESS_REPORT.md","kind":"report","status":"COMPLETED"}
+  ]
+}

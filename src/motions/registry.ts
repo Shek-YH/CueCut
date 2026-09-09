@@ -5,6 +5,9 @@ import {
   type CueCutMotionAdapter,
 } from './adapters';
 import type { MotionCategory, MotionParameterSet } from './format';
+import { packMotionCatalog } from './packCatalog';
+
+export type MotionLicense = 'MIT' | 'PROJECT-LOCAL' | 'Apache-2.0' | 'BSD-2-Clause' | 'BSD-3-Clause' | 'CC-BY-4.0';
 
 export interface MotionSourceReference {
   provider: string;
@@ -25,10 +28,12 @@ export interface MotionDefinition {
   intensity: number;
   durationRangeSec: [number, number];
   recommendedEffectFamilies: string[];
+  effectFamilyId?: string;
   displayName?: string;
   adapterId?: string;
   adapter?: CueCutMotionAdapter;
   semanticTags?: string[];
+  visualTags?: string[];
   useCases?: string[];
   avoidCases?: string[];
   defaultProps?: MotionParameterSet;
@@ -40,7 +45,7 @@ export interface MotionDefinition {
   supportedMotions?: string[];
   source?: string;
   sourceRef?: MotionSourceReference;
-  license?: 'MIT';
+  license?: MotionLicense;
   licenseRef?: string;
 }
 
@@ -135,10 +140,12 @@ function formalDefinition(adapter: CueCutMotionAdapter): MotionDefinition {
     intensity: category === 'motion-layer' && ['bounce', 'rotate', 'flip'].includes(adapter.id) ? 0.75 : 0.4,
     durationRangeSec: category === 'number' ? [0.4, 4] : category === 'list' ? [0.3, 3] : [0.2, 1.5],
     recommendedEffectFamilies: category === 'motion-layer' ? ['*'] : [category],
+    effectFamilyId: category,
     displayName: displayNameFor(adapter.id),
     adapterId: adapter.id,
     adapter,
     semanticTags: semanticTagsFor(category, adapter.id),
+    visualTags: category === 'text' ? ['Text'] : category === 'number' ? ['Number', 'Counter'] : category === 'list' ? ['List', 'Steps'] : ['MotionLayer'],
     useCases: useCasesFor(category),
     avoidCases: avoidCasesFor(category),
     defaultProps: adapter.defaultProps,
@@ -155,7 +162,42 @@ function formalDefinition(adapter: CueCutMotionAdapter): MotionDefinition {
   };
 }
 
-const formalMotionDefinitions = motionAdapterRegistry.map(formalDefinition);
+const formalMotionDefinitions = motionAdapterRegistry.filter((adapter) => adapter.category !== 'pack-effect').map(formalDefinition);
+
+const packMotionDefinitions: MotionDefinition[] = packMotionCatalog.map((entry) => {
+  const adapter = findMotionAdapter(entry.adapterId);
+  if (!adapter) throw new Error(`Motion adapter must be registered: ${entry.adapterId}`);
+  const timing = ['delay', 'duration', 'enter', 'exit', 'deterministic-frame'];
+  const layout = ['normalized-position', 'scale', 'opacity', 'translate', 'rotation'];
+  return {
+    id: entry.adapterId,
+    motionId: entry.adapterId,
+    role: 'both',
+    category: 'pack-effect',
+    effectFamilyId: entry.effectFamilyId,
+    intensity: 0.5,
+    durationRangeSec: entry.durationRangeSec,
+    recommendedEffectFamilies: [entry.effectFamilyId],
+    displayName: entry.displayName,
+    adapterId: entry.adapterId,
+    adapter,
+    semanticTags: entry.semanticTags,
+    visualTags: entry.visualTags,
+    useCases: entry.useCases,
+    avoidCases: entry.avoidCases,
+    defaultProps: adapter.defaultProps,
+    supportedAspectRatios: entry.supportedAspectRatios,
+    timingCapabilities: timing,
+    layoutCapabilities: layout,
+    capabilities: { timing, layout },
+    supportedStyles: ['dark', 'light', '中文', 'English'],
+    supportedMotions: [entry.adapterId],
+    source: entry.source,
+    sourceRef: { provider: entry.packId, url: `local://${entry.packId}`, files: [entry.sourceRef] },
+    license: entry.license,
+    licenseRef: entry.licenseRef,
+  };
+});
 
 function legacy(definition: Omit<MotionDefinition, 'id'>): MotionDefinition {
   return { ...definition, id: definition.motionId };
@@ -175,7 +217,7 @@ const legacyMotionDefinitions: MotionDefinition[] = [
   legacy({ motionId: 'spin-out', role: 'exit', category: 'rotation', intensity: 0.85, durationRangeSec: [0.35, 1.3], recommendedEffectFamilies: ['emphasis-marker'] }),
 ];
 
-export const motionRegistry: MotionDefinition[] = [...formalMotionDefinitions, ...legacyMotionDefinitions];
+export const motionRegistry: MotionDefinition[] = [...formalMotionDefinitions, ...packMotionDefinitions, ...legacyMotionDefinitions];
 
 export const motionDefinitions = motionRegistry;
 

@@ -8,14 +8,8 @@ interface SrtQuickPanelProps {
   onItemsChange?: (items: TranscriptSegment[]) => void;
 }
 
-const initialItems = [
-  { id: 's-1', startSec: 2.2, endSec: 5.7, text: '很多人用 CueCut 最浪费时间的地方，发生在真正开始执行之前。' },
-  { id: 's-2', startSec: 5.7, endSec: 9.4, text: '把前面的沟通交给清晰的工作流，可以明显降低执行阶段的消耗。' },
-  { id: 's-3', startSec: 9.4, endSec: 13.8, text: '同一个内容，也可以通过数字、对比或金句动效来表达。' },
-];
-
 export function SrtQuickPanel({ currentTime, onSeek, items: controlledItems, onItemsChange }: SrtQuickPanelProps) {
-  const [localItems, setLocalItems] = useState<TranscriptSegment[]>(initialItems);
+  const [localItems, setLocalItems] = useState<TranscriptSegment[]>([]);
   const items = controlledItems ?? localItems;
 
   const updateItems = (nextItems: TranscriptSegment[]) => {

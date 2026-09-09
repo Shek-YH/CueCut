@@ -1,0 +1,20 @@
+{
+  "id": "cuecut-code-highlight",
+  "family": "CodeHighlight",
+  "file": "03_Code/CueCutCodeHighlight.tsx",
+  "useCases": [
+    "focus specific code lines",
+    "bug fix explanation"
+  ],
+  "avoidCases": [
+    "unstyled prose"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-area-chart",
+  "family": "TrendArea",
+  "file": "01_Trend_Charts/CueCutAreaChart.tsx",
+  "useCases": [
+    "volume over time",
+    "cumulative-feeling trend"
+  ],
+  "avoidCases": [
+    "unordered categories"
+  ],
+  "rendering": "progress-driven",
+  "requiresNumericData": true,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

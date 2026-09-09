@@ -1,0 +1,53 @@
+{
+  "version": "0.6",
+  "families": {
+    "BrowserWindow": [
+      "CueCutBrowserWindow"
+    ],
+    "AppWindow": [
+      "CueCutAppWindow"
+    ],
+    "DesktopWindow": [
+      "CueCutDesktopWindow"
+    ],
+    "Terminal": [
+      "CueCutTerminalPanel"
+    ],
+    "CommandLine": [
+      "CueCutCommandLine"
+    ],
+    "CodeBlock": [
+      "CueCutCodeBlock"
+    ],
+    "CodeTyping": [
+      "CueCutCodeTyping"
+    ],
+    "CodeHighlight": [
+      "CueCutCodeHighlight"
+    ],
+    "MobileDevice": [
+      "CueCutMobileDevice"
+    ],
+    "LaptopMockup": [
+      "CueCutLaptopMockup"
+    ],
+    "CameraFrame": [
+      "CueCutCameraFrame"
+    ],
+    "ScreenRecordingFrame": [
+      "CueCutScreenRecordingFrame"
+    ],
+    "UICalloutPanel": [
+      "CueCutUICalloutPanel"
+    ],
+    "LowerThird": [
+      "CueCutLowerThird"
+    ],
+    "NamePlate": [
+      "CueCutNamePlate"
+    ],
+    "ChapterMarker": [
+      "CueCutChapterMarker"
+    ]
+  }
+}

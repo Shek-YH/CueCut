@@ -1,0 +1,20 @@
+{
+  "id": "cuecut-screen-recording-frame",
+  "family": "ScreenRecordingFrame",
+  "file": "04_Device_Frames/CueCutScreenRecordingFrame.tsx",
+  "useCases": [
+    "screen capture presentation",
+    "software walkthrough"
+  ],
+  "avoidCases": [
+    "raw talking-head only"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

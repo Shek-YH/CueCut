@@ -1,0 +1,22 @@
+{
+  "id": "cuecut-line-chart",
+  "family": "Trend",
+  "file": "01_Trend_Charts/CueCutLineChart.tsx",
+  "useCases": [
+    "time series",
+    "trend direction",
+    "growth over time"
+  ],
+  "avoidCases": [
+    "single static value"
+  ],
+  "rendering": "progress-driven",
+  "requiresNumericData": true,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

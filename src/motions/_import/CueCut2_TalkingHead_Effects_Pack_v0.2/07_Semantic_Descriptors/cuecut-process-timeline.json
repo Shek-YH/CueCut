@@ -1,0 +1,23 @@
+{
+  "id": "cuecut-process-timeline",
+  "family": "Timeline",
+  "file": "04_Timeline_Flow/CueCutProcessTimeline.tsx",
+  "useCases": [
+    "chronology",
+    "milestones",
+    "history",
+    "evolution"
+  ],
+  "avoidCases": [
+    "checklist completion",
+    "single metric"
+  ],
+  "recommendedItemCount": [
+    3,
+    6
+  ],
+  "recommendedDurationSec": [
+    3.0,
+    14.0
+  ]
+}

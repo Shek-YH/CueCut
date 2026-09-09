@@ -1,0 +1,20 @@
+{
+  "id": "cuecut-app-window",
+  "family": "AppWindow",
+  "file": "01_Window_Frames/CueCutAppWindow.tsx",
+  "useCases": [
+    "desktop app demo",
+    "tool UI presentation"
+  ],
+  "avoidCases": [
+    "mobile-only screenshot"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

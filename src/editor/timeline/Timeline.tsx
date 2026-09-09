@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { ProjectComposition } from '../../project/schema';
 import type { ProjectStore } from '../../project/store';
+import { timelineItems } from '../../project/timeline';
 import { clampEffectMove, clampEffectTrim, secondsFromTimelineX } from './timeMath';
 
 interface TimelineProps {
@@ -29,6 +30,10 @@ export function Timeline({ project, store, currentTime, onSeek }: TimelineProps)
   const contentRef = useRef<HTMLDivElement>(null);
 
   const ticks = useMemo(() => Array.from({ length: 16 }, (_, index) => index * 2), []);
+  const canonicalItems = timelineItems(project);
+  const subtitleItems = canonicalItems.filter((item) => item.type === 'SUBTITLE');
+  const sfxItems = canonicalItems.filter((item) => item.type === 'SFX');
+  const videoItem = canonicalItems.find((item) => item.type === 'VIDEO');
   const toPercent = (value: number) => value / project.project.durationSec * 100;
   const seekFromEvent = (event: ReactPointerEvent<HTMLElement>) => {
     const rect = contentRef.current?.getBoundingClientRect();
@@ -114,7 +119,7 @@ export function Timeline({ project, store, currentTime, onSeek }: TimelineProps)
       </div>
       <div className="tlbody">
         <div className="labels">
-          {['FX3', 'FX2', 'FX1', 'SFX', 'SUB', 'VIDEO 🔒'].map((label, index) => (
+          {[...project.effects.map((_, index) => `FX${project.effects.length - index}`), 'SFX', 'SUB', 'VIDEO 🔒'].map((label, index) => (
             <div className={'tlabel' + (index === 5 ? ' video' : '')} key={label}>{label}</div>
           ))}
         </div>
@@ -165,6 +170,8 @@ export function Timeline({ project, store, currentTime, onSeek }: TimelineProps)
                       }}
                     />
                     {effect.familyId} {index + 1}
+                    <button aria-label={`${effect.effectId} duplicate`} className="clip-action" onClick={(event) => { event.stopPropagation(); store.duplicateEffect(effect.effectId); }} type="button">⧉</button>
+                    <button aria-label={`${effect.effectId} delete`} className="clip-action" onClick={(event) => { event.stopPropagation(); store.deleteEffect(effect.effectId); }} type="button">×</button>
                     <span
                       className="handle right"
                       onPointerDown={(event) => {
@@ -176,9 +183,13 @@ export function Timeline({ project, store, currentTime, onSeek }: TimelineProps)
                 </div>
               );
             })}
-            <div className="track"><div className="clip sfx" style={{ left: '20%', width: '3%' }}>pop</div></div>
-            <div className="track"><div className="clip sub" style={{ left: '7%', width: '12%' }}>字幕1</div><div className="clip sub" style={{ left: '19%', width: '13%' }}>字幕2</div><div className="clip sub" style={{ left: '32%', width: '15%' }}>字幕3</div></div>
-            <div className="track"><div className="videobar">原始视频 · Layer 0</div></div>
+            <div className="track">
+              {sfxItems.map((item) => <div className="clip sfx" key={item.id} style={{ left: toPercent(item.startSec) + '%', width: toPercent(item.endSec - item.startSec) + '%' }}>{item.sfxId}<button aria-label={`${item.id} delete`} className="clip-action" onClick={(event) => { event.stopPropagation(); store.deleteSoundEvent(item.id); }} type="button">×</button></div>)}
+            </div>
+            <div className="track">
+              {subtitleItems.map((item) => <div className="clip sub" key={item.id} style={{ left: toPercent(item.startSec) + '%', width: toPercent(item.endSec - item.startSec) + '%' }}>{item.text}<button aria-label={`${item.id} duplicate`} className="clip-action" onClick={(event) => { event.stopPropagation(); store.duplicateSubtitle(item.id); }} type="button">⧉</button><button aria-label={`${item.id} delete`} className="clip-action" onClick={(event) => { event.stopPropagation(); store.deleteSubtitle(item.id); }} type="button">×</button></div>)}
+            </div>
+            <div className="track"><div className="videobar">{videoItem?.label ?? '原始视频'} · Layer 0</div></div>
             <div className="playhead" style={{ left: toPercent(currentTime) + '%' }} />
             <div
               aria-label="播放头"

@@ -51,7 +51,7 @@ describe('Canvas video surface', () => {
     });
     fireEvent.loadedMetadata(video);
 
-    expect(onVideoMetadata).toHaveBeenCalledWith({ durationSec: 42.5, fps: 30, canvasWidth: 1080, canvasHeight: 1920 });
+    expect(onVideoMetadata).toHaveBeenCalledWith({ durationSec: 42.5, canvasWidth: 1080, canvasHeight: 1920 });
   });
 
   it('seeks the native video while playback remains active', () => {

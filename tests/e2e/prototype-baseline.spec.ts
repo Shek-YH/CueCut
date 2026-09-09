@@ -1,8 +1,10 @@
 import { test } from '@playwright/test';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 test.use({ viewport: { width: 1920, height: 1080 } });
 
-const prototypeUrl = 'file:///F:/CCPJ/CueCut3/CueCut_UI_Prototype_V4_Director_EffectLab.html';
+const prototypeUrl = pathToFileURL(path.resolve('CueCut_UI_Prototype_V4_Director_EffectLab.html')).href;
 
 test('captures local prototype baseline views', async ({ page }) => {
   await page.goto(prototypeUrl);
@@ -17,4 +19,3 @@ test('captures local prototype baseline views', async ({ page }) => {
   await page.locator('.navitem[data-view="learn"]').click();
   await page.screenshot({ path: 'docs/evidence/prototype-baselines/04-preference-evolution.png', fullPage: true });
 });
-

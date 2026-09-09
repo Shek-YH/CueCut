@@ -1,0 +1,56 @@
+import { execFile } from 'node:child_process';
+import { mkdir, rm } from 'node:fs/promises';
+import { promisify } from 'node:util';
+import { describe, expect, it } from 'vitest';
+import { createFixtureProject } from '../../src/project/fixtures';
+import { createExportController } from '../../src/export/controller';
+import { probeVideoFile } from '../../src/media/videoProbe';
+
+const execFileAsync = promisify(execFile);
+const fixturePath = 'test-results/cuecut-portable-fixture.mp4';
+
+async function ensureFixture() {
+  await mkdir('test-results', { recursive: true });
+  await execFileAsync('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', 'scripts/create-test-video.ps1', '-OutputPath', fixturePath]);
+}
+
+function exportProject() {
+  const project = createFixtureProject();
+  project.project.durationSec = 2;
+  project.project.canvasWidth = 320;
+  project.project.canvasHeight = 180;
+  project.project.aspectRatio = '16:9';
+  project.subtitles = [{ id: 's-1', startSec: 0.2, endSec: 1.4, text: 'Portable export 中文' }];
+  project.effects = project.effects.map((effect, index) => ({
+    ...effect,
+    familyId: `pack-0-2-${index === 0 ? 'percentage' : index === 1 ? 'checklist' : 'versus'}`,
+    variantId: `pack:${index === 0 ? 'cuecut-ring-metric' : index === 1 ? 'cuecut-checklist' : 'cuecut-versus-card'}`,
+    time: { startSec: 0.2 + index * 0.2, endSec: 1.5 + index * 0.1 },
+    motion: {
+      enter: { motionId: `pack:${index === 0 ? 'cuecut-ring-metric' : index === 1 ? 'cuecut-checklist' : 'cuecut-versus-card'}`, durationSec: 0.3, intensity: 0.5 },
+      exit: { motionId: 'fade', durationSec: 0.2, intensity: 0.4 },
+    },
+  }));
+  return project;
+}
+
+describe('portable actual export', () => {
+  it('exports a real MP4 and transparent ProRes MOV and validates both with ffprobe', async () => {
+    await ensureFixture();
+    const project = exportProject();
+    const mp4Path = 'test-results/cuecut-portable-output.mp4';
+    const movPath = 'test-results/cuecut-portable-overlay.mov';
+    await rm(mp4Path, { force: true });
+    await rm(movPath, { force: true });
+
+    const mp4 = await createExportController().start({ mode: 'full-video', project, inputPath: fixturePath, outputPath: mp4Path });
+    const mov = await createExportController().start({ mode: 'transparent-mov', project, outputPath: movPath });
+
+    expect(mp4.metadata).toMatchObject({ width: 320, height: 180, hasAudio: true });
+    expect(mov.metadata).toMatchObject({ width: 320, height: 180, hasAudio: false, pixelFormat: expect.stringMatching(/yuva|rgba|argb/i) });
+    expect(mp4.metadata.durationSec).toBeCloseTo(2, 1);
+    expect(mov.metadata.durationSec).toBeCloseTo(2, 1);
+    expect((await probeVideoFile(mp4Path)).codec).toBe('h264');
+    expect((await probeVideoFile(movPath)).codec).toContain('prores');
+  }, 120_000);
+});

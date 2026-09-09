@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-horizontal-comparison",
+  "family": "ComparisonBars",
+  "file": "03_Bars_Comparison/CueCutHorizontalComparison.tsx",
+  "useCases": [
+    "multi-category numeric comparison",
+    "benchmark"
+  ],
+  "avoidCases": [
+    "chronological process"
+  ],
+  "rendering": "progress-driven",
+  "requiresNumericData": true,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

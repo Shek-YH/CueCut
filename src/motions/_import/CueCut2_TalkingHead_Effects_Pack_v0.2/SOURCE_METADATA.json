@@ -1,0 +1,49 @@
+{
+  "pack": "CueCut2 Talking-Head Effects Pack",
+  "version": "0.2",
+  "created": "2026-09-08",
+  "purpose": "semantic talking-head overlays: checklist, steps, metrics, ranking, comparison, timeline, flow",
+  "cuecutOriginalComponents": [
+    "CueCutChecklist",
+    "CueCutStepTimeline",
+    "CueCutRingMetric",
+    "CueCutGaugeMetric",
+    "CueCutProgressMetric",
+    "CueCutRankingBars",
+    "CueCutVersusCard",
+    "CueCutBeforeAfterSplit",
+    "CueCutProcessTimeline",
+    "CueCutFlowSteps"
+  ],
+  "thirdPartyReferences": [
+    {
+      "name": "motion-primitives",
+      "repo": "https://github.com/ibelick/motion-primitives",
+      "license": "MIT",
+      "files": [
+        "components/core/image-comparison.tsx"
+      ],
+      "role": "reference/candidate"
+    },
+    {
+      "name": "magicui",
+      "repo": "https://github.com/magicuidesign/magicui",
+      "license": "MIT",
+      "files": [
+        "apps/www/registry/magicui/animated-beam.tsx"
+      ],
+      "role": "reference/candidate"
+    },
+    {
+      "name": "recharts",
+      "repo": "https://github.com/recharts/recharts",
+      "license": "MIT",
+      "files": [
+        "www/src/docs/exampleComponents/RadialBarChart/SimpleRadialBarChart.tsx",
+        "www/src/docs/exampleComponents/BarChart/SimpleBarChart.tsx"
+      ],
+      "role": "reference/candidate"
+    }
+  ],
+  "integrationNote": "CueCut original components are progress-driven and intended to be adapted to the existing CueCut3 registry/timeline/renderer."
+}

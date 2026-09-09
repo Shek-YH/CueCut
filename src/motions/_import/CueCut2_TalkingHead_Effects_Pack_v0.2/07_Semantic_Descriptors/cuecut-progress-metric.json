@@ -1,0 +1,18 @@
+{
+  "id": "cuecut-progress-metric",
+  "family": "Progress",
+  "file": "02_Ring_Gauge_Progress/CueCutProgressMetric.tsx",
+  "useCases": [
+    "task progress",
+    "completion",
+    "loading metaphor",
+    "goal"
+  ],
+  "avoidCases": [
+    "share of total across multiple categories"
+  ],
+  "recommendedDurationSec": [
+    1.2,
+    5.0
+  ]
+}

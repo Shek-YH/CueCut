@@ -1,0 +1,53 @@
+{
+  "version": "0.7",
+  "families": {
+    "Trend": [
+      "CueCutLineChart"
+    ],
+    "TrendArea": [
+      "CueCutAreaChart"
+    ],
+    "Sparkline": [
+      "CueCutSparkline"
+    ],
+    "Distribution": [
+      "CueCutDonutChart"
+    ],
+    "MultiMetricRing": [
+      "CueCutMultiRing"
+    ],
+    "StackedBar": [
+      "CueCutStackedBar"
+    ],
+    "ComparisonBars": [
+      "CueCutHorizontalComparison"
+    ],
+    "SlopeChart": [
+      "CueCutSlopeChart"
+    ],
+    "Funnel": [
+      "CueCutFunnelChart"
+    ],
+    "Waterfall": [
+      "CueCutWaterfallChart"
+    ],
+    "Heatmap": [
+      "CueCutHeatmap"
+    ],
+    "GoalVsActual": [
+      "CueCutGoalVsActual"
+    ],
+    "KPI": [
+      "CueCutKPIGrid"
+    ],
+    "Milestone": [
+      "CueCutMilestoneTrack"
+    ],
+    "DataCallout": [
+      "CueCutDataCallout"
+    ],
+    "NumberTrend": [
+      "CueCutNumberTrend"
+    ]
+  }
+}

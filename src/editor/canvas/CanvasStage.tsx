@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { ProjectComposition } from '../../project/schema';
 import type { ProjectStore } from '../../project/store';
+import { evaluateSceneAtTime } from '../../render/scene';
+import { findEffectDefinition } from '../../effects/registry';
 
 interface CanvasStageProps {
   project: ProjectComposition;
@@ -11,15 +13,9 @@ interface CanvasStageProps {
   store: ProjectStore;
   playing: boolean;
   onVideoTime: (timeSec: number) => void;
-  onVideoMetadata: (metadata: { durationSec: number; fps: number; canvasWidth: number; canvasHeight: number }) => void;
+  onVideoMetadata: (metadata: { durationSec: number; canvasWidth: number; canvasHeight: number }) => void;
   onSelect: (effectId: string) => void;
 }
-
-const names: Record<string, string> = {
-  'fx-ring': 'Ring A · Spring In',
-  'fx-quote': 'Quote B · Slide Left',
-  'fx-compare': 'Compare A · Fly Right',
-};
 
 export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, store, playing, onVideoTime, onVideoMetadata, onSelect }: CanvasStageProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -92,6 +88,8 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
     setPreview({});
   };
 
+  const scene = evaluateSceneAtTime(project, currentTime);
+
   return (
     <main className="stage" data-testid="canvas-stage">
       <div className="stagebar">
@@ -103,18 +101,21 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
       </div>
       <div className="canvaswrap">
         <div className="canvas" data-aspect-ratio={project.project.aspectRatio} style={{ aspectRatio: project.project.aspectRatio.replace(':', ' / ') }}>
-          {videoSrc ? <video ref={videoRef} className="vbg-video" data-testid="preview-video" preload="metadata" src={videoSrc} playsInline onLoadedMetadata={(event) => onVideoMetadata({ durationSec: event.currentTarget.duration, fps: project.project.fps, canvasWidth: event.currentTarget.videoWidth, canvasHeight: event.currentTarget.videoHeight })} onTimeUpdate={(event) => onVideoTime(event.currentTarget.currentTime)} /> : <div className="vbg" />}
+          {videoSrc ? <video ref={videoRef} className="vbg-video" data-testid="preview-video" preload="metadata" src={videoSrc} playsInline onLoadedMetadata={(event) => onVideoMetadata({ durationSec: event.currentTarget.duration, canvasWidth: event.currentTarget.videoWidth, canvasHeight: event.currentTarget.videoHeight })} onTimeUpdate={(event) => onVideoTime(event.currentTarget.currentTime)} /> : <div className="vbg" />}
           <span className="vlabel">VIDEO FRAME · {currentTime.toFixed(2)}s</span>
           <div className="person" />
           <div className="safe" />
           {project.effects.map((effect) => {
-            const isActive = currentTime >= effect.time.startSec && currentTime <= effect.time.endSec;
+            const sceneItem = scene.items.find((item) => item.effectId === effect.effectId);
+            const isActive = sceneItem?.visible ?? false;
             const selected = effect.effectId === selectedEffectId;
-            const isRing = effect.effectId === 'fx-ring';
+            const isNumber = sceneItem?.content.kind === 'number';
             const position = preview[effect.effectId] ?? effect.layout;
+            const definition = findEffectDefinition(effect.familyId, effect.variantId);
             return (
               <button
                 className={'fx ' + effect.familyId + (isActive ? '' : ' off') + (selected ? ' sel' : '')}
+                data-motion-phase={sceneItem?.phase ?? 'hidden'}
                 data-testid={'effect-card-' + effect.effectId}
                 key={effect.effectId}
                 onClick={() => onSelect(effect.effectId)}
@@ -128,17 +129,20 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
                   width: position.nw * 100 + '%',
                   height: position.nh * 100 + '%',
                   zIndex: effect.zIndex,
+                  opacity: sceneItem?.opacity ?? 0,
+                  filter: sceneItem?.blur ? `blur(${sceneItem.blur}px)` : undefined,
+                  transform: sceneItem ? `translate(${sceneItem.translate.x}px, ${sceneItem.translate.y}px) scale(${sceneItem.scale}) rotate(${sceneItem.rotation}deg)` : undefined,
                 }}
                 type="button"
               >
-                <span className="fxtag">{names[effect.effectId] ?? effect.familyId}</span>
-                {isRing ? (
+                <span className="fxtag">{definition?.displayName ?? effect.familyId}</span>
+                {isNumber ? (
                   <>
-                    <span className="circle">{String(effect.content.value ?? '92.4')}</span>
-                    <span className="card-copy">比例指标</span>
+                    <span className="circle">{String(sceneItem?.content.kind === 'number' ? sceneItem.content.value : effect.content.value ?? '0')}</span>
+                    <span className="card-copy">{sceneItem?.content.kind === 'number' ? sceneItem.content.label : ''}</span>
                   </>
                 ) : (
-                  <strong>{String(effect.content.headline ?? '视觉强调')}</strong>
+                  <strong>{sceneItem?.content.kind === 'text' ? sceneItem.content.text : sceneItem?.content.kind === 'list' ? sceneItem.content.items.join(' · ') : sceneItem?.content.label}</strong>
                 )}
                 <span className="resize-handle top-left" data-testid={'resize-handle-' + effect.effectId + '-top-left'} onPointerDown={(event) => beginResize(event, effect.effectId)} />
                 <span className="resize-handle top-right" data-testid={'resize-handle-' + effect.effectId + '-top-right'} onPointerDown={(event) => beginResize(event, effect.effectId)} />
@@ -147,6 +151,16 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
               </button>
             );
           })}
+          {scene.items.filter((item) => item.variantId === 'subtitle' && item.visible).map((subtitle) => (
+            <div
+              className="canvas-subtitle"
+              data-testid={'canvas-subtitle-' + subtitle.effectId}
+              key={subtitle.effectId}
+              style={{ left: subtitle.layout.nx * 100 + '%', top: subtitle.layout.ny * 100 + '%', width: subtitle.layout.nw * 100 + '%', height: subtitle.layout.nh * 100 + '%', opacity: subtitle.opacity, zIndex: subtitle.zIndex }}
+            >
+              {subtitle.content.kind === 'text' ? subtitle.content.text : ''}
+            </div>
+          ))}
         </div>
       </div>
     </main>

@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-spotlight-box",
+  "family": "SpotlightBox",
+  "file": "05_Callout_Pointer/CueCutSpotlightBox.tsx",
+  "useCases": [
+    "highlight screen region",
+    "UI tutorial target"
+  ],
+  "avoidCases": [
+    "plain subtitle"
+  ],
+  "rendering": "progress-driven",
+  "supportsElementCue": false,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

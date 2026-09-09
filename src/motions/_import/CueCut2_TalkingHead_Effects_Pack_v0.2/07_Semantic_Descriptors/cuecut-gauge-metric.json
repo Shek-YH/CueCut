@@ -1,0 +1,19 @@
+{
+  "id": "cuecut-gauge-metric",
+  "family": "Gauge",
+  "file": "02_Ring_Gauge_Progress/CueCutGaugeMetric.tsx",
+  "useCases": [
+    "bounded score",
+    "health score",
+    "speed/intensity",
+    "rating"
+  ],
+  "avoidCases": [
+    "unbounded raw counts",
+    "categorical comparison"
+  ],
+  "recommendedDurationSec": [
+    1.5,
+    5.0
+  ]
+}

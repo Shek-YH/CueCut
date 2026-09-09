@@ -1,0 +1,20 @@
+{
+  "id": "cuecut-transfer-action",
+  "family": "TransferAction",
+  "file": "07_File_Clipboard_Link/CueCutTransferAction.tsx",
+  "useCases": [
+    "download/upload progress",
+    "file transfer"
+  ],
+  "avoidCases": [
+    "single static fact"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

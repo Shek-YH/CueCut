@@ -1,0 +1,20 @@
+{
+  "id": "cuecut-slope-chart",
+  "family": "SlopeChart",
+  "file": "03_Bars_Comparison/CueCutSlopeChart.tsx",
+  "useCases": [
+    "before vs after across multiple categories"
+  ],
+  "avoidCases": [
+    "more than two time endpoints"
+  ],
+  "rendering": "progress-driven",
+  "requiresNumericData": true,
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}

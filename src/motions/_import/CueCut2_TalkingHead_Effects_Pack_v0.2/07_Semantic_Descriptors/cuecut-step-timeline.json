@@ -1,0 +1,22 @@
+{
+  "id": "cuecut-step-timeline",
+  "family": "Steps",
+  "file": "01_Checklist_Steps/CueCutStepTimeline.tsx",
+  "useCases": [
+    "ordered procedure",
+    "tutorial steps",
+    "sequence"
+  ],
+  "avoidCases": [
+    "unordered checklist",
+    "multi-series data"
+  ],
+  "recommendedItemCount": [
+    3,
+    6
+  ],
+  "recommendedDurationSec": [
+    3.0,
+    14.0
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "cuecut-ranking-bars",
+  "family": "Ranking",
+  "file": "03_Ranking_Comparison/CueCutRankingBars.tsx",
+  "useCases": [
+    "Top N",
+    "leaderboard",
+    "numeric comparison"
+  ],
+  "avoidCases": [
+    "single number",
+    "non-comparable units"
+  ],
+  "recommendedItemCount": [
+    2,
+    6
+  ],
+  "recommendedDurationSec": [
+    2.5,
+    10.0
+  ]
+}

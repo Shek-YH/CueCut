@@ -11,6 +11,7 @@ import { effectRegistry } from '../effects/registry';
 import { motionRegistry } from '../motions/registry';
 import { sfxRegistry } from '../sfx/registry';
 import { createBailianAsrClient, type BailianAsrResult } from '../media/bailianAsr';
+import { probeVideoFile } from '../media/videoProbe';
 import { createBailianProvider } from '../director/bailianProvider';
 import { createDirectorService, type DirectorResult } from '../director/service';
 import type { DirectorInput } from '../director/types';
@@ -86,7 +87,7 @@ export function createHostGenerationRunner(options: {
 
     try {
       await writeLimitedStream(input.video, videoPath);
-      const metadata = await probeVideo(videoPath, options.ffprobePath ?? 'ffprobe');
+      const metadata = await probeVideoFile(videoPath, options.ffprobePath ?? 'ffprobe');
       await runProcess(options.ffmpegPath ?? 'ffmpeg', [
         '-y', '-i', videoPath, '-vn', '-ac', '1', '-ar', '16000',
         '-codec:a', 'libmp3lame', '-b:a', '64k', audioPath,
@@ -102,9 +103,9 @@ export function createHostGenerationRunner(options: {
         projectId: 'cuecut-' + randomUUID(),
         durationSec: metadata.durationSec,
         fps: metadata.fps,
-        canvasWidth: metadata.canvasWidth,
-        canvasHeight: metadata.canvasHeight,
-        aspectRatio: aspectRatio(metadata.canvasWidth, metadata.canvasHeight),
+        canvasWidth: metadata.width,
+        canvasHeight: metadata.height,
+        aspectRatio: aspectRatio(metadata.width, metadata.height),
         platformHint: null,
         contentStyleHint: 'tutorial',
       } satisfies DirectorInput['project'];
@@ -197,24 +198,6 @@ async function writeLimitedStream(source: AsyncIterable<Uint8Array>, targetPath:
   await pipeline(source, limiter, createWriteStream(targetPath));
 }
 
-async function probeVideo(videoPath: string, ffprobePath: string): Promise<{ durationSec: number; fps: number; canvasWidth: number; canvasHeight: number }> {
-  const output = await runProcess(ffprobePath, [
-    '-v', 'error', '-show_entries', 'format=duration:stream=codec_type,width,height,r_frame_rate', '-of', 'json', videoPath,
-  ]);
-  const payload = JSON.parse(output) as {
-    format?: { duration?: string };
-    streams?: Array<{ codec_type?: string; width?: number; height?: number; r_frame_rate?: string }>;
-  };
-  const video = payload.streams?.find((stream) => stream.codec_type === 'video');
-  if (!video?.width || !video.height || !payload.format?.duration) throw new Error('FFprobe did not return usable video metadata');
-  return {
-    durationSec: Number(payload.format.duration),
-    fps: parseFrameRate(video.r_frame_rate ?? '30/1'),
-    canvasWidth: video.width,
-    canvasHeight: video.height,
-  };
-}
-
 function runProcess(command: string, args: string[]): Promise<string> {
   return new Promise((resolveOutput, reject) => {
     const child = spawn(command, args, { windowsHide: true });
@@ -257,11 +240,6 @@ function effectCandidate(effect: EffectDefinition): { id: string; tags: string[]
 function safeFileName(fileName: string): string {
   const name = basename(fileName).replace(/[^a-zA-Z0-9._-]/g, '_');
   return name || 'video.mp4';
-}
-
-function parseFrameRate(value: string): number {
-  const [numerator, denominator] = value.split('/').map(Number);
-  return denominator ? numerator / denominator : 30;
 }
 
 function aspectRatio(width: number, height: number): string {

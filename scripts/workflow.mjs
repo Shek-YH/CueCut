@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { evaluateP0Gate, isAcceptedEvidenceComplete } from './workflow-gates.mjs';
 
 const root = process.cwd();
 const workItemsDir = path.join(root, 'docs', 'work-items');
@@ -30,6 +31,7 @@ function validate(items, graph) {
     if (item.status === 'READY_FOR_REVIEW' && !item.evidence?.length) errors.push(`${item.id}: READY_FOR_REVIEW needs evidence`);
     if (item.status === 'VERIFIED' && item.review?.verdict !== 'PASS') errors.push(`${item.id}: VERIFIED needs verifier PASS`);
     if (item.status === 'ACCEPTED' && item.review?.verdict !== 'PASS') errors.push(`${item.id}: ACCEPTED needs VERIFIED review`);
+    if (item.status === 'ACCEPTED' && !isAcceptedEvidenceComplete(item)) errors.push(`${item.id}: ACCEPTED needs implementation, automated-test, real-test, and independent-verifier evidence`);
     if (item.review?.executionRef && item.execution?.executionRef && item.review.executionRef === item.execution.executionRef) errors.push(`${item.id}: verifier executionRef must differ`);
   }
 
@@ -61,9 +63,13 @@ function printCheck() {
   const errors = validate(items, graph);
   const inProgress = items.filter((item) => item.status === 'IN_PROGRESS').map((item) => item.id);
   const queue = readyQueue(items);
+  const p0Gate = evaluateP0Gate(items);
   console.log(errors.length ? 'WORKFLOW_CHECK: FAIL' : 'WORKFLOW_CHECK: PASS');
   console.log(`IN_PROGRESS: ${inProgress.length ? inProgress.join(', ') : 'none'}`);
   console.log(`READY_QUEUE: ${queue.length ? queue.join(', ') : 'none'}`);
+  console.log(`P0_GATE: ${p0Gate.status}`);
+  if (p0Gate.remaining.length) console.log(`P0_REMAINING: ${p0Gate.remaining.join(', ')}`);
+  if (p0Gate.invalidAccepted.length) console.log(`P0_INVALID_ACCEPTED: ${p0Gate.invalidAccepted.join(', ')}`);
   if (errors.length) for (const error of errors) console.log(`ERROR: ${error}`);
   process.exitCode = errors.length ? 1 : 0;
 }
@@ -88,11 +94,19 @@ function printReadiness() {
   console.log(text.split('\n').filter((line) => /\| (READY|WAITING_FOR_USER|BLOCKED) \|/.test(line)).join('\n') || 'READINESS: no unresolved rows');
 }
 
+function printRelease() {
+  printCheck();
+  const items = loadItems();
+  const gate = evaluateP0Gate(items);
+  if (gate.status !== 'PASS') process.exitCode = 1;
+}
+
 const command = process.argv[2] ?? 'check';
 if (command === 'check') printCheck();
 else if (command === 'next') printNext();
 else if (command === 'golden') printGolden();
 else if (command === 'readiness') printReadiness();
+else if (command === 'release') printRelease();
 else {
   console.error(`Unknown workflow command: ${command}`);
   process.exitCode = 2;

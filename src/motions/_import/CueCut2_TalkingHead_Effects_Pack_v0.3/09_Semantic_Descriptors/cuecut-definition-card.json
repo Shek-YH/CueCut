@@ -1,0 +1,21 @@
+{
+  "id": "cuecut-definition-card",
+  "family": "Definition",
+  "file": "02_Term_Definition_Alert/CueCutDefinitionCard.tsx",
+  "useCases": [
+    "what is X",
+    "concept definition",
+    "explanation"
+  ],
+  "avoidCases": [
+    "ranking"
+  ],
+  "rendering": "progress-driven",
+  "supportedSkins": [
+    "minimal",
+    "glass",
+    "tech",
+    "soft"
+  ],
+  "integrationStatus": "candidate"
+}
