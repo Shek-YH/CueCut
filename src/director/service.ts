@@ -89,7 +89,18 @@ export function createDirectorService(provider: DirectorProvider, fallback: Loca
         };
       }
 
-      return { composition: resolvedComposition, usedFallback: false, warnings: timingWarnings, selectionTrace: materializeSelectionTrace(input, resolvedComposition, compositionLint), lint: compositionLint };
+      const selectionTrace = materializeSelectionTrace(input, resolvedComposition, compositionLint);
+      const selectionTraceIssue = validateSelectionTrace(input, selectionTrace);
+      if (selectionTraceIssue) {
+        return {
+          composition: fallback(input),
+          usedFallback: true,
+          warnings: [...timingWarnings, selectionTraceIssue],
+          selectionTrace: fallbackSelectionTrace(input),
+          lint: compositionLint,
+        };
+      }
+      return { composition: resolvedComposition, usedFallback: false, warnings: timingWarnings, selectionTrace, lint: compositionLint };
     },
   };
 }
@@ -143,11 +154,35 @@ function materializeSelectionTrace(
       : [];
     return {
       ...entry,
-      selected: selectedEffect ? `${selectedEffect.familyId}:${selectedEffect.variantId}` : entry.selected,
+      selected: selectedEffect ? `${selectedEffect.familyId}:${selectedEffect.variantId}` : undefined,
       dataContractPassed: Boolean(selectedEffect) && !effectErrors.some((error) => /required|provenance|items|numeric_value_not_evidenced/.test(error.code)),
       durationContractPassed: Boolean(selectedEffect) && !effectErrors.some((error) => error.code.startsWith('duration_')),
     };
   });
+}
+
+function validateSelectionTrace(input: unknown, trace: SelectionTraceEntry[]): string | undefined {
+  const units = getVisualUnits(input);
+  if (units.length === 0) return undefined;
+  const expectedIds = new Set(units.map((unit) => unit.visualUnitId));
+  const actualIds = new Set(trace.map((entry) => entry.visualUnitId));
+  if (trace.length !== units.length || actualIds.size !== units.length || [...expectedIds].some((id) => !actualIds.has(id))) {
+    return 'Director SelectionTrace is incomplete: every VisualUnit must have exactly one trace entry';
+  }
+  const bundles = getCandidateBundles(input);
+  if (!hasCandidateBundles(input)) return undefined;
+  for (const entry of trace) {
+    const bundle = bundles.find((candidate) => candidate.visualUnitId === entry.visualUnitId);
+    if (!bundle) return `Director SelectionTrace has no CandidateBundle for ${entry.visualUnitId}`;
+    const candidateIds = new Set(bundle.candidates.map((candidate) => `${candidate.familyId}:${candidate.variantId}`));
+    if (entry.retrievedCandidates.some((candidateId) => !candidateIds.has(candidateId))) {
+      return `Director SelectionTrace retrieved candidate is outside bundle scope for ${entry.visualUnitId}`;
+    }
+    if (entry.selected && !candidateIds.has(entry.selected)) {
+      return `Director SelectionTrace selected candidate is outside bundle scope for ${entry.visualUnitId}`;
+    }
+  }
+  return undefined;
 }
 
 function getNumericEvidence(input: unknown): NumericEvidence | undefined {

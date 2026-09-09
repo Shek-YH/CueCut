@@ -141,8 +141,8 @@ function lintItemCues(
     if (!cue || typeof cue !== 'object' || Array.isArray(cue)) return;
     const startSec = (cue as Record<string, unknown>).startSec;
     if (typeof startSec !== 'number' || !Number.isFinite(startSec)) return;
-    if (startSec < time.startSec || startSec > time.endSec) errors.push({ code: 'item_cue_out_of_range', path: [...path, 'content', 'items', String(index), 'cue', 'startSec'], message: 'Item cue must be inside the effect time range' });
-    if (previousCue !== undefined && startSec < previousCue) errors.push({ code: 'item_cue_out_of_order', path: [...path, 'content', 'items', String(index), 'cue', 'startSec'], message: 'Item cues must be chronological' });
+    if (startSec < time.startSec || startSec > time.endSec) errors.push({ code: 'item_cue_out_of_range', path: [...path, String(index), 'cue', 'startSec'], message: 'Item cue must be inside the effect time range' });
+    if (previousCue !== undefined && startSec < previousCue) errors.push({ code: 'item_cue_out_of_order', path: [...path, String(index), 'cue', 'startSec'], message: 'Item cues must be chronological' });
     previousCue = startSec;
   });
 }

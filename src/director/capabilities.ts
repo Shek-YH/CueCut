@@ -35,20 +35,20 @@ export function validateEffectContent(candidate: EffectCapabilityCandidate, cont
   for (const slot of candidate.dataContract.numericSlots) {
     if (!(slot in content)) continue;
     const value = content[slot];
-    if (typeof value !== 'number' && !(typeof value === 'string' && value.trim() !== '' && Number.isFinite(Number(value)))) {
+    const numericValue = typeof value === 'number' ? value : typeof value === 'string' && value.trim() !== '' ? Number(value) : NaN;
+    if (!Number.isFinite(numericValue)) {
       issues.push({ code: 'numeric_value_required', path: [slot], message: `Numeric content is required for ${slot}` });
       continue;
     }
-    if (evidence) {
-      const provenance = content.provenance;
-      const source = provenance && typeof provenance === 'object' && !Array.isArray(provenance)
-        ? (provenance as Record<string, unknown>).source
-        : undefined;
-      const sourceValues = source === 'srt' ? evidence.srt : source === 'user' ? evidence.user : source === 'project-data' ? evidence.projectData : undefined;
-      const numericValue = typeof value === 'number' ? value : Number(value);
-      if (sourceValues && !sourceValues.some((candidateValue) => Math.abs(candidateValue - numericValue) < 1e-9)) {
-        issues.push({ code: 'numeric_value_not_evidenced', path: [slot], message: `Numeric content for ${slot} is not present in ${source} evidence` });
-      }
+    const provenance = content.provenance;
+    const source = provenance && typeof provenance === 'object' && !Array.isArray(provenance)
+      ? (provenance as Record<string, unknown>).source
+      : undefined;
+    const sourceValues = source === 'srt' ? evidence?.srt : source === 'user' ? evidence?.user : source === 'project-data' ? evidence?.projectData : undefined;
+    if (!sourceValues) {
+      if (source === 'srt' || source === 'user' || source === 'project-data') issues.push({ code: 'numeric_evidence_missing', path: [slot], message: `Numeric content for ${slot} cannot be verified without ${source} evidence` });
+    } else if (!sourceValues.some((candidateValue) => Number.isFinite(candidateValue) && Math.abs(candidateValue - numericValue) < 1e-9)) {
+      issues.push({ code: 'numeric_value_not_evidenced', path: [slot], message: `Numeric content for ${slot} is not present in ${source} evidence` });
     }
   }
   for (const slot of candidate.dataContract.itemSlots) {

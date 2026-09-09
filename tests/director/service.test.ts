@@ -179,7 +179,7 @@ describe('Director service', () => {
 
     const result = await service.generate({ selectionTrace: trace });
 
-    expect(result.selectionTrace).toEqual([expect.objectContaining({ selected: 'quote:quote-b', dataContractPassed: false, durationContractPassed: false })]);
+    expect(result.selectionTrace).toEqual([expect.objectContaining({ selected: undefined, dataContractPassed: false, durationContractPassed: false })]);
   });
 
   it('materializes a SelectionTrace entry from the actual selected effect and linter result', async () => {

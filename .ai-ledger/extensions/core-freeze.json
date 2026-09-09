@@ -27,5 +27,23 @@
     "tests/layout/visualContext.test.ts",
     "tests/render/itemCues.test.ts"
   ],
-  "contractHash": "ee3eeec282a34d9eedc4c7b9357e5239b29b5b123618ec7d62e9b344cd858025"
+  "contractHash": "ee3eeec282a34d9eedc4c7b9357e5239b29b5b123618ec7d62e9b344cd858025",
+  "amendments": [
+    {
+      "id": "ARCH-AMEND-001",
+      "actor": "R-ARCH",
+      "status": "CONTRACT_PRESERVED",
+      "paths": [
+        "src/director/capabilities.ts",
+        "src/director/compositionLinter.ts",
+        "src/director/contextBuilder.ts",
+        "src/director/prompt.ts",
+        "src/director/semanticPlanner.ts",
+        "src/director/service.ts",
+        "src/director/types.ts"
+      ],
+      "record": "docs/director-recovery/CORE_FREEZE_AMENDMENT.md",
+      "contractHash": "ee3eeec282a34d9eedc4c7b9357e5239b29b5b123618ec7d62e9b344cd858025"
+    }
+  ]
 }

@@ -25,6 +25,11 @@ function semanticTags(transcript: TranscriptInput[]): string[] {
   return tags.length ? tags : ['neutral'];
 }
 
+/**
+ * @deprecated Production Director generation uses buildDirectorInputV2. This
+ * adapter remains only for legacy callers and must not be used as the runtime
+ * Director path because it intentionally exposes the old global-tag shape.
+ */
 export function buildDirectorInput(input: {
   project: DirectorInput['project'];
   transcript: TranscriptInput[];

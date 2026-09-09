@@ -75,6 +75,15 @@ describe('Director independent-review regressions', () => {
     ]));
   });
 
+  it('rejects non-finite numeric content and missing numeric evidence', () => {
+    expect(validateEffectContent(numeric, { label: '增长', value: Number.NaN, provenance: { source: 'srt' } })).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'numeric_value_required' }),
+    ]));
+    expect(validateEffectContent(numeric, { label: '增长', value: 78, provenance: { source: 'srt' } })).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'numeric_evidence_missing' }),
+    ]));
+  });
+
   it('does not mark a seed trace as passed before a selected composition is validated', () => {
     const result = buildDirectorInputV2({
       project: { projectId: 'trace', durationSec: 12, fps: 30, canvasWidth: 1920, canvasHeight: 1080, aspectRatio: '16:9' },
@@ -188,5 +197,18 @@ describe('Director independent-review regressions', () => {
     composition.effects = [{ ...composition.effects[0]!, familyId: 'steps', variantId: 'timeline-b', content: { steps: [{ text: '第一步' }] } }];
 
     expect(lintComposition(composition, [steps]).errors.map((error) => error.code)).toContain('item_cue_required');
+  });
+
+  it('rejects a fabricated retrieved candidate in a complete trace', async () => {
+    const composition = createFixtureProject();
+    const service = createDirectorService(async () => composition, () => createFixtureProject());
+    const result = await service.generate({
+      visualUnits: [{ visualUnitId: 'vu-1', sourceSubtitleIds: ['s-1'], startSec: 2, endSec: 8, semanticIntent: 'quote', importance: 0.8 }],
+      candidateBundles: [{ visualUnitId: 'vu-1', candidates: [numeric], retrievalReason: [] }],
+      selectionTrace: [{ visualUnitId: 'vu-1', semanticIntent: 'quote', retrievedCandidates: ['quote:invented'], dataContractPassed: false, durationContractPassed: false }],
+    });
+
+    expect(result.usedFallback).toBe(true);
+    expect(result.warnings.join(' ')).toMatch(/trace|bundle|scope/i);
   });
 });
