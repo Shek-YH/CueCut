@@ -7,7 +7,7 @@ This handoff is generated for an external independent reviewer. It is navigation
 - Git mode: `EXISTING`
 - Git root: `F:\CCPJ\CueCut3`
 - Branch: `main`
-- Latest commit: `78c0282a237da5d542d3e21f6612cde764b80b16`
+- Latest commit: `c58f635b941db7abe15e9f7b7e9ababae09c9c0d`
 - Working tree: `DIRTY`
 - Push performed: `NO`
 
@@ -100,6 +100,9 @@ No separate REAL_TEST_REQUIREMENTS.md was recorded.
 - director-requirement-evidence: docs/director-recovery/12_REQUIREMENT_EVIDENCE.md
 - director-real-regression: docs/director-recovery/13_REAL_WORLD_REGRESSION.md
 - director-pre-push-acceptance: docs/director-recovery/14_PRE_PUSH_ACCEPTANCE.md
+- director-reviewer-regressions: tests/director/reviewer-regressions.test.ts
+- director-four-step-fixture: tests/fixtures/director/ai-reading-four-step.srt
+- director-core-freeze-amendment: docs/director-recovery/CORE_FREEZE_AMENDMENT.md
 
 ## Known Issues
 
