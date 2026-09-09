@@ -25,5 +25,11 @@ describe('Director prompt contract', () => {
     expect(userMessage).toContain('nw');
     expect(userMessage).toContain('nh');
     expect(userMessage).toContain(JSON.stringify(createFixtureProject().effects[0]!.layout));
+    expect(userMessage).toContain('VisualUnit');
+    expect(userMessage).toContain('CandidateBundle');
+    expect(userMessage).toContain('SelectionTrace');
+    expect(userMessage).toContain('provenance');
+    expect(userMessage).toContain('item cue');
+    expect(userMessage).toContain('不得发明');
   });
 });

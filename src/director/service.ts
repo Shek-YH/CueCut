@@ -2,7 +2,7 @@ import { projectCompositionSchema, type ProjectComposition } from '../project/sc
 import { createOneCallGuard } from './oneCallGuard';
 import { assertCompositionCandidateIds, sanitizeCompositionCandidateIds, type CandidateIndexes } from './validator';
 import { lintComposition } from './compositionLinter';
-import type { EffectCapabilityCandidate, VisualUnit } from './types';
+import type { EffectCapabilityCandidate, SelectionTraceEntry, VisualUnit } from './types';
 
 export interface DirectorResult {
   composition: ProjectComposition;
@@ -58,6 +58,7 @@ export function createDirectorService(provider: DirectorProvider, fallback: Loca
       const compositionLint = lintComposition(result.data, getEffectCapabilities(input), {
         safeMargin: getSafeMargin(input),
         visualUnits: getVisualUnits(input),
+        visualContext: getVisualContext(input),
       });
       if (!compositionLint.ok) {
         return {
@@ -69,7 +70,7 @@ export function createDirectorService(provider: DirectorProvider, fallback: Loca
         };
       }
 
-      return { composition: result.data, usedFallback: false, warnings: timingWarnings, selectionTrace: getSelectionTrace(input), lint: compositionLint };
+      return { composition: result.data, usedFallback: false, warnings: timingWarnings, selectionTrace: materializeSelectionTrace(input, result.data, compositionLint), lint: compositionLint };
     },
   };
 }
@@ -80,10 +81,35 @@ function getEffectCapabilities(input: unknown): EffectCapabilityCandidate[] {
   return Array.isArray(capabilities) ? capabilities as EffectCapabilityCandidate[] : [];
 }
 
-function getSelectionTrace(input: unknown): import('./types').SelectionTraceEntry[] {
+function getSelectionTrace(input: unknown): SelectionTraceEntry[] {
   if (!input || typeof input !== 'object' || !('selectionTrace' in input)) return [];
   const trace = (input as { selectionTrace?: unknown }).selectionTrace;
-  return Array.isArray(trace) ? trace as import('./types').SelectionTraceEntry[] : [];
+  return Array.isArray(trace) ? trace as SelectionTraceEntry[] : [];
+}
+
+function materializeSelectionTrace(
+  input: unknown,
+  composition: ProjectComposition,
+  lint: import('./compositionLinter').CompositionLintResult,
+): SelectionTraceEntry[] {
+  const units = getVisualUnits(input);
+  return getSelectionTrace(input).map((entry) => {
+    const unit = units.find((candidate) => candidate.visualUnitId === entry.visualUnitId);
+    const segmentIds = composition.segments
+      .filter((segment) => unit?.sourceSubtitleIds.some((subtitleId) => segment.sourceSubtitleIds.includes(subtitleId)))
+      .map((segment) => segment.segmentId);
+    const effectIndex = composition.effects.findIndex((effect) => segmentIds.includes(effect.segmentId));
+    const selectedEffect = effectIndex >= 0 ? composition.effects[effectIndex] : undefined;
+    const effectErrors = effectIndex >= 0
+      ? lint.errors.filter((error) => error.path[0] === 'effects' && error.path[1] === String(effectIndex))
+      : [];
+    return {
+      ...entry,
+      selected: selectedEffect ? `${selectedEffect.familyId}:${selectedEffect.variantId}` : entry.selected,
+      dataContractPassed: !effectErrors.some((error) => /required|provenance|items/.test(error.code)),
+      durationContractPassed: !effectErrors.some((error) => error.code.startsWith('duration_')),
+    };
+  });
 }
 
 function getVisualUnits(input: unknown): VisualUnit[] {
@@ -97,6 +123,12 @@ function getSafeMargin(input: unknown): number {
   const context = (input as { visualContext?: unknown }).visualContext;
   if (!context || typeof context !== 'object' || typeof (context as { safeMargins?: unknown }).safeMargins !== 'number') return 0;
   return Math.max(0, (context as { safeMargins: number }).safeMargins);
+}
+
+function getVisualContext(input: unknown): import('./types').VisualContext | undefined {
+  if (!input || typeof input !== 'object' || !('visualContext' in input)) return undefined;
+  const context = (input as { visualContext?: unknown }).visualContext;
+  return context && typeof context === 'object' && !Array.isArray(context) ? context as import('./types').VisualContext : undefined;
 }
 
 function getCandidateIndexes(input: unknown): CandidateIndexes | undefined {

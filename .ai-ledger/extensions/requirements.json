@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "projectId": "cuecut3-cecb1e53",
-  "updatedAt": "2026-09-09T09:43:16.596Z",
+  "updatedAt": "2026-09-09T12:29:19.851Z",
   "requirements": [
     {
       "requirementId": "REQ-DIR-001",
@@ -193,10 +193,15 @@
         "src/director/compositionLinter.ts",
         "src/director/service.ts",
         "tests/director/compositionLinter.test.ts",
-        "tests/director/service.test.ts"
+        "tests/director/service.test.ts",
+        "src/director/prompt.ts",
+        "src/director/capabilities.ts"
       ],
       "testEvidence": [
-        "pnpm exec vitest run tests/director/compositionLinter.test.ts tests/director/service.test.ts"
+        "pnpm exec vitest run tests/director/compositionLinter.test.ts tests/director/service.test.ts",
+        "pnpm exec vitest run tests/director/golden.test.ts",
+        "pnpm test --run",
+        "pnpm test:e2e"
       ],
       "artifactEvidence": [
         "docs/director-recovery/08_GOLDEN_TEST_PLAN.md"
@@ -206,7 +211,7 @@
       "metadata": {
         "acceptanceStatus": "NOT_VERIFIED"
       },
-      "updatedAt": "2026-09-09T09:43:16.596Z"
+      "updatedAt": "2026-09-09T12:29:19.851Z"
     },
     {
       "requirementId": "REQ-DIR-006",
@@ -236,10 +241,16 @@
         "src/director/compositionLinter.ts",
         "src/director/service.ts",
         "tests/director/compositionLinter.test.ts",
-        "tests/director/service.test.ts"
+        "tests/director/service.test.ts",
+        "src/director/prompt.ts",
+        "src/director/capabilities.ts",
+        "tests/director/golden.test.ts"
       ],
       "testEvidence": [
-        "pnpm exec vitest run tests/director/compositionLinter.test.ts"
+        "pnpm exec vitest run tests/director/compositionLinter.test.ts",
+        "pnpm exec vitest run tests/director/golden.test.ts",
+        "pnpm test --run",
+        "pnpm test:e2e"
       ],
       "artifactEvidence": [
         "docs/director-recovery/08_GOLDEN_TEST_PLAN.md"
@@ -249,7 +260,7 @@
       "metadata": {
         "acceptanceStatus": "NOT_VERIFIED"
       },
-      "updatedAt": "2026-09-09T09:43:16.596Z"
+      "updatedAt": "2026-09-09T12:29:19.851Z"
     },
     {
       "requirementId": "REQ-DIR-007",
@@ -318,17 +329,27 @@
       "dependencies": [
         "director-phase2-per-unit-retrieval"
       ],
-      "codeEvidence": [],
-      "testEvidence": [],
+      "codeEvidence": [
+        "src/director/semanticPlanner.ts",
+        "src/director/capabilities.ts",
+        "src/render/scene.ts",
+        "tests/director/golden.test.ts",
+        "tests/render/itemCues.test.ts"
+      ],
+      "testEvidence": [
+        "pnpm exec vitest run tests/director/golden.test.ts",
+        "pnpm test --run",
+        "pnpm test:e2e"
+      ],
       "artifactEvidence": [
         "docs/director-recovery/08_GOLDEN_TEST_PLAN.md"
       ],
-      "verificationStatus": "NOT_IMPLEMENTED",
+      "verificationStatus": "IN_PROGRESS",
       "deviationId": null,
       "metadata": {
         "acceptanceStatus": "NOT_VERIFIED"
       },
-      "updatedAt": "2026-09-09T09:30:00.000Z"
+      "updatedAt": "2026-09-09T12:29:19.851Z"
     },
     {
       "requirementId": "REQ-DIR-009",
@@ -356,10 +377,17 @@
       "codeEvidence": [
         "src/director/types.ts",
         "src/director/contextBuilder.ts",
-        "tests/director/contextBuilderV2.test.ts"
+        "tests/director/contextBuilderV2.test.ts",
+        "src/director/capabilities.ts",
+        "src/director/compositionLinter.ts",
+        "src/render/scene.ts",
+        "tests/render/itemCues.test.ts"
       ],
       "testEvidence": [
-        "pnpm exec vitest run tests/director/semanticPlanner.test.ts"
+        "pnpm exec vitest run tests/director/semanticPlanner.test.ts",
+        "pnpm exec vitest run tests/director/golden.test.ts",
+        "pnpm test --run",
+        "pnpm test:e2e"
       ],
       "artifactEvidence": [
         "docs/director-recovery/07_FILE_BY_FILE_CHANGE_PLAN.md",
@@ -370,7 +398,7 @@
       "metadata": {
         "acceptanceStatus": "NOT_VERIFIED"
       },
-      "updatedAt": "2026-09-09T09:43:16.596Z"
+      "updatedAt": "2026-09-09T12:29:19.851Z"
     },
     {
       "requirementId": "REQ-DIR-010",
@@ -397,18 +425,28 @@
       "dependencies": [
         "director-phase1-call-chain-audit"
       ],
-      "codeEvidence": [],
-      "testEvidence": [],
+      "codeEvidence": [
+        "src/director/types.ts",
+        "src/layout/visualContext.ts",
+        "src/director/compositionLinter.ts",
+        "src/server/generationRoute.ts",
+        "tests/layout/visualContext.test.ts"
+      ],
+      "testEvidence": [
+        "pnpm exec vitest run tests/director/golden.test.ts",
+        "pnpm test --run",
+        "pnpm test:e2e"
+      ],
       "artifactEvidence": [
         "docs/director-recovery/00_CURRENT_CALL_GRAPH.md",
         "docs/director-recovery/09_RISK_REGISTER.md"
       ],
-      "verificationStatus": "NOT_IMPLEMENTED",
+      "verificationStatus": "IN_PROGRESS",
       "deviationId": null,
       "metadata": {
         "acceptanceStatus": "NOT_VERIFIED"
       },
-      "updatedAt": "2026-09-09T09:30:00.000Z"
+      "updatedAt": "2026-09-09T12:29:19.851Z"
     },
     {
       "requirementId": "REQ-DIR-011",
@@ -440,7 +478,10 @@
         "tests/director/service.test.ts"
       ],
       "testEvidence": [
-        "pnpm exec vitest run tests/director/compositionLinter.test.ts"
+        "pnpm exec vitest run tests/director/compositionLinter.test.ts",
+        "pnpm exec vitest run tests/director/golden.test.ts",
+        "pnpm test --run",
+        "pnpm test:e2e"
       ],
       "artifactEvidence": [
         "docs/director-recovery/07_FILE_BY_FILE_CHANGE_PLAN.md",
@@ -451,7 +492,7 @@
       "metadata": {
         "acceptanceStatus": "NOT_VERIFIED"
       },
-      "updatedAt": "2026-09-09T09:43:16.596Z"
+      "updatedAt": "2026-09-09T12:29:19.851Z"
     },
     {
       "requirementId": "REQ-DIR-012",
@@ -484,7 +525,10 @@
         "tests/server/generationRoute.test.ts"
       ],
       "testEvidence": [
-        "pnpm exec vitest run tests/director/service.test.ts tests/server/generationRoute.test.ts"
+        "pnpm exec vitest run tests/director/service.test.ts tests/server/generationRoute.test.ts",
+        "pnpm exec vitest run tests/director/golden.test.ts",
+        "pnpm test --run",
+        "pnpm test:e2e"
       ],
       "artifactEvidence": [
         "docs/director-recovery/07_FILE_BY_FILE_CHANGE_PLAN.md",
@@ -495,7 +539,7 @@
       "metadata": {
         "acceptanceStatus": "NOT_VERIFIED"
       },
-      "updatedAt": "2026-09-09T09:43:16.596Z"
+      "updatedAt": "2026-09-09T12:29:19.851Z"
     },
     {
       "requirementId": "REQ-DIR-013",
@@ -526,7 +570,10 @@
         "tests/director/service.test.ts"
       ],
       "testEvidence": [
-        "pnpm exec vitest run tests/director/compositionLinter.test.ts"
+        "pnpm exec vitest run tests/director/compositionLinter.test.ts",
+        "pnpm exec vitest run tests/director/golden.test.ts",
+        "pnpm test --run",
+        "pnpm test:e2e"
       ],
       "artifactEvidence": [
         "docs/director-recovery/07_FILE_BY_FILE_CHANGE_PLAN.md",
@@ -537,7 +584,7 @@
       "metadata": {
         "acceptanceStatus": "NOT_VERIFIED"
       },
-      "updatedAt": "2026-09-09T09:43:16.596Z"
+      "updatedAt": "2026-09-09T12:29:19.851Z"
     },
     {
       "requirementId": "REQ-DIR-014",
@@ -567,10 +614,14 @@
         "src/director/service.ts",
         "src/server/generationRoute.ts",
         "tests/director/service.test.ts",
-        "tests/server/generationRoute.test.ts"
+        "tests/server/generationRoute.test.ts",
+        "tests/director/golden.test.ts"
       ],
       "testEvidence": [
-        "pnpm exec vitest run tests/director/service.test.ts"
+        "pnpm exec vitest run tests/director/service.test.ts",
+        "pnpm exec vitest run tests/director/golden.test.ts",
+        "pnpm test --run",
+        "pnpm test:e2e"
       ],
       "artifactEvidence": [
         "docs/director-recovery/08_GOLDEN_TEST_PLAN.md",
@@ -581,7 +632,7 @@
       "metadata": {
         "acceptanceStatus": "NOT_VERIFIED"
       },
-      "updatedAt": "2026-09-09T09:43:16.596Z"
+      "updatedAt": "2026-09-09T12:29:19.851Z"
     }
   ]
 }

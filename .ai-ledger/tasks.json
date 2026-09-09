@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "projectId": "cuecut3-cecb1e53",
-  "updatedAt": "2026-09-09T09:46:02.343Z",
+  "updatedAt": "2026-09-09T12:29:19.851Z",
   "tasks": [
     {
       "id": "motion-packs",
@@ -333,7 +333,7 @@
       "title": "Implement global semantic planning and VisualUnit generation",
       "phaseId": "director-phase-2",
       "status": "IN_PROGRESS",
-      "progress": 80,
+      "progress": 90,
       "owner": "R-BUILD",
       "verifier": "R90",
       "dependencies": [
@@ -343,7 +343,20 @@
         "src/director/semanticPlanner.ts",
         "tests/director/semanticPlanner.test.ts",
         "tests/generation/workflow.test.ts",
-        "docs/director-recovery/PHASE2_PROGRESS.md"
+        "docs/director-recovery/PHASE2_PROGRESS.md",
+        "src/director/prompt.ts",
+        "src/director/compositionLinter.ts",
+        "src/director/service.ts",
+        "src/director/capabilities.ts",
+        "src/layout/visualContext.ts",
+        "src/render/scene.ts",
+        "src/server/generationRoute.ts",
+        "tests/director/golden.test.ts",
+        "tests/director/compositionLinter.test.ts",
+        "tests/director/prompt.test.ts",
+        "tests/director/service.test.ts",
+        "tests/layout/visualContext.test.ts",
+        "tests/render/itemCues.test.ts"
       ],
       "completedAt": null
     },
@@ -352,7 +365,7 @@
       "title": "Implement VisualUnit and item-level cue contracts",
       "phaseId": "director-phase-2",
       "status": "IN_PROGRESS",
-      "progress": 80,
+      "progress": 90,
       "owner": "R-BUILD",
       "verifier": "R90",
       "dependencies": [
@@ -362,7 +375,20 @@
         "src/director/types.ts",
         "src/director/contextBuilder.ts",
         "tests/director/contextBuilderV2.test.ts",
-        "docs/director-recovery/PHASE2_PROGRESS.md"
+        "docs/director-recovery/PHASE2_PROGRESS.md",
+        "src/director/prompt.ts",
+        "src/director/compositionLinter.ts",
+        "src/director/service.ts",
+        "src/director/capabilities.ts",
+        "src/layout/visualContext.ts",
+        "src/render/scene.ts",
+        "src/server/generationRoute.ts",
+        "tests/director/golden.test.ts",
+        "tests/director/compositionLinter.test.ts",
+        "tests/director/prompt.test.ts",
+        "tests/director/service.test.ts",
+        "tests/layout/visualContext.test.ts",
+        "tests/render/itemCues.test.ts"
       ],
       "completedAt": null
     },
@@ -371,7 +397,7 @@
       "title": "Implement compact Effect capability and data contracts",
       "phaseId": "director-phase-2",
       "status": "IN_PROGRESS",
-      "progress": 70,
+      "progress": 82,
       "owner": "R-BUILD",
       "verifier": "R90",
       "dependencies": [
@@ -380,7 +406,19 @@
       "evidence": [
         "src/director/capabilities.ts",
         "tests/director/capabilities.test.ts",
-        "docs/director-recovery/PHASE2_PROGRESS.md"
+        "docs/director-recovery/PHASE2_PROGRESS.md",
+        "src/director/prompt.ts",
+        "src/director/compositionLinter.ts",
+        "src/director/service.ts",
+        "src/layout/visualContext.ts",
+        "src/render/scene.ts",
+        "src/server/generationRoute.ts",
+        "tests/director/golden.test.ts",
+        "tests/director/compositionLinter.test.ts",
+        "tests/director/prompt.test.ts",
+        "tests/director/service.test.ts",
+        "tests/layout/visualContext.test.ts",
+        "tests/render/itemCues.test.ts"
       ],
       "completedAt": null
     },
@@ -389,7 +427,7 @@
       "title": "Implement capability-aware per-VisualUnit candidate retrieval",
       "phaseId": "director-phase-2",
       "status": "IN_PROGRESS",
-      "progress": 70,
+      "progress": 85,
       "owner": "R-BUILD",
       "verifier": "R90",
       "dependencies": [
@@ -399,7 +437,20 @@
       "evidence": [
         "src/director/retriever.ts",
         "tests/director/perUnitRetriever.test.ts",
-        "docs/director-recovery/PHASE2_PROGRESS.md"
+        "docs/director-recovery/PHASE2_PROGRESS.md",
+        "src/director/prompt.ts",
+        "src/director/compositionLinter.ts",
+        "src/director/service.ts",
+        "src/director/capabilities.ts",
+        "src/layout/visualContext.ts",
+        "src/render/scene.ts",
+        "src/server/generationRoute.ts",
+        "tests/director/golden.test.ts",
+        "tests/director/compositionLinter.test.ts",
+        "tests/director/prompt.test.ts",
+        "tests/director/service.test.ts",
+        "tests/layout/visualContext.test.ts",
+        "tests/render/itemCues.test.ts"
       ],
       "completedAt": null
     },
@@ -408,7 +459,7 @@
       "title": "Implement data provenance and typed content validation",
       "phaseId": "director-phase-2",
       "status": "IN_PROGRESS",
-      "progress": 55,
+      "progress": 72,
       "owner": "R-BUILD",
       "verifier": "R90",
       "dependencies": [
@@ -419,7 +470,16 @@
         "src/director/service.ts",
         "tests/director/compositionLinter.test.ts",
         "tests/director/service.test.ts",
-        "docs/director-recovery/PHASE2_PROGRESS.md"
+        "docs/director-recovery/PHASE2_PROGRESS.md",
+        "src/director/prompt.ts",
+        "src/director/capabilities.ts",
+        "src/layout/visualContext.ts",
+        "src/render/scene.ts",
+        "src/server/generationRoute.ts",
+        "tests/director/golden.test.ts",
+        "tests/director/prompt.test.ts",
+        "tests/layout/visualContext.test.ts",
+        "tests/render/itemCues.test.ts"
       ],
       "completedAt": null
     },
@@ -428,7 +488,7 @@
       "title": "Implement effect capability duration validation and repair policy",
       "phaseId": "director-phase-2",
       "status": "IN_PROGRESS",
-      "progress": 55,
+      "progress": 72,
       "owner": "R-BUILD",
       "verifier": "R90",
       "dependencies": [
@@ -439,7 +499,16 @@
         "src/director/service.ts",
         "tests/director/compositionLinter.test.ts",
         "tests/director/service.test.ts",
-        "docs/director-recovery/PHASE2_PROGRESS.md"
+        "docs/director-recovery/PHASE2_PROGRESS.md",
+        "src/director/prompt.ts",
+        "src/director/capabilities.ts",
+        "src/layout/visualContext.ts",
+        "src/render/scene.ts",
+        "src/server/generationRoute.ts",
+        "tests/director/golden.test.ts",
+        "tests/director/prompt.test.ts",
+        "tests/layout/visualContext.test.ts",
+        "tests/render/itemCues.test.ts"
       ],
       "completedAt": null
     },
@@ -448,7 +517,7 @@
       "title": "Implement SelectionTrace for candidate selection and validation",
       "phaseId": "director-phase-2",
       "status": "IN_PROGRESS",
-      "progress": 65,
+      "progress": 82,
       "owner": "R-BUILD",
       "verifier": "R90",
       "dependencies": [
@@ -459,7 +528,17 @@
         "src/server/generationRoute.ts",
         "tests/director/service.test.ts",
         "tests/server/generationRoute.test.ts",
-        "docs/director-recovery/PHASE2_PROGRESS.md"
+        "docs/director-recovery/PHASE2_PROGRESS.md",
+        "src/director/prompt.ts",
+        "src/director/compositionLinter.ts",
+        "src/director/capabilities.ts",
+        "src/layout/visualContext.ts",
+        "src/render/scene.ts",
+        "tests/director/golden.test.ts",
+        "tests/director/compositionLinter.test.ts",
+        "tests/director/prompt.test.ts",
+        "tests/layout/visualContext.test.ts",
+        "tests/render/itemCues.test.ts"
       ],
       "completedAt": null
     },
@@ -468,7 +547,7 @@
       "title": "Implement Composition Linter for structure, density, coverage, and layout",
       "phaseId": "director-phase-2",
       "status": "IN_PROGRESS",
-      "progress": 65,
+      "progress": 82,
       "owner": "R-BUILD",
       "verifier": "R90",
       "dependencies": [
@@ -481,7 +560,16 @@
         "src/director/service.ts",
         "tests/director/compositionLinter.test.ts",
         "tests/director/service.test.ts",
-        "docs/director-recovery/PHASE2_PROGRESS.md"
+        "docs/director-recovery/PHASE2_PROGRESS.md",
+        "src/director/prompt.ts",
+        "src/director/capabilities.ts",
+        "src/layout/visualContext.ts",
+        "src/render/scene.ts",
+        "src/server/generationRoute.ts",
+        "tests/director/golden.test.ts",
+        "tests/director/prompt.test.ts",
+        "tests/layout/visualContext.test.ts",
+        "tests/render/itemCues.test.ts"
       ],
       "completedAt": null
     },
@@ -490,7 +578,7 @@
       "title": "Make fallback visibility and Golden acceptance semantics explicit",
       "phaseId": "director-phase-2",
       "status": "IN_PROGRESS",
-      "progress": 35,
+      "progress": 65,
       "owner": "R-BUILD",
       "verifier": "R90",
       "dependencies": [
@@ -499,7 +587,18 @@
       "evidence": [
         "src/director/service.ts",
         "tests/director/service.test.ts",
-        "docs/director-recovery/PHASE2_PROGRESS.md"
+        "docs/director-recovery/PHASE2_PROGRESS.md",
+        "src/director/prompt.ts",
+        "src/director/compositionLinter.ts",
+        "src/director/capabilities.ts",
+        "src/layout/visualContext.ts",
+        "src/render/scene.ts",
+        "src/server/generationRoute.ts",
+        "tests/director/golden.test.ts",
+        "tests/director/compositionLinter.test.ts",
+        "tests/director/prompt.test.ts",
+        "tests/layout/visualContext.test.ts",
+        "tests/render/itemCues.test.ts"
       ],
       "completedAt": null
     },
@@ -507,14 +606,29 @@
       "id": "director-phase2-golden-tests",
       "title": "Implement GOLDEN-001 through GOLDEN-006 regression tests",
       "phaseId": "director-phase-2",
-      "status": "NOT_STARTED",
-      "progress": 0,
+      "status": "IN_PROGRESS",
+      "progress": 80,
       "owner": "R-BUILD",
       "verifier": "R90",
       "dependencies": [
         "director-phase2-fallback-contract"
       ],
-      "evidence": [],
+      "evidence": [
+        "src/director/prompt.ts",
+        "src/director/compositionLinter.ts",
+        "src/director/service.ts",
+        "src/director/capabilities.ts",
+        "src/layout/visualContext.ts",
+        "src/render/scene.ts",
+        "src/server/generationRoute.ts",
+        "tests/director/golden.test.ts",
+        "tests/director/compositionLinter.test.ts",
+        "tests/director/prompt.test.ts",
+        "tests/director/service.test.ts",
+        "tests/layout/visualContext.test.ts",
+        "tests/render/itemCues.test.ts",
+        "docs/director-recovery/PHASE2_PROGRESS.md"
+      ],
       "completedAt": null
     },
     {
@@ -606,15 +720,30 @@
       "id": "director-phase2-layout-integration",
       "title": "Integrate real visual context with the local Layout Solver",
       "phaseId": "director-phase-2",
-      "status": "NOT_STARTED",
-      "progress": 0,
+      "status": "IN_PROGRESS",
+      "progress": 70,
       "owner": "R-BUILD",
       "verifier": "R90",
       "dependencies": [
         "director-phase1-layout-context-audit",
         "director-phase2-visual-unit-contract"
       ],
-      "evidence": [],
+      "evidence": [
+        "src/director/prompt.ts",
+        "src/director/compositionLinter.ts",
+        "src/director/service.ts",
+        "src/director/capabilities.ts",
+        "src/layout/visualContext.ts",
+        "src/render/scene.ts",
+        "src/server/generationRoute.ts",
+        "tests/director/golden.test.ts",
+        "tests/director/compositionLinter.test.ts",
+        "tests/director/prompt.test.ts",
+        "tests/director/service.test.ts",
+        "tests/layout/visualContext.test.ts",
+        "tests/render/itemCues.test.ts",
+        "docs/director-recovery/PHASE2_PROGRESS.md"
+      ],
       "completedAt": null
     }
   ]

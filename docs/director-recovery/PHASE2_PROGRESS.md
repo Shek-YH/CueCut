@@ -12,10 +12,15 @@
 - `src/generation/workflow.ts` 与 `src/server/generationRoute.ts` 已接通 v2 builder，候选索引从 per-unit bundles 去重构建。
 - `src/director/compositionLinter.ts` 已检查数据契约、provenance、duration capability、aspect ratio、project range、safe-area 和 visual-event 计数。
 - `src/director/service.ts` 已在成功返回前运行 linter，并在 fallback/API 结果中传出 SelectionTrace。
+- Prompt 已显式约束 VisualUnit、CandidateBundle、SelectionTrace、numeric provenance 与 item cue；这与本地硬校验配套，而非替代它。
+- Steps/List item cue 可由 Scene renderer 按时间逐项 reveal；Linter 会拦截缺失、越界或倒序 cue。
+- Visual Context 已有正式 unavailable 状态，subject/face/no-go/subtitle reserve 均可作为本地 layout blocked zones；当前生产路径明确标记人物/人脸分析不可用。
+- Linter 已对有 VisualUnit 上下文的 Composition 执行 visual-event density 范围检查。
+- `tests/director/golden.test.ts` 已实现并通过 GOLDEN-001…006 的本地回归。
 
 ## Fresh verification
 
-- `pnpm test --run`：61 test files passed, 2 skipped；144 tests passed, 2 skipped。
+- `pnpm test --run`：64 test files passed, 2 skipped；156 tests passed, 2 skipped。
 - `pnpm test:e2e`：9 passed, 3 skipped。
 - `pnpm lint`：exit 0。
 - `pnpm build`：client 与 SSR build 均 exit 0。
@@ -25,11 +30,10 @@
 
 ## 尚未满足的 Phase 2 Gate
 
-- Prompt 尚未完成 v2 contract 的明确输出约束和 provenance/item-cue schema。
-- 当前 linter 尚未覆盖完整 ordered structure completeness、repetition 和全部 SFX/layout ID 约束。
-- 真实 subject/face/no-go detector 尚未接入；当前仍以 unavailable/空 context 作为事实，不伪造坐标。
+- 当前 linter 尚未覆盖完整 ordered structure completeness、excessive repetition 和所有 SFX ID 约束。
+- 真实 subject/face/no-go detector 尚未接入；当前以明确的 `unavailable` 状态传递这一事实，不伪造坐标。
 - 生成结果尚未完成从 server response 到浏览器 ProjectStore 的正式 handoff 证明。
-- GOLDEN-001…006 仍是部分 focused tests；尚未完成完整真实失败 SRT/视频 Golden Regression。
+- GOLDEN-001…006 已通过本地回归；尚未完成完整真实失败 SRT/视频和 `usedFallback=false` Provider Golden Regression。
 - Core Freeze 尚未创建，因此 `fidelity-gate --final` 当前按设计返回 `core_freeze_missing_or_invalid`。
 
 ## Acceptance boundary

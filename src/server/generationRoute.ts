@@ -19,6 +19,7 @@ import { createLocalFallbackComposition } from '../director/localFallback';
 import { projectCompositionSchema, type ProjectComposition } from '../project/schema';
 import { createGenerationWorkflow, type GenerationInput } from '../generation/workflow';
 import { serializeSrt } from '../subtitles/srt';
+import { createUnavailableVisualContext } from '../layout/visualContext';
 
 const MAX_VIDEO_BYTES = 512 * 1024 * 1024;
 const MAX_AUDIO_BASE64_BYTES = 10 * 1024 * 1024;
@@ -111,13 +112,11 @@ export function createHostGenerationRunner(options: {
       } satisfies DirectorInput['project'];
       const generationInput: GenerationInput = {
         project,
-        visualContext: {
-          subjectZones: [],
-          faceZones: [],
+        visualContext: createUnavailableVisualContext({
           subtitleReservedZone: { nx: 0.05, ny: 0.78, nw: 0.9, nh: 0.17 },
           safeMargins: 0.05,
           optionalSceneHints: ['Use the supplied video dimensions and preserve the detected aspect ratio.'],
-        },
+        }),
         effects: effectRegistry,
         motions: motionRegistry.map((motion) => ({ id: motion.motionId, tags: [motion.category, ...motion.recommendedEffectFamilies] })),
         sfx: sfxRegistry.map((sfx) => ({ id: sfx.sfxId, tags: sfx.tags, isFavorite: sfx.isFavorite, usageScore: sfx.usageScore })),

@@ -181,4 +181,37 @@ describe('Director service', () => {
 
     expect(result.selectionTrace).toEqual(trace);
   });
+
+  it('materializes a SelectionTrace entry from the actual selected effect and linter result', async () => {
+    const composition = createFixtureProject();
+    const service = createDirectorService(async () => composition, () => createFixtureProject());
+
+    const result = await service.generate({
+      visualUnits: [{ visualUnitId: 'vu-s-1', sourceSubtitleIds: ['s-1'], startSec: 2.2, endSec: 7.8, semanticIntent: 'evidence', importance: 0.8 }],
+      selectionTrace: [{
+        visualUnitId: 'vu-s-1',
+        semanticIntent: 'evidence',
+        retrievedCandidates: ['numeric:ring-a'],
+        dataContractPassed: true,
+        durationContractPassed: true,
+      }],
+      candidateIndexes: {
+        effects: [
+          { familyId: 'numeric', variantId: 'ring-a' },
+          { familyId: 'quote', variantId: 'quote-b' },
+          { familyId: 'comparison', variantId: 'compare-a' },
+        ],
+        motions: ['spring-in', 'scale-fade-out'],
+        sfx: [],
+      },
+    });
+
+    expect(result.usedFallback).toBe(false);
+    expect(result.selectionTrace).toEqual([expect.objectContaining({
+      visualUnitId: 'vu-s-1',
+      selected: 'numeric:ring-a',
+      dataContractPassed: true,
+      durationContractPassed: true,
+    })]);
+  });
 });

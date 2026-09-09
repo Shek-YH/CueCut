@@ -96,6 +96,9 @@ export interface VisualContext {
   faceZones: Array<{ nx: number; ny: number; nw: number; nh: number }>;
   subtitleReservedZone: { nx: number; ny: number; nw: number; nh: number } | null;
   safeMargins: number;
+  noGoZones?: Array<{ nx: number; ny: number; nw: number; nh: number }>;
+  subjectZonesStatus?: 'available' | 'unavailable';
+  faceZonesStatus?: 'available' | 'unavailable';
   optionalSceneHints?: string[];
 }
 

@@ -65,3 +65,26 @@
 {"ts":"2026-09-09T09:46:02.351Z","type":"TEST_PASSED","command":"pnpm test --run","result":"144 passed; 2 skipped"}
 {"ts":"2026-09-09T09:46:02.351Z","type":"TEST_PASSED","command":"pnpm test:e2e","result":"9 passed; 3 skipped"}
 {"ts":"2026-09-09T09:46:02.351Z","type":"TEST_PASSED","command":"pnpm lint && pnpm build && git diff --check","result":"all passed"}
+{"ts":"2026-09-09T12:29:19.863Z","type":"TASK_PROGRESS_CHANGED","taskId":"director-phase2-semantic-planner","status":"IN_PROGRESS","progress":90,"evidence":"docs/director-recovery/PHASE2_PROGRESS.md"}
+{"ts":"2026-09-09T12:29:19.864Z","type":"TASK_PROGRESS_CHANGED","taskId":"director-phase2-visual-unit-contract","status":"IN_PROGRESS","progress":90,"evidence":"docs/director-recovery/PHASE2_PROGRESS.md"}
+{"ts":"2026-09-09T12:29:19.864Z","type":"TASK_PROGRESS_CHANGED","taskId":"director-phase2-capability-contract","status":"IN_PROGRESS","progress":82,"evidence":"docs/director-recovery/PHASE2_PROGRESS.md"}
+{"ts":"2026-09-09T12:29:19.865Z","type":"TASK_PROGRESS_CHANGED","taskId":"director-phase2-per-unit-retrieval","status":"IN_PROGRESS","progress":85,"evidence":"docs/director-recovery/PHASE2_PROGRESS.md"}
+{"ts":"2026-09-09T12:29:19.865Z","type":"TASK_PROGRESS_CHANGED","taskId":"director-phase2-data-contract-validation","status":"IN_PROGRESS","progress":72,"evidence":"docs/director-recovery/PHASE2_PROGRESS.md"}
+{"ts":"2026-09-09T12:29:19.866Z","type":"TASK_PROGRESS_CHANGED","taskId":"director-phase2-duration-validation","status":"IN_PROGRESS","progress":72,"evidence":"docs/director-recovery/PHASE2_PROGRESS.md"}
+{"ts":"2026-09-09T12:29:19.866Z","type":"TASK_PROGRESS_CHANGED","taskId":"director-phase2-composition-linter","status":"IN_PROGRESS","progress":82,"evidence":"docs/director-recovery/PHASE2_PROGRESS.md"}
+{"ts":"2026-09-09T12:29:19.866Z","type":"TASK_PROGRESS_CHANGED","taskId":"director-phase2-selection-trace","status":"IN_PROGRESS","progress":82,"evidence":"docs/director-recovery/PHASE2_PROGRESS.md"}
+{"ts":"2026-09-09T12:29:19.867Z","type":"TASK_PROGRESS_CHANGED","taskId":"director-phase2-fallback-contract","status":"IN_PROGRESS","progress":65,"evidence":"docs/director-recovery/PHASE2_PROGRESS.md"}
+{"ts":"2026-09-09T12:29:19.867Z","type":"TASK_PROGRESS_CHANGED","taskId":"director-phase2-layout-integration","status":"IN_PROGRESS","progress":70,"evidence":"docs/director-recovery/PHASE2_PROGRESS.md"}
+{"ts":"2026-09-09T12:29:19.868Z","type":"TASK_PROGRESS_CHANGED","taskId":"director-phase2-golden-tests","status":"IN_PROGRESS","progress":80,"evidence":"docs/director-recovery/PHASE2_PROGRESS.md"}
+{"ts":"2026-09-09T12:29:19.868Z","type":"REQUIREMENT_UPDATED","requirementId":"REQ-DIR-005","verificationStatus":"IN_PROGRESS","evidence":"Phase 2 Prompt/Cue/VisualContext/Golden update"}
+{"ts":"2026-09-09T12:29:19.868Z","type":"REQUIREMENT_UPDATED","requirementId":"REQ-DIR-006","verificationStatus":"IN_PROGRESS","evidence":"Phase 2 Prompt/Cue/VisualContext/Golden update"}
+{"ts":"2026-09-09T12:29:19.869Z","type":"REQUIREMENT_UPDATED","requirementId":"REQ-DIR-008","verificationStatus":"IN_PROGRESS","evidence":"Phase 2 Prompt/Cue/VisualContext/Golden update"}
+{"ts":"2026-09-09T12:29:19.869Z","type":"REQUIREMENT_UPDATED","requirementId":"REQ-DIR-009","verificationStatus":"IN_PROGRESS","evidence":"Phase 2 Prompt/Cue/VisualContext/Golden update"}
+{"ts":"2026-09-09T12:29:19.869Z","type":"REQUIREMENT_UPDATED","requirementId":"REQ-DIR-010","verificationStatus":"IN_PROGRESS","evidence":"Phase 2 Prompt/Cue/VisualContext/Golden update"}
+{"ts":"2026-09-09T12:29:19.870Z","type":"REQUIREMENT_UPDATED","requirementId":"REQ-DIR-011","verificationStatus":"IN_PROGRESS","evidence":"Phase 2 Prompt/Cue/VisualContext/Golden update"}
+{"ts":"2026-09-09T12:29:19.870Z","type":"REQUIREMENT_UPDATED","requirementId":"REQ-DIR-012","verificationStatus":"IN_PROGRESS","evidence":"Phase 2 Prompt/Cue/VisualContext/Golden update"}
+{"ts":"2026-09-09T12:29:19.870Z","type":"REQUIREMENT_UPDATED","requirementId":"REQ-DIR-013","verificationStatus":"IN_PROGRESS","evidence":"Phase 2 Prompt/Cue/VisualContext/Golden update"}
+{"ts":"2026-09-09T12:29:19.871Z","type":"REQUIREMENT_UPDATED","requirementId":"REQ-DIR-014","verificationStatus":"IN_PROGRESS","evidence":"Phase 2 Prompt/Cue/VisualContext/Golden update"}
+{"ts":"2026-09-09T12:29:19.871Z","type":"TEST_PASSED","command":"pnpm test --run","result":"156 passed; 2 skipped"}
+{"ts":"2026-09-09T12:29:19.871Z","type":"TEST_PASSED","command":"pnpm test:e2e","result":"9 passed; 3 skipped"}
+{"ts":"2026-09-09T12:29:19.871Z","type":"TEST_PASSED","command":"pnpm lint && pnpm build","result":"passed"}

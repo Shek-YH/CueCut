@@ -33,9 +33,9 @@ export interface SceneFrame {
   activeEffectIds: string[];
 }
 
-function contentForEffect(effect: EffectInstance): SceneContent {
+function contentForEffect(effect: EffectInstance, timeSec: number): SceneContent {
   const items = effect.content.items;
-  if (Array.isArray(items)) return { kind: 'list', items: items.map(String) };
+  if (Array.isArray(items)) return { kind: 'list', items: items.flatMap((item) => listItemTextAtTime(item, timeSec)) };
   const definition = findEffectDefinition(effect.familyId, effect.variantId);
   if (effect.familyId === 'numeric' || definition?.category === 'number' || typeof effect.content.value === 'number') {
     const value = Number(effect.content.value);
@@ -44,6 +44,17 @@ function contentForEffect(effect: EffectInstance): SceneContent {
   const text = effect.content.text ?? effect.content.headline ?? effect.content.titleText ?? effect.content.quoteText;
   if (text !== undefined) return { kind: 'text', text: String(text) };
   return { kind: 'motion-layer', label: effect.familyId };
+}
+
+function listItemTextAtTime(item: unknown, timeSec: number): string[] {
+  if (typeof item === 'string') return [item];
+  if (!item || typeof item !== 'object' || Array.isArray(item)) return [String(item)];
+  const record = item as Record<string, unknown>;
+  const text = typeof record.text === 'string' ? record.text : String(item);
+  const cue = record.cue;
+  if (!cue || typeof cue !== 'object' || Array.isArray(cue)) return [text];
+  const startSec = (cue as Record<string, unknown>).startSec;
+  return typeof startSec === 'number' && Number.isFinite(startSec) && startSec > timeSec ? [] : [text];
 }
 
 function visualTagsForEffect(effect: EffectInstance): string[] {
@@ -70,7 +81,7 @@ export function evaluateSceneAtTime(project: ProjectComposition, timeSec: number
         variantId: effect.variantId,
         phase,
         visible: false,
-        content: contentForEffect(effect),
+        content: contentForEffect(effect, safeTime),
         visualTags: visualTagsForEffect(effect),
         layout: { nx: effect.layout.nx, ny: effect.layout.ny, nw: effect.layout.nw, nh: effect.layout.nh, scale: effect.layout.scale },
         opacity: 0,
@@ -92,7 +103,7 @@ export function evaluateSceneAtTime(project: ProjectComposition, timeSec: number
       variantId: effect.variantId,
       phase,
         visible: true,
-      content: contentForEffect(effect),
+      content: contentForEffect(effect, safeTime),
       visualTags: visualTagsForEffect(effect),
       layout: { nx: effect.layout.nx, ny: effect.layout.ny, nw: effect.layout.nw, nh: effect.layout.nh, scale: effect.layout.scale },
       opacity: motionFrame.opacity,

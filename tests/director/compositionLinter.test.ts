@@ -51,4 +51,74 @@ describe('Director composition linter', () => {
     expect(result.metrics.visualEventCount).toBeGreaterThan(1);
     expect(result.errors.map((error) => error.code)).toContain('layout_out_of_bounds');
   });
+
+  it('requires in-range ordered item cues for step capabilities', () => {
+    const steps = createEffectCapability({
+      familyId: 'steps',
+      variantId: 'timeline-a',
+      displayName: '步骤时间线',
+      semanticTags: ['list', 'steps'],
+      contentSlots: ['items'],
+      minDurationSec: 1,
+      maxDurationSec: 12,
+      supportedAspectRatios: ['16:9'],
+      recommendedMotionCategories: [],
+      recommendedSfxIntents: [],
+    });
+    const composition = createFixtureProject();
+    composition.effects = [composition.effects[0]!];
+    composition.effects[0] = {
+      ...composition.effects[0]!,
+      familyId: 'steps',
+      variantId: 'timeline-a',
+      time: { startSec: 10, endSec: 20 },
+      content: {
+        items: [
+          { text: '第一步', cue: { startSec: 9 } },
+          { text: '第二步' },
+        ],
+      },
+    };
+
+    const result = lintComposition(composition, [steps]);
+
+    expect(result.errors.map((error) => error.code)).toEqual(expect.arrayContaining([
+      'item_cue_out_of_range',
+      'item_cue_required',
+    ]));
+  });
+
+  it('rejects a layout that overlaps an available face or subtitle reserve zone', () => {
+    const composition = createFixtureProject();
+    composition.effects = [composition.effects[0]!];
+    composition.effects[0] = {
+      ...composition.effects[0]!,
+      layout: { ...composition.effects[0]!.layout, nx: 0.3, ny: 0.2, nw: 0.2, nh: 0.2 },
+    };
+
+    const result = lintComposition(composition, [], {
+      visualContext: {
+        subjectZones: [],
+        faceZones: [{ nx: 0.35, ny: 0.25, nw: 0.1, nh: 0.1 }],
+        subtitleReservedZone: { nx: 0.05, ny: 0.78, nw: 0.9, nh: 0.17 },
+        safeMargins: 0.05,
+        subjectZonesStatus: 'unavailable',
+        faceZonesStatus: 'available',
+      },
+    });
+
+    expect(result.errors.map((error) => error.code)).toContain('layout_overlaps_visual_context');
+  });
+
+  it('enforces visual-event density when VisualUnit context is available', () => {
+    const composition = createFixtureProject();
+    composition.effects = [composition.effects[0]!];
+
+    const result = lintComposition(composition, [], {
+      visualUnits: [{ visualUnitId: 'vu-s-1', sourceSubtitleIds: ['s-1'], startSec: 2.2, endSec: 7.8, semanticIntent: 'evidence', importance: 0.9 }],
+    });
+
+    expect(result.metrics.visualEventsPerMinute).toBe(2);
+    expect(result.errors.map((error) => error.code)).toContain('visual_event_density_out_of_range');
+  });
 });

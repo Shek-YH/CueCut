@@ -41,8 +41,13 @@ export function validateEffectContent(candidate: EffectCapabilityCandidate, cont
   }
   for (const slot of candidate.dataContract.itemSlots) {
     if (!(slot in content)) continue;
-    if (!Array.isArray(content[slot]) || content[slot].some((item) => typeof item !== 'string')) {
+    const items = content[slot];
+    if (!Array.isArray(items) || items.some((item) => !isListItem(item))) {
       issues.push({ code: 'items_required', path: [slot], message: `String items are required for ${slot}` });
+      continue;
+    }
+    if (candidate.dataContract.kind === 'steps' && items.some((item) => !hasCue(item))) {
+      issues.push({ code: 'item_cue_required', path: [slot], message: `Each step item requires a cue.startSec` });
     }
   }
   if (candidate.dataContract.provenanceRequired && content.provenance === undefined) {
@@ -57,6 +62,20 @@ export function validateEffectContent(candidate: EffectCapabilityCandidate, cont
     }
   }
   return issues;
+}
+
+function isListItem(value: unknown): boolean {
+  if (typeof value === 'string') return true;
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const item = value as Record<string, unknown>;
+  if (typeof item.text !== 'string') return false;
+  if (item.cue === undefined) return true;
+  if (!item.cue || typeof item.cue !== 'object' || Array.isArray(item.cue)) return false;
+  return typeof (item.cue as Record<string, unknown>).startSec === 'number' && Number.isFinite((item.cue as Record<string, unknown>).startSec);
+}
+
+function hasCue(value: unknown): boolean {
+  return Boolean(value && typeof value === 'object' && !Array.isArray(value) && (value as Record<string, unknown>).cue && typeof (value as Record<string, unknown>).cue === 'object' && typeof ((value as Record<string, unknown>).cue as Record<string, unknown>).startSec === 'number');
 }
 
 function createDataContract(effect: Pick<EffectDefinition, 'familyId' | 'semanticTags' | 'visualTags' | 'contentSlots'>): EffectDataContract {
