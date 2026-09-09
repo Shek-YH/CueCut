@@ -4,6 +4,7 @@ import { extname, join, relative, resolve } from 'node:path';
 import { createGenerationRoute, createHostGenerationRunner, type GenerationRunner } from './generationRoute';
 import { createExportRoute, createHostExportRunner, type ExportRouteRunner } from './exportRoute';
 import { createProbeRoute, createHostProbeRunner, type ProbeRouteRunner } from './probeRoute';
+import { createRealtimeCaptureRoute } from './realtimeCaptureRoute';
 
 export interface ProductionHostOptions {
   runner?: GenerationRunner;
@@ -27,6 +28,7 @@ export function createProductionServer(options: ProductionHostOptions = {}): Ser
   const generationRoute = createGenerationRoute(generationRunner);
   const exportRoute = createExportRoute(exportRunner ?? createHostExportRunner(runnerOptions));
   const probeRoute = createProbeRoute(probeRunner ?? createHostProbeRunner(runnerOptions));
+  const realtimeCaptureRoute = createRealtimeCaptureRoute();
   return createServer((request, response) => {
     const pathname = request.url?.split('?')[0] ?? '/';
     if (pathname === '/api/export') {
@@ -35,6 +37,10 @@ export function createProductionServer(options: ProductionHostOptions = {}): Ser
     }
     if (pathname === '/api/probe-video') {
       void probeRoute(request, response);
+      return;
+    }
+    if (pathname === '/api/realtime-capture') {
+      void realtimeCaptureRoute(request, response);
       return;
     }
     if (pathname === '/api/generate-effects') {
