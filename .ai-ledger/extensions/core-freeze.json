@@ -35,6 +35,7 @@
       "status": "CONTRACT_PRESERVED",
       "paths": [
         "src/director/capabilities.ts",
+        "src/director/candidateScope.ts",
         "src/director/compositionLinter.ts",
         "src/director/contextBuilder.ts",
         "src/director/prompt.ts",
