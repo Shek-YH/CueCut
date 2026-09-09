@@ -4,7 +4,7 @@ Input: `测试素材与api/ComfyUI_00001_qguot_1787042165.mp4` (local only)
 
 ## Result
 
-The explicit real test `CUECUT_RUN_REAL_DIRECTOR=1 pnpm exec vitest run tests/director/real-regression.test.ts` passed again after the independent-review fixes. The earlier four real attempts exposed malformed subtitle timing, overlong Effect durations, and unsafe layout dimensions; this revalidation was the fifth real run and exercised one real ASR call and one real Director call. It asserted `usedFallback=false`, non-empty transcript, valid Composition schema, and non-empty SelectionTrace after candidate-scope and numeric-evidence validation.
+The explicit real test `CUECUT_RUN_REAL_DIRECTOR=1 pnpm exec vitest run tests/director/real-regression.test.ts` passed on the latest run after the independent-review fixes. The first four real attempts exposed malformed subtitle timing, overlong Effect durations, and unsafe layout dimensions; a later run exposed stochastic repetition/duration violations and was correctly rejected by the Linter. The latest run was the seventh real attempt and exercised one real ASR call and one real Director call, asserting `usedFallback=false`, non-empty transcript, valid Composition schema, and non-empty SelectionTrace after candidate-scope and numeric-evidence validation.
 
 ## Observed metrics
 
@@ -31,7 +31,7 @@ The ComfyUI sample itself does not contain a complete ordered four-step sequence
 ## Repairs observed
 
 - One malformed subtitle range was deterministically clamped before schema validation.
-- Seven Effect durations were bounded to registry capability maxima with an explicit warning.
+- Effect durations were bounded to registry capability maxima with explicit warnings on runs where the provider exceeded capability bounds.
 - Four oversized layout cases were normalized to the safe-area boundary.
 - Per-VisualUnit candidate scope was checked after global ID allow-list validation; an ID that is globally valid but absent from the unit bundle now falls back.
 - Numeric values are checked against the declared SRT/user/project-data evidence source; provenance labels alone are insufficient.

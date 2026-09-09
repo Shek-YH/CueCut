@@ -12,7 +12,8 @@ export function assertCompositionCandidateScopes(
   visualUnits: VisualUnit[],
   candidateBundles: CandidateBundle[],
 ): void {
-  if (visualUnits.length === 0 || candidateBundles.length === 0) return;
+  if (visualUnits.length === 0 || composition.effects.length === 0) return;
+  if (candidateBundles.length === 0) throw new Error('Composition is outside the VisualUnit candidate scope: candidate bundles are missing');
 
   for (const effect of composition.effects) {
     const segment = composition.segments.find((candidate) => candidate.segmentId === effect.segmentId);

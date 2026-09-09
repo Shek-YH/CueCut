@@ -63,7 +63,7 @@ export function createDirectorService(provider: DirectorProvider, fallback: Loca
       }
 
       try {
-        assertCompositionCandidateScopes(resolvedComposition, getVisualUnits(input), getCandidateBundles(input));
+        if (hasCandidateBundles(input)) assertCompositionCandidateScopes(resolvedComposition, getVisualUnits(input), getCandidateBundles(input));
       } catch (error) {
         return {
           composition: fallback(input),
@@ -83,7 +83,7 @@ export function createDirectorService(provider: DirectorProvider, fallback: Loca
         return {
           composition: fallback(input),
           usedFallback: true,
-          warnings: [...timingWarnings, 'Director composition linter failed: ' + compositionLint.errors.map((error) => error.code).join(',')],
+          warnings: [...timingWarnings, 'Director composition linter failed: ' + compositionLint.errors.map((error) => `${error.code}@${error.path.join('.')}`).join(',')],
           selectionTrace: fallbackSelectionTrace(input),
           lint: compositionLint,
         };
@@ -121,13 +121,16 @@ function getCandidateBundles(input: unknown): import('./types').CandidateBundle[
   return Array.isArray(bundles) ? bundles as import('./types').CandidateBundle[] : [];
 }
 
+function hasCandidateBundles(input: unknown): boolean {
+  return Boolean(input && typeof input === 'object' && 'candidateBundles' in input);
+}
+
 function materializeSelectionTrace(
   input: unknown,
   composition: ProjectComposition,
   lint: import('./compositionLinter').CompositionLintResult,
 ): SelectionTraceEntry[] {
   const units = getVisualUnits(input);
-  if (units.length === 0) return getSelectionTrace(input);
   return getSelectionTrace(input).map((entry) => {
     const unit = units.find((candidate) => candidate.visualUnitId === entry.visualUnitId);
     const segmentIds = composition.segments

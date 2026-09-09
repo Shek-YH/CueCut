@@ -135,4 +135,26 @@ describe('Director independent-review regressions', () => {
     expect(result.usedFallback).toBe(true);
     expect(result.warnings.join(' ')).toMatch(/scope/i);
   });
+
+  it('does not accept a non-empty composition when the V2 candidate bundles are missing', async () => {
+    const composition = createFixtureProject();
+    const service = createDirectorService(async () => composition, () => createFixtureProject());
+    const result = await service.generate({
+      visualUnits: [{ visualUnitId: 'vu-process', sourceSubtitleIds: ['s-1'], startSec: 0, endSec: 2, semanticIntent: 'ordered_process', importance: 1 }],
+      candidateBundles: [],
+    });
+
+    expect(result.usedFallback).toBe(true);
+    expect(result.warnings.join(' ')).toMatch(/scope/i);
+  });
+
+  it('checks cues for a capability that stores items under the steps slot', () => {
+    const steps = createEffectCapability({
+      familyId: 'steps', variantId: 'timeline-b', displayName: 'Steps', semanticTags: ['steps'], contentSlots: ['steps'], minDurationSec: 1, maxDurationSec: 8, supportedAspectRatios: ['16:9'], recommendedMotionCategories: [], recommendedSfxIntents: [],
+    });
+    const composition = createFixtureProject();
+    composition.effects = [{ ...composition.effects[0]!, familyId: 'steps', variantId: 'timeline-b', content: { steps: [{ text: '第一步' }] } }];
+
+    expect(lintComposition(composition, [steps]).errors.map((error) => error.code)).toContain('item_cue_required');
+  });
 });

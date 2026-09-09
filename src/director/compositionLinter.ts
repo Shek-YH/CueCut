@@ -47,7 +47,7 @@ export function lintComposition(
         errors.push({ code: 'duration_exceeds_capability', path: [...path, 'time'], message: `Effect duration ${duration} exceeds ${candidate.maxDurationSec}` });
       }
       if (!candidate.supportedAspectRatios.includes(composition.project.aspectRatio)) errors.push({ code: 'aspect_ratio_unsupported', path, message: `Effect does not support ${composition.project.aspectRatio}` });
-      lintItemCues(effect.content.items, effect.time, path, errors);
+      for (const slot of candidate.dataContract.itemSlots) lintItemCues(effect.content[slot], effect.time, [...path, 'content', slot], errors);
     }
     if (effect.time.startSec < 0 || effect.time.endSec > composition.project.durationSec) errors.push({ code: 'time_out_of_project_range', path: [...path, 'time'], message: 'Effect time is outside the project range' });
     if (!findMotion(effect.motion.enter.motionId)) errors.push({ code: 'unknown_motion_id', path: [...path, 'motion', 'enter', 'motionId'], message: `Motion is not registered: ${effect.motion.enter.motionId}` });
@@ -58,7 +58,8 @@ export function lintComposition(
     if (rect.nx < safeMargin - epsilon || rect.ny < safeMargin - epsilon || rect.nx + rect.nw > 1 - safeMargin + epsilon || rect.ny + rect.nh > 1 - safeMargin + epsilon) errors.push({ code: 'layout_out_of_bounds', path: [...path, 'layout'], message: 'Effect layout exceeds the safe area' });
     if (blockedZones.some((blocked) => overlaps(rect, blocked))) errors.push({ code: 'layout_overlaps_visual_context', path: [...path, 'layout'], message: 'Effect layout overlaps a subject, face, subtitle reserve, or no-go zone' });
     visualEventCount += 1;
-    if (Array.isArray(effect.content.items)) visualEventCount += effect.content.items.length;
+    const itemSlots = candidate?.dataContract.itemSlots.length ? candidate.dataContract.itemSlots : ['items'];
+    visualEventCount += itemSlots.reduce((count, slot) => count + (Array.isArray(effect.content[slot]) ? effect.content[slot].length : 0), 0);
   });
 
   let previousFamily: string | undefined;
@@ -82,7 +83,11 @@ export function lintComposition(
     if (!unit.structure || !supportedStructures.includes(unit.structure.type)) continue;
     const linkedSegmentIds = composition.segments.filter((segment) => unit.sourceSubtitleIds.some((subtitleId) => segment.sourceSubtitleIds.includes(subtitleId))).map((segment) => segment.segmentId);
     const linkedEffects = composition.effects.filter((effect) => linkedSegmentIds.includes(effect.segmentId));
-    const actualItemCount = linkedEffects.reduce((count, effect) => count + (Array.isArray(effect.content.items) ? effect.content.items.length : 0), 0);
+    const actualItemCount = linkedEffects.reduce((count, effect) => {
+      const candidate = capabilityById.get(`${effect.familyId}:${effect.variantId}`);
+      const slots = candidate?.dataContract.itemSlots.length ? candidate.dataContract.itemSlots : ['items', 'steps', 'entries'];
+      return count + slots.reduce((slotCount, slot) => slotCount + (Array.isArray(effect.content[slot]) ? effect.content[slot].length : 0), 0);
+    }, 0);
     const expectedItemCount = unit.structure.items?.length ?? 0;
     if (expectedItemCount > 0 && actualItemCount < expectedItemCount) errors.push({ code: 'ordered_structure_incomplete', path: ['visualUnits', unit.visualUnitId], message: `VisualUnit requires ${expectedItemCount} items but linked composition contains ${actualItemCount}` });
   }

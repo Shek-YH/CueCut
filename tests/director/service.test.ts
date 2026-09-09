@@ -165,7 +165,7 @@ describe('Director service', () => {
     expect(result.warnings.some((warning) => /linter|contract|duration/i.test(warning))).toBe(true);
   });
 
-  it('returns the candidate selection trace without requiring another provider call', async () => {
+  it('does not report an unvalidated trace when VisualUnit evidence is absent', async () => {
     const composition = createFixtureProject();
     const service = createDirectorService(async () => composition, () => createFixtureProject());
     const trace = [{
@@ -179,7 +179,7 @@ describe('Director service', () => {
 
     const result = await service.generate({ selectionTrace: trace });
 
-    expect(result.selectionTrace).toEqual(trace);
+    expect(result.selectionTrace).toEqual([expect.objectContaining({ selected: 'quote:quote-b', dataContractPassed: false, durationContractPassed: false })]);
   });
 
   it('materializes a SelectionTrace entry from the actual selected effect and linter result', async () => {

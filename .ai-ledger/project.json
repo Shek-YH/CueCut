@@ -4,7 +4,7 @@
   "name": "CueCut3",
   "rootPath": "F:\\CCPJ\\CueCut3",
   "createdAt": "2026-09-09T04:17:16.849Z",
-  "updatedAt": "2026-09-09T18:55:25.141Z",
+  "updatedAt": "2026-09-09T19:19:03.617Z",
   "phases": [
     {
       "id": "phase-0",
@@ -68,10 +68,17 @@
       "status": "WAITING_REVIEW",
       "progress": 90,
       "completedAt": null
+    },
+    {
+      "id": "realtime-p0",
+      "name": "Realtime Chroma Capture P0 Proof of Concept",
+      "status": "IN_PROGRESS",
+      "progress": 5,
+      "completedAt": null
     }
   ],
   "complexity": "COMPLEX",
   "externalVerifierRequired": true,
-  "currentPhase": "director-phase-4",
-  "status": "WAITING_REVIEW"
+  "currentPhase": "realtime-p0",
+  "status": "IN_PROGRESS"
 }
