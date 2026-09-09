@@ -6,18 +6,18 @@
   "currentTaskIds": [
     "director-phase4-independent-review"
   ],
-  "lastWriteAt": "2026-09-09T18:17:51.555Z",
+  "lastWriteAt": "2026-09-09T18:19:34.277Z",
   "dashboard": {
     "enabled": true,
     "status": "RUNNING",
-    "url": "http://127.0.0.1:47832",
-    "port": 47832,
-    "pid": 50988,
+    "url": "http://127.0.0.1:47831",
+    "port": 47831,
+    "pid": 58772,
     "autoOpenDone": true,
     "openedAt": "2026-09-09T04:20:30.079Z",
-    "startedAt": "2026-09-09T09:23:05.200Z",
+    "startedAt": "2026-09-09T18:19:34.034Z",
     "stoppedAt": null,
-    "lastHealthAt": "2026-09-09T12:30:21.555Z",
+    "lastHealthAt": "2026-09-09T18:19:34.276Z",
     "lastError": null,
     "runtimeVersion": "2.3.0"
   }

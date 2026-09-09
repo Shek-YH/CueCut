@@ -111,3 +111,5 @@
 {"ts":"2026-09-09T18:17:20.435Z","type":"BUILDER_PHASE_COMPLETED","phaseId":"director-phase-3","realTestStatus":"PASS","usedFallback":false}
 {"ts":"2026-09-09T18:17:20.436Z","type":"WAITING_REVIEW","phaseId":"director-phase-4","reason":"Independent verifier and external GitHub review required"}
 {"ts":"2026-09-09T18:17:51.556Z","type":"EXTERNAL_REVIEW_HANDOFF_CREATED","projectId":"cuecut3-cecb1e53"}
+{"ts":"2026-09-09T18:19:33.815Z","type":"DASHBOARD_STARTING","url":"http://127.0.0.1:47831","runtimeVersion":"2.3.0"}
+{"ts":"2026-09-09T18:19:34.036Z","type":"DASHBOARD_STARTED","url":"http://127.0.0.1:47831","pid":58772,"runtimeVersion":"2.3.0"}
