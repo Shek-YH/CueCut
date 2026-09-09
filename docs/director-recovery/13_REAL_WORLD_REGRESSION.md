@@ -4,7 +4,7 @@ Input: `测试素材与api/ComfyUI_00001_qguot_1787042165.mp4` (local only)
 
 ## Result
 
-The explicit real test `CUECUT_RUN_REAL_DIRECTOR=1 pnpm exec vitest run tests/director/real-regression.test.ts` passed once after the local repairs. The test exercised one real ASR call and one real Director call and asserted `usedFallback=false`, non-empty transcript, valid Composition schema, and non-empty SelectionTrace.
+The explicit real test `CUECUT_RUN_REAL_DIRECTOR=1 pnpm exec vitest run tests/director/real-regression.test.ts` passed on the final attempt after local repairs. Four real attempts were made in total: earlier attempts exposed malformed subtitle timing, overlong Effect durations, and unsafe layout dimensions; the final attempt exercised one real ASR call and one real Director call and asserted `usedFallback=false`, non-empty transcript, valid Composition schema, and non-empty SelectionTrace.
 
 ## Observed metrics
 
