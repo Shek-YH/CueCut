@@ -83,7 +83,8 @@ The realtime path only imports existing project/render contracts and the optiona
 2. MediaRecorder container/codec remains runtime-dependent. This environment reliably produced VP9 WebM; MP4 is not forced.
 3. Manual CapCut/Jianying edge-quality acceptance requires a user-owned downstream application and cannot be truthfully completed by local unit/E2E tests.
 4. The benchmark uses CueCut's canonical fixture composition with real registered motion evaluation; it is not a user-supplied complex project containing video/image/SVG/Glow/Blur assets.
-5. The strict actual-media duration gate remains NO-GO: the current 10s run is about 10.620s despite complete frame count, so timing optimization is still required before P1.
+5. Dynamic browser timing isolated the duration overrun to the MediaRecorder start window: `start()` to `onstart` measured roughly 560–730ms while CueCut capture-surface frame rendering measured roughly 0–0.2ms. The current `requestFrame()` path avoids pre-start frame submission, but the browser container still reflects the recorder startup window.
+6. The strict actual-media duration gate remains NO-GO: the current 10s run is about 10.620s despite complete frame count, so a timestamp-alignment strategy (likely a different encoder/muxer or host backend) is required before P1.
 
 ## Recommendation
 
