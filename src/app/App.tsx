@@ -19,6 +19,12 @@ import { findMotion, motionRegistry } from '../motions/registry';
 import { evaluateMotion } from '../motions/runtime';
 import { evaluateSceneAtTime } from '../render/scene';
 import type { SelectionTraceEntry } from '../director/types';
+import { createBrowserCanvasCaptureBackend } from '../export/realtime/browserCanvasBackend';
+import { createRealtimeCaptureController } from '../export/realtime/controller';
+import { createRealtimeCaptureDownload } from '../export/realtime/finalizer';
+import { isRealtimeChromaCaptureEnabled } from '../export/realtime/featureFlag';
+import type { CaptureState, RealtimeCaptureResult } from '../export/realtime/types';
+import { RealtimeCapturePanel } from '../editor/realtime/RealtimeCapturePanel';
 
 type ViewId = 'edit' | 'lab' | 'sfx' | 'learn';
 
@@ -398,6 +404,15 @@ export function App() {
   const [mediaProbeState, setMediaProbeState] = useState<'idle' | 'probing' | 'ready' | 'error'>('idle');
   const [mediaProbeError, setMediaProbeError] = useState<string | null>(null);
   const [projectStatus, setProjectStatus] = useState<string | null>(null);
+  const realtimeEnabled = isRealtimeChromaCaptureEnabled();
+  const [realtimeState, setRealtimeState] = useState<CaptureState>('IDLE');
+  const [realtimeResult, setRealtimeResult] = useState<RealtimeCaptureResult | null>(null);
+  const [realtimeError, setRealtimeError] = useState<string | null>(null);
+  const [realtimeController] = useState(() => createRealtimeCaptureController({
+    backend: createBrowserCanvasCaptureBackend(),
+    forceEnabled: realtimeEnabled,
+    onState: setRealtimeState,
+  }));
   const [persistence] = useState(() => createProjectPersistence(window.localStorage));
   const [videoSourceManager] = useState(() => createVideoSourceManager({
     createObjectUrl: (file) => URL.createObjectURL(file),
@@ -568,6 +583,17 @@ export function App() {
 
   const handleCancelExport = () => exportAbortController?.abort();
 
+  const handleRealtimeCapture = async (durationSec?: number) => {
+    if (!['IDLE', 'SUCCESS', 'FAILED', 'CANCELLED'].includes(realtimeState)) return;
+    setRealtimeResult(null);
+    setRealtimeError(null);
+    try {
+      setRealtimeResult(await realtimeController.start({ project, projectName: project.project.projectId, durationSecOverride: durationSec }));
+    } catch (error) {
+      setRealtimeError(error instanceof Error ? error.message : '极速抠像失败');
+    }
+  };
+
   const handleSaveProject = () => {
     persistence.save(project);
     setProjectStatus('项目已保存');
@@ -622,6 +648,15 @@ export function App() {
         {exportState === 'exporting' && <button className="btn" onClick={handleCancelExport} type="button">取消导出</button>}
         {exportState === 'success' && <span className="tiny" data-testid="export-status">已生成本地文件</span>}
         {exportError && <span className="tiny error" role="alert">{exportError}</span>}
+        <RealtimeCapturePanel
+          enabled={realtimeEnabled}
+          state={realtimeState}
+          result={realtimeResult}
+          error={realtimeError}
+          onStart={(durationSec) => void handleRealtimeCapture(durationSec)}
+          onCancel={() => realtimeController.cancel()}
+          onDownload={() => { if (realtimeResult) createRealtimeCaptureDownload(realtimeResult); }}
+        />
         <button className="btn" onClick={handleSaveProject} type="button">保存</button>
         <button className="btn" onClick={handleContinueProject} type="button">继续</button>
         {projectStatus && <span className="tiny" data-testid="project-status">{projectStatus}</span>}

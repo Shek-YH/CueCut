@@ -2,7 +2,7 @@ import type { ProjectComposition } from '../project/schema';
 import { evaluateSceneAtTime, type SceneItem } from './scene';
 import type { Renderer } from './types';
 
-export function createCanvasRenderer(project: ProjectComposition): Renderer {
+export function createCanvasRenderer(project: ProjectComposition, options: { background?: string } = {}): Renderer {
   const evaluate = (timeSec: number) => evaluateSceneAtTime(project, timeSec);
 
   const renderItem = (target: CanvasRenderingContext2D, item: SceneItem) => {
@@ -58,7 +58,7 @@ export function createCanvasRenderer(project: ProjectComposition): Renderer {
     evaluate,
     renderFrame(timeSec, target) {
       const frame = evaluate(timeSec);
-      target.fillStyle = project.project.palette.background;
+      target.fillStyle = options.background ?? project.project.palette.background;
       target.fillRect(0, 0, target.canvas.width, target.canvas.height);
       [...frame.items].sort((left, right) => left.zIndex - right.zIndex).filter((item) => item.visible).forEach((item) => renderItem(target, item));
       return frame;

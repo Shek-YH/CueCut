@@ -28,6 +28,9 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .btn.primary { background: var(--accent); border-color: var(--accent); font-weight: 850; }
 .wide { width: 100%; }
 .time { font: 750 11px ui-monospace, SFMono-Regular, Consolas, monospace; color: #cbd4e7; }
+.realtime-capture-panel { position: fixed; top: 60px; right: 12px; z-index: 50; display: flex; align-items: center; gap: 8px; min-width: 360px; max-width: min(720px, calc(100vw - 24px)); padding: 6px 10px; border: 1px solid rgba(56, 212, 188, .35); border-radius: 8px; background: #101a20; box-shadow: 0 10px 30px rgba(0, 0, 0, .35); }
+.realtime-capture-panel > div:first-child, .realtime-capture-metrics { display: flex; align-items: center; gap: 8px; }
+.realtime-capture-metrics { flex-wrap: wrap; font-size: 11px; color: #b7c4d6; }
 .spacer { flex: 1; }
 .pill, .director { font: 800 8px ui-monospace, SFMono-Regular, Consolas, monospace; border-radius: 20px; padding: 5px 8px; white-space: nowrap; }
 .pill { border: 1px solid #335049; background: #10211d; color: #7adfc3; }
