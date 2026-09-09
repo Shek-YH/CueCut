@@ -588,7 +588,10 @@ export function App() {
     setRealtimeResult(null);
     setRealtimeError(null);
     try {
-      setRealtimeResult(await realtimeController.start({ project, projectName: project.project.projectId, durationSecOverride: durationSec }));
+      const result = await realtimeController.start({ project, projectName: project.project.projectId, durationSecOverride: durationSec });
+      const response = await fetch('/api/realtime-capture', { method: 'POST', headers: { 'Content-Type': result.mimeType, 'X-CueCut-Job-Id': result.jobId, 'X-CueCut-Filename': encodeURIComponent(result.fileName) }, body: result.blob });
+      if (!response.ok) throw new Error('Realtime capture temporary output could not be persisted');
+      setRealtimeResult(result);
     } catch (error) {
       setRealtimeError(error instanceof Error ? error.message : '极速抠像失败');
     }

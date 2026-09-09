@@ -86,6 +86,7 @@ export interface CaptureBackendOptions {
 }
 
 export interface RealtimeCaptureResult {
+  jobId: string;
   blob: Blob;
   fileName: string;
   mimeType: string;

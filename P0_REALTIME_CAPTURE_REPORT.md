@@ -47,6 +47,7 @@ FFprobe confirms both files are `matroska,webm`, VP9, 1920×1080. The 10s stream
 - [x] Explicit `VALIDATING` state and final-frame submission before stop
 - [x] FPS, dropped-frame estimate, drift, duration, wall-clock and file size metrics
 - [x] Cancel/failure cleanup paths and invalid-output rejection
+- [x] Host temp-store persistence through `/api/realtime-capture` with temporary write and atomic promote
 - [x] Real 10s and 60s Chromium media artifacts
 - [x] FFprobe output validation and actual frame-count hard check (the 10s strict timing gate currently fails)
 - [x] Existing Alpha/Normal export paths unchanged by the realtime module
@@ -70,10 +71,11 @@ Downstream manual inspection remains **NOT RUN**, not PASS. The following must b
 
 The realtime path only imports existing project/render contracts and the optional canvas background override. It does not change `src/export/controller.ts`, `src/export/ffmpeg.ts`, `/api/export`, or the existing Timeline clock semantics. Full regression command/results are recorded below after the final suite run.
 
-- Vitest: **198 passed, 4 skipped** (`pnpm test --run`)
+- Vitest: **201 passed, 4 skipped** (`pnpm test --run`)
 - TypeScript: **PASS** (`pnpm lint`)
 - Production client + SSR host build: **PASS** (`pnpm build`)
 - Playwright default-flag regression: **9 passed, 4 skipped** (`pnpm test:e2e`)
+- Temp persistence tests: **3 passed** (`tests/server/realtimeCaptureStore.test.ts`, `tests/server/realtimeCaptureRoute.test.ts`)
 
 ## Known Issues and Conditions
 
@@ -81,6 +83,7 @@ The realtime path only imports existing project/render contracts and the optiona
 2. MediaRecorder container/codec remains runtime-dependent. This environment reliably produced VP9 WebM; MP4 is not forced.
 3. Manual CapCut/Jianying edge-quality acceptance requires a user-owned downstream application and cannot be truthfully completed by local unit/E2E tests.
 4. The benchmark uses CueCut's canonical fixture composition with real registered motion evaluation; it is not a user-supplied complex project containing video/image/SVG/Glow/Blur assets.
+5. The strict actual-media duration gate remains NO-GO: the current 10s run is about 10.620s despite complete frame count, so timing optimization is still required before P1.
 
 ## Recommendation
 

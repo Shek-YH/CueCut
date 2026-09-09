@@ -7,6 +7,8 @@ function fakeBackend(events: string[]): CaptureBackend {
   return {
     prepare: vi.fn(async () => { events.push('prepare'); }),
     start: vi.fn(async () => { events.push('start'); }),
+    requestFrame: vi.fn(() => { events.push('requestFrame'); }),
+    usesManualFrameSubmission: vi.fn(() => true),
     getStats: vi.fn(() => ({ mimeType: 'video/webm;codecs=vp9', codec: 'vp9', observedFrames: 0, startedAt: 0, endedAt: 100 })),
     stop: vi.fn(async () => { events.push('stop'); return { blob: new Blob(['video']), stats: { mimeType: 'video/webm;codecs=vp9', codec: 'vp9', observedFrames: 0, startedAt: 0, endedAt: 100 } }; }),
     cancel: vi.fn(async () => { events.push('cancel'); }),
@@ -31,6 +33,7 @@ describe('realtime capture controller', () => {
     project.project.durationSec = 0.1;
     const result = await controller.start({ project });
     expect(events.indexOf('start')).toBeLessThan(events.indexOf('stop'));
+    expect(events.indexOf('start')).toBeLessThan(events.indexOf('requestFrame'));
     expect(states).toContain('RECORDER_ARMED');
     expect(states.at(-1)).toBe('SUCCESS');
     expect(result.validation.ok).toBe(true);

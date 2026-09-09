@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { createGenerationRoute, createHostGenerationRunner } from './src/server/generationRoute';
 import { createExportRoute } from './src/server/exportRoute';
 import { createProbeRoute } from './src/server/probeRoute';
+import { createRealtimeCaptureRoute } from './src/server/realtimeCaptureRoute';
 
 export default defineConfig({
   plugins: [
@@ -13,6 +14,7 @@ export default defineConfig({
         server.middlewares.use('/api/generate-effects', createGenerationRoute(createHostGenerationRunner()));
         server.middlewares.use('/api/export', createExportRoute());
         server.middlewares.use('/api/probe-video', createProbeRoute());
+        server.middlewares.use('/api/realtime-capture', createRealtimeCaptureRoute());
       },
     },
   ],

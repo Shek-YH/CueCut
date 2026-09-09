@@ -42,13 +42,17 @@ export function createRealtimeCaptureController(dependencies: ControllerDependen
       machine = createCaptureStateMachine();
       const durationMs = durationSec * 1000;
       const clock = createCaptureClock({ durationMs, fps: REALTIME_CAPTURE_DEFAULTS.fps });
+      const jobId = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `capture-${Date.now()}`;
       let surface: CaptureSceneSurface | null = null;
       const startWallClock = now();
       try {
         transition('PREPARE');
         surface = createSurface(input.project, REALTIME_CAPTURE_DEFAULTS);
-        const renderFrame = (timeMs: number) => {
+        const renderScene = (timeMs: number) => {
           surface?.render(timeMs);
+        };
+        const renderFrame = (timeMs: number) => {
+          renderScene(timeMs);
           dependencies.backend.requestFrame?.();
         };
         const backendOptions: CaptureBackendOptions = {
@@ -59,13 +63,13 @@ export function createRealtimeCaptureController(dependencies: ControllerDependen
         };
         await waitForCaptureAssets();
         transition('ASSETS_READY');
-        for (let frame = 0; frame < REALTIME_CAPTURE_DEFAULTS.warmupFrames; frame += 1) renderFrame(0);
+        for (let frame = 0; frame < REALTIME_CAPTURE_DEFAULTS.warmupFrames; frame += 1) renderScene(0);
         transition('WARMUP_READY');
         await dependencies.backend.prepare(backendOptions);
         if (cancelRequested) throw new Error('Capture cancelled');
         const health = createCaptureHealthMonitor({ fps: REALTIME_CAPTURE_DEFAULTS.fps, durationMs, manualFrameSubmission: dependencies.backend.usesManualFrameSubmission?.() === true });
         transition('RECORDER_READY');
-        renderFrame(0);
+        renderScene(0);
         transition('TIMELINE_READY');
         await dependencies.backend.start();
         const captureStart = now();
@@ -114,6 +118,7 @@ export function createRealtimeCaptureController(dependencies: ControllerDependen
         }
         transition('VALIDATED');
         return {
+          jobId,
           blob: output.blob,
           fileName: createRealtimeCaptureFileName(input.projectName ?? input.project.project.projectId, Date.now(), output.stats.mimeType.includes('mp4') ? 'mp4' : 'webm'),
           mimeType: output.stats.mimeType,
