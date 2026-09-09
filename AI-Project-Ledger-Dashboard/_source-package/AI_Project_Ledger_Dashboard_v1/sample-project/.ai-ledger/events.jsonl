@@ -1,0 +1,4 @@
+{"eventId": "evt-001", "ts": "2026-09-08T12:30:00-04:00", "type": "TASK_COMPLETED", "taskId": "T-001", "actor": "codex", "sessionId": "session-001"}
+{"eventId": "evt-002", "ts": "2026-09-08T12:40:00-04:00", "type": "TASK_STATUS_CHANGED", "taskId": "T-002", "from": "NOT_STARTED", "to": "IN_PROGRESS", "actor": "codex", "sessionId": "session-002"}
+{"eventId": "evt-003", "ts": "2026-09-08T13:35:00-04:00", "type": "TASK_BLOCKED", "taskId": "T-003", "actor": "codex", "sessionId": "session-003"}
+{"eventId": "evt-004", "ts": "2026-09-08T13:36:00-04:00", "type": "WAITING_USER", "taskId": "T-004", "actor": "codex", "sessionId": null}

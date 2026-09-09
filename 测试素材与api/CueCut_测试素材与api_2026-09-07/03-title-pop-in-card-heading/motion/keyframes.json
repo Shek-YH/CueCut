@@ -1,0 +1,59 @@
+{
+  "durationMs": 600,
+  "tracks": [
+    {
+      "target": "group",
+      "property": "opacity",
+      "keyframes": [
+        [
+          0,
+          0
+        ],
+        [
+          100,
+          1
+        ],
+        [
+          520,
+          1
+        ],
+        [
+          600,
+          0
+        ]
+      ]
+    },
+    {
+      "target": "group",
+      "property": "scale",
+      "keyframes": [
+        [
+          0,
+          0.82
+        ],
+        [
+          150,
+          1.08
+        ],
+        [
+          260,
+          1.0
+        ]
+      ]
+    },
+    {
+      "target": "group",
+      "property": "translateY",
+      "keyframes": [
+        [
+          0,
+          24
+        ],
+        [
+          180,
+          0
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "08-chapter-divider-dash",
+  "name": "Chapter Divider Line",
+  "category": "chapter divider",
+  "asset": "assets/dash-lg.svg",
+  "preview": "preview.png",
+  "motion": "motion/keyframes.json",
+  "license": "MIT",
+  "textPolicy": "No user-facing text is baked into the image asset. Text is exposed as CueCut parameters where applicable.",
+  "dependencies": {
+    "fonts": [],
+    "javascript": [],
+    "remoteUrls": [],
+    "runtime": []
+  },
+  "recommendedParameters": {
+    "chapterText": "可替换章节名",
+    "lineColor": "#FFFFFF",
+    "lineLengthPct": 44,
+    "lineThicknessPx": 3,
+    "gapPx": 18,
+    "durationMs": 700,
+    "safeMarginPct": 10
+  }
+}

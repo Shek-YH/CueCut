@@ -1,0 +1,29 @@
+{
+  "scenario": "RT-03",
+  "provider": "Alibaba Bailian recorded-speech HTTP ASR",
+  "endpoint": "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation",
+  "model": "qwen-audio-3.0-asr-flash",
+  "inputVideo": "F:\\CCPJ\\CueCut3\\测试素材与api\\ComfyUI_00001_qguot_1787042165.mp4",
+  "inputVideoUploaded": false,
+  "extractedAudio": {
+    "path": "F:\\CCPJ\\CueCut3\\renders\\qwen-audio-asr-input.mp3",
+    "format": "mp3",
+    "sampleRate": 16000,
+    "channels": 1,
+    "bytes": 511108,
+    "durationSec": 62.678938
+  },
+  "authorization": "User explicitly authorized this single real ASR request",
+  "httpStatus": 200,
+  "requestId": "7a208fcd-b51d-9424-a3cc-ea4e6cee8728",
+  "processedDurationSec": 63,
+  "returnedTextLength": 294,
+  "returnedSentenceCount": 1,
+  "srtSegmentCount": 1,
+  "srtOutput": "F:\\CCPJ\\CueCut3\\renders\\qwen-audio-3-asr-flash.srt",
+  "retryCount": 0,
+  "dataEgress": "audio-only; 511108 bytes of extracted MP3 sent to Alibaba Bailian",
+  "apiKeyRecorded": false,
+  "fullTranscriptRecorded": false,
+  "costQuota": "Review Alibaba Bailian account billing/quota; one ASR request was made"
+}

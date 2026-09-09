@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "sessions": [
+    {
+      "id": "session-002",
+      "provider": "codex",
+      "roleId": "R01",
+      "status": "ACTIVE",
+      "startedAt": "2026-09-08T12:40:00-04:00",
+      "lastSeenAt": "2026-09-08T13:38:00-04:00",
+      "taskIds": [
+        "T-002"
+      ]
+    }
+  ]
+}

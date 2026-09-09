@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "sessions": [
+    {
+      "id": "session-dashboard-001",
+      "provider": "codex",
+      "roleId": "R00",
+      "status": "ACTIVE",
+      "startedAt": "2026-09-08T14:10:00-04:00",
+      "lastSeenAt": "2026-09-08T23:26:16.640Z",
+      "taskIds": [
+        "T-001",
+        "T-002"
+      ]
+    },
+    {
+      "id": "session-dashboard-002",
+      "provider": "codex",
+      "roleId": "R02",
+      "status": "ENDED",
+      "startedAt": "2026-09-08T17:00:00-04:00",
+      "lastSeenAt": "2026-09-08T23:26:16.640Z",
+      "taskIds": [
+        "T-003"
+      ]
+    },
+    {
+      "id": "session-dashboard-003",
+      "provider": "codex",
+      "roleId": "R04",
+      "status": "ENDED",
+      "startedAt": "2026-09-08T17:00:00-04:00",
+      "lastSeenAt": "2026-09-08T23:26:16.640Z",
+      "taskIds": [
+        "T-004"
+      ]
+    }
+  ]
+}

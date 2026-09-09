@@ -1,0 +1,30 @@
+{
+  "pack": "CueCut2 Talking-Head Effects Pack",
+  "version": "0.1",
+  "created": "2026-09-08",
+  "sources": [
+    {
+      "name": "motion-primitives",
+      "repo": "https://github.com/ibelick/motion-primitives",
+      "license": "MIT",
+      "selected_files": [
+        "text-morph.tsx",
+        "text-roll.tsx",
+        "text-scramble.tsx",
+        "text-shimmer.tsx",
+        "animated-number.tsx",
+        "animated-group.tsx"
+      ]
+    },
+    {
+      "name": "magicui",
+      "repo": "https://github.com/magicuidesign/magicui",
+      "license": "MIT",
+      "selected_files": [
+        "animated-shiny-text.tsx",
+        "number-ticker.tsx",
+        "animated-list.tsx"
+      ]
+    }
+  ]
+}

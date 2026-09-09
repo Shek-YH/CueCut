@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "projectId": "cuecut3-example",
+  "name": "CueCut3",
+  "rootPath": "F:\\CCPJ\\CueCut3",
+  "createdAt": "2026-09-08T13:30:00-04:00",
+  "updatedAt": "2026-09-08T13:38:22-04:00",
+  "phases": [
+    {
+      "id": "P01",
+      "name": "项目分析",
+      "order": 1
+    },
+    {
+      "id": "P02",
+      "name": "开发实现",
+      "order": 2
+    },
+    {
+      "id": "P03",
+      "name": "测试验收",
+      "order": 3
+    }
+  ]
+}

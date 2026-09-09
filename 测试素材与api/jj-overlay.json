@@ -1,0 +1,270 @@
+{
+  "version": 1,
+  "theme": "dark",
+  "cards": [
+    {
+      "id": "card-1",
+      "kind": "blur-text",
+      "start": 0.133,
+      "end": 5.566,
+      "params": {
+        "text": "怎么用AI读书|*我从不*让AI|替我把书读完",
+        "staggerMs": 1400,
+        "accent": "orange",
+        "position": "center"
+      }
+    },
+    {
+      "id": "card-2",
+      "kind": "versus-card",
+      "start": 5.9,
+      "end": 13.0,
+      "params": {
+        "aKicker": "代读",
+        "aTitle": "让AI替你读完",
+        "aSub": "像隔着靴子挠痒痒",
+        "bKicker": "自用",
+        "bTitle": "我读书必用AI",
+        "bSub": "只当脚手架",
+        "winner": "b"
+      }
+    },
+    {
+      "id": "card-3",
+      "kind": "punch-pill",
+      "start": 14.6,
+      "end": 25.766,
+      "params": {
+        "text": "今天直播*被问*|我*现场演示*",
+        "position": "bottom-left",
+        "accent": "orange"
+      }
+    },
+    {
+      "id": "card-4",
+      "kind": "pin-board",
+      "start": 25.766,
+      "end": 50.533,
+      "params": {
+        "title": "第一步·问骨架",
+        "subtitle": "先摸清知识骨架",
+        "items": "它*论证*了什么 / 它*怎么*论证 / 站不站得住脚",
+        "stepMs": 7500,
+        "accent": "blue",
+        "position": "left",
+        "dimAt": 50.6
+      }
+    },
+    {
+      "id": "card-5",
+      "kind": "punch-pill",
+      "start": 48.766,
+      "end": 50.533,
+      "params": {
+        "text": "判断*合不合理*",
+        "position": "bottom-right",
+        "accent": "blue",
+        "lintOff": ["short-dwell"]
+      }
+    },
+    {
+      "id": "card-6",
+      "kind": "pin-board",
+      "start": 53.333,
+      "end": 64.4,
+      "params": {
+        "title": "第二步·找裂缝",
+        "subtitle": "反常识的点",
+        "items": "哪些*反常识* / 我的思维裂缝 / 对我有用吗",
+        "stepMs": 3300,
+        "accent": "alert",
+        "position": "left",
+        "dimAt": 116.7
+      }
+    },
+    {
+      "id": "card-7",
+      "kind": "versus-card",
+      "start": 69.5,
+      "end": 86.0,
+      "params": {
+        "aKicker": "不该读",
+        "aTitle": "你全会的知识",
+        "aSub": "本来就这么做的",
+        "bKicker": "该读",
+        "bTitle": "反常识的点",
+        "bSub": "补齐思维裂缝",
+        "winner": "b",
+        "accent": "alert"
+      }
+    },
+    {
+      "id": "card-8",
+      "kind": "punch-pill",
+      "start": 86.0,
+      "end": 93.766,
+      "params": {
+        "text": "读书*必有摩擦*",
+        "position": "bottom-center",
+        "accent": "alert"
+      }
+    },
+    {
+      "id": "card-9",
+      "kind": "quote-lockup",
+      "start": 94.366,
+      "end": 108.366,
+      "params": {
+        "quote": "AI直接指出|我最近*出现偏差*的部分|找到我的*盲区*",
+        "author": "我的AI",
+        "accent": "alert",
+        "side": "right"
+      }
+    },
+    {
+      "id": "card-10",
+      "kind": "punch-pill",
+      "start": 112.666,
+      "end": 116.166,
+      "params": {
+        "text": "摸清*思想边界*",
+        "position": "bottom-right",
+        "accent": "alert"
+      }
+    },
+    {
+      "id": "card-11",
+      "kind": "pin-board",
+      "start": 116.7,
+      "end": 127.1,
+      "params": {
+        "title": "第三步·精读",
+        "subtitle": "基于我的情况",
+        "items": "最该读哪几章 / 阅读*顺序*",
+        "stepMs": 4500,
+        "accent": "blue",
+        "position": "left",
+        "dimAt": 127.1
+      }
+    },
+    {
+      "id": "card-12",
+      "kind": "punch-pill",
+      "start": 127.1,
+      "end": 141.166,
+      "params": {
+        "text": "第四步·*亲自读*",
+        "position": "bottom-left",
+        "accent": "orange"
+      }
+    },
+    {
+      "id": "card-13",
+      "kind": "versus-card",
+      "start": 141.966,
+      "end": 158.3,
+      "params": {
+        "aKicker": "别做",
+        "aTitle": "让AI提取金句",
+        "aSub": "10分钟读一本书",
+        "bKicker": "要做",
+        "bTitle": "打开书亲读",
+        "bSub": "逐字过脑",
+        "winner": "b",
+        "accent": "orange"
+      }
+    },
+    {
+      "id": "card-14",
+      "kind": "type-shift",
+      "start": 158.466,
+      "end": 181.166,
+      "params": {
+        "lines": "*下载*式学习|—买书放书架|*安装*到身上",
+        "shiftAtMs": 18600,
+        "accent": "orange",
+        "position": "center"
+      }
+    },
+    {
+      "id": "card-15",
+      "kind": "punch-pill",
+      "start": 161.6,
+      "end": 185.7,
+      "params": {
+        "text": "学知识*要用出来*",
+        "position": "bottom-center",
+        "accent": "blue"
+      }
+    },
+    {
+      "id": "card-16",
+      "kind": "blur-text",
+      "start": 168.0,
+      "end": 178.766,
+      "params": {
+        "text": "读书是*占便宜*|人家几十年经验|别只*下载*",
+        "staggerMs": 3000,
+        "accent": "blue",
+        "position": "top"
+      }
+    },
+    {
+      "id": "card-17",
+      "kind": "punch-pill",
+      "start": 176.5,
+      "end": 188.166,
+      "params": {
+        "text": "安装到*身上*",
+        "position": "bottom-left",
+        "accent": "blue"
+      }
+    },
+    {
+      "id": "card-18",
+      "kind": "quote-lockup",
+      "start": 188.166,
+      "end": 203.666,
+      "params": {
+        "quote": "AI告诉我|书里讲什么|*你现在*怎么做|重点读哪",
+        "author": "我的AI",
+        "accent": "blue",
+        "side": "right"
+      }
+    },
+    {
+      "id": "card-19",
+      "kind": "punch-pill",
+      "start": 204.133,
+      "end": 209.3,
+      "params": {
+        "text": "每一步*有实操*",
+        "position": "bottom-center",
+        "accent": "blue"
+      }
+    },
+    {
+      "id": "card-20",
+      "kind": "type-shift",
+      "start": 209.7,
+      "end": 222.1,
+      "params": {
+        "lines": "*AI是帮助你学习*的|—不是给AI公司|*提供养料*",
+        "shiftAtMs": 7266,
+        "accent": "blue",
+        "position": "center"
+      }
+    },
+    {
+      "id": "chapter-bar",
+      "kind": "chapter-bar",
+      "start": 0,
+      "end": 222.1,
+      "params": {
+        "chapters": "开场 0 | 第一步·骨架 25.8 | 第二步·盲区 50.6 | 第三步·精读 116.7 | 第四步·亲读 127.1 | 收尾·安装 161.6",
+        "accent": "blue",
+        "showProgress": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "artifacts": [
+    {
+      "id": "A-001",
+      "taskId": "T-001",
+      "type": "docs",
+      "path": "00_PROJECT_ENTRY.md",
+      "exists": true,
+      "updatedAt": "2026-09-08T14:20:00-04:00"
+    },
+    {
+      "id": "A-002",
+      "taskId": "T-002",
+      "type": "docs",
+      "path": "docs/source/LEDGER_RUNTIME_CONTRACT_v1.md",
+      "exists": true,
+      "updatedAt": "2026-09-08T14:20:00-04:00"
+    },
+    {
+      "id": "A-003",
+      "taskId": "T-007",
+      "type": "report",
+      "path": "docs/evidence/WI-007-REAL-DOGFOOD.md",
+      "exists": true,
+      "updatedAt": "2026-09-08T23:26:16.640Z"
+    },
+    {
+      "id": "A-004",
+      "taskId": "T-008",
+      "type": "report",
+      "path": "docs/11_FINAL_ACCEPTANCE.md",
+      "exists": true,
+      "updatedAt": "2026-09-08T23:26:16.640Z"
+    },
+    {
+      "id": "A-005",
+      "taskId": "T-009",
+      "type": "report",
+      "path": "docs/evidence/WI-013.md",
+      "exists": true,
+      "updatedAt": "2026-09-09T01:47:05.244Z"
+    }
+  ]
+}

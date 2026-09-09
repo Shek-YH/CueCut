@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "artifacts": [
+    {
+      "id": "A-001",
+      "taskId": "T-002",
+      "type": "source",
+      "path": "src/motions/registry/index.ts",
+      "exists": true,
+      "updatedAt": "2026-09-08T13:35:12-04:00"
+    }
+  ]
+}

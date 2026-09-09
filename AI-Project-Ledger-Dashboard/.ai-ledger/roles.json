@@ -1,0 +1,13 @@
+{
+  "schemaVersion":1,
+  "roles":[
+    {"id":"R00","name":"Project Orchestrator","agent":"codex","description":"治理、DAG、证据和最终验收"},
+    {"id":"R01","name":"Ledger Architecture","agent":"codex","description":"Schema、progress、phase 和 snapshot contract"},
+    {"id":"R02","name":"Backend Watcher SSE","agent":"codex","description":"Ledger store、LKG、chokidar、atomic write、HTTP/SSE"},
+    {"id":"R03","name":"Dashboard UX","agent":"codex","description":"React 页面、任务树、筛选和可访问性"},
+    {"id":"R04","name":"Legacy Migration","agent":"codex","description":"Markdown 到 machine ledger 的保守迁移"},
+    {"id":"R05","name":"Skill Integration","agent":"codex","description":"AI_Autonomous_Project_Ledger_Skill_v1 双写规则"},
+    {"id":"R06","name":"QA Security Dogfood","agent":"codex","description":"全链路测试、安全审计和自身项目导入"},
+    {"id":"R90","name":"Independent Verifier","agent":"codex","description":"独立检查 Work Item 与最终产品证据"}
+  ]
+}

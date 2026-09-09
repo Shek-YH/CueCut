@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "03-title-pop-in-card-heading",
+  "name": "Card Heading Pop-in",
+  "category": "title pop-in",
+  "asset": "assets/card-heading.svg",
+  "preview": "preview.png",
+  "motion": "motion/keyframes.json",
+  "license": "MIT",
+  "textPolicy": "No user-facing text is baked into the image asset. Text is exposed as CueCut parameters where applicable.",
+  "dependencies": {
+    "fonts": [],
+    "javascript": [],
+    "remoteUrls": [],
+    "runtime": []
+  },
+  "recommendedParameters": {
+    "titleText": "可替换标题",
+    "subtitleText": "",
+    "textColor": "#FFFFFF",
+    "accentColor": "#FFFFFF",
+    "paddingPx": 24,
+    "cornerRadiusPx": 18,
+    "popScale": 1.08,
+    "durationMs": 600,
+    "safeMarginPct": 10
+  }
+}

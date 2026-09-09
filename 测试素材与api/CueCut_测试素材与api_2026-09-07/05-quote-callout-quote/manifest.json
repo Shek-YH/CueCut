@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "05-quote-callout-quote",
+  "name": "Quote Callout Accent",
+  "category": "quote/callout card",
+  "asset": "assets/quote.svg",
+  "preview": "preview.png",
+  "motion": "motion/keyframes.json",
+  "license": "MIT",
+  "textPolicy": "No user-facing text is baked into the image asset. Text is exposed as CueCut parameters where applicable.",
+  "dependencies": {
+    "fonts": [],
+    "javascript": [],
+    "remoteUrls": [],
+    "runtime": []
+  },
+  "recommendedParameters": {
+    "quoteText": "可替换引用内容",
+    "attributionText": "",
+    "accentColor": "#FFFFFF",
+    "maxWidthPct": 68,
+    "paddingPx": 28,
+    "cornerRadiusPx": 18,
+    "durationMs": 700,
+    "safeMarginPct": 10
+  }
+}

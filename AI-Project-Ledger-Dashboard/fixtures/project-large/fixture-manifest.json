@@ -1,0 +1,7 @@
+{
+  "fixtureId": "wi-007-project-large",
+  "projectId": "wi-007-large",
+  "taskCount": 1000,
+  "eventCount": 10000,
+  "phaseCount": 10
+}

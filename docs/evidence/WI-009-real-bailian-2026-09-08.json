@@ -1,0 +1,49 @@
+{
+  "scenario": "RT-04",
+  "provider": "Alibaba Bailian OpenAI-compatible Chat Completions",
+  "endpoint": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+  "model": "qwen-plus",
+  "input": "synthetic project, SRT and bounded candidate context only",
+  "secretStatus": "configured locally; value omitted",
+  "productGenerationCalls": 0,
+  "smokeTestRequests": [
+    {
+      "attempt": 1,
+      "phase": "initial",
+      "outcome": "client_response_indexing_failed",
+      "note": "Request was sent; the wrapper did not capture a safe HTTP/response summary."
+    },
+    {
+      "attempt": 2,
+      "phase": "explicit_failure_recovery",
+      "httpStatus": 200,
+      "requestId": "chatcmpl-88889b6e-b96b-91f6-af61-112c05a70c8b",
+      "model": "qwen-plus",
+      "responseKeys": ["model", "id", "choices", "created", "object", "usage"],
+      "jsonParsed": true,
+      "schemaMarker": true,
+      "candidateIds": false,
+      "promptTokens": 257,
+      "completionTokens": 351,
+      "totalTokens": 608,
+      "elapsedMs": 8260
+    }
+  ],
+  "strictSchemaModelExperiment": {
+    "model": "qwen3.7-plus",
+    "requestType": "json_schema strict",
+    "httpStatus": 403,
+    "requestId": "chatcmpl-22dafdd9-cff7-9c27-9ff5-a278cd723493",
+    "providerError": "AllocationQuota.FreeTierOnly",
+    "outcome": "model unavailable for the configured allocation; no automatic fallback request was made",
+    "directorCalls": 1
+  },
+  "localValidation": {
+    "schema": "passed",
+    "registryCandidateValidation": "failed",
+    "automaticSecondLlmRepair": false
+  },
+  "dataEgress": "synthetic project/SRT/candidate context only",
+  "videoUploaded": false,
+  "apiKeyRecorded": false
+}

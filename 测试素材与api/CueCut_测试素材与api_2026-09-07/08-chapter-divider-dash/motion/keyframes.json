@@ -1,0 +1,55 @@
+{
+  "durationMs": 700,
+  "tracks": [
+    {
+      "target": "leftLine",
+      "property": "scaleX",
+      "keyframes": [
+        [
+          0,
+          0
+        ],
+        [
+          260,
+          1
+        ]
+      ]
+    },
+    {
+      "target": "rightLine",
+      "property": "scaleX",
+      "keyframes": [
+        [
+          0,
+          0
+        ],
+        [
+          260,
+          1
+        ]
+      ]
+    },
+    {
+      "target": "text",
+      "property": "opacity",
+      "keyframes": [
+        [
+          180,
+          0
+        ],
+        [
+          340,
+          1
+        ],
+        [
+          620,
+          1
+        ],
+        [
+          700,
+          0
+        ]
+      ]
+    }
+  ]
+}

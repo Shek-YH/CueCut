@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "02-underline-highlight-highlighter",
+  "name": "Highlighter Accent",
+  "category": "underline/highlight",
+  "asset": "assets/highlighter.svg",
+  "preview": "preview.png",
+  "motion": "motion/keyframes.json",
+  "license": "MIT",
+  "textPolicy": "No user-facing text is baked into the image asset. Text is exposed as CueCut parameters where applicable.",
+  "dependencies": {
+    "fonts": [],
+    "javascript": [],
+    "remoteUrls": [],
+    "runtime": []
+  },
+  "recommendedParameters": {
+    "color": "#FFFFFF",
+    "highlightColor": "#FFD54A",
+    "direction": "left-to-right",
+    "thickness": 0.16,
+    "offsetY": 0.12,
+    "revealDurationMs": 420,
+    "overshoot": 0.06,
+    "safeMarginPct": 10
+  }
+}

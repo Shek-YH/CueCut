@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "04-number-stat-card-bar-chart",
+  "name": "Stat Card Bar Accent",
+  "category": "number/stat card",
+  "asset": "assets/bar-chart-line.svg",
+  "preview": "preview.png",
+  "motion": "motion/keyframes.json",
+  "license": "MIT",
+  "textPolicy": "No user-facing text is baked into the image asset. Text is exposed as CueCut parameters where applicable.",
+  "dependencies": {
+    "fonts": [],
+    "javascript": [],
+    "remoteUrls": [],
+    "runtime": []
+  },
+  "recommendedParameters": {
+    "labelText": "指标",
+    "valueText": "100",
+    "unitText": "%",
+    "countUp": true,
+    "countDurationMs": 700,
+    "iconColor": "#FFFFFF",
+    "backgroundOpacity": 0.86,
+    "cornerRadiusPx": 20,
+    "safeMarginPct": 10
+  }
+}

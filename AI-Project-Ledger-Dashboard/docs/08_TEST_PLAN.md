@@ -1,0 +1,3 @@
+# Test Plan
+
+Unit: Zod schemas, status invariants, parent/phase/project progress, event parser and legacy status parser. Integration: secure allowlist, projectId/root binding, LKG, atomic writer, watcher debounce, SSE/API and registry. UI/E2E: seven navigation views, task tree/filters, status colors/text/icons, blocker split, activity, artifacts, project switching, read-only state. Real local: edit self `.ai-ledger/tasks.json` from IN_PROGRESS to COMPLETED and observe the UI turn green within 1 second; corrupt JSON and verify LKG warning; add legacy fixture and confirm Markdown remains unchanged.

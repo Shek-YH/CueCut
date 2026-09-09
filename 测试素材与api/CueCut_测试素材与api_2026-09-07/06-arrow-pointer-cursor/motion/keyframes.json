@@ -1,0 +1,69 @@
+{
+  "durationMs": 900,
+  "tracks": [
+    {
+      "target": "asset",
+      "property": "opacity",
+      "keyframes": [
+        [
+          0,
+          0
+        ],
+        [
+          80,
+          1
+        ],
+        [
+          820,
+          1
+        ],
+        [
+          900,
+          0
+        ]
+      ]
+    },
+    {
+      "target": "asset",
+      "property": "translate",
+      "keyframes": [
+        [
+          0,
+          [
+            -24,
+            18
+          ]
+        ],
+        [
+          260,
+          [
+            0,
+            0
+          ]
+        ]
+      ]
+    },
+    {
+      "target": "asset",
+      "property": "rotationDeg",
+      "keyframes": [
+        [
+          300,
+          -4
+        ],
+        [
+          430,
+          5
+        ],
+        [
+          560,
+          -3
+        ],
+        [
+          680,
+          0
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "scenario": "WI-014 real full flow",
+  "inputVideo": "F:\\CCPJ\\CueCut3\\测试素材与api\\ComfyUI_00001_qguot_1787042165.mp4",
+  "inputVideoUploadedToProvider": false,
+  "asr": {
+    "provider": "Alibaba Bailian",
+    "model": "qwen-audio-3.0-asr-flash",
+    "httpStatus": 200,
+    "processedSegments": 1,
+    "processedDurationSec": 63,
+    "audioEgress": "extracted audio only"
+  },
+  "director": {
+    "skill": "F:\\CCPJ\\CueCut3\\CueCut_Director_SKILL.md",
+    "provider": "Alibaba Bailian qwen-plus",
+    "directorCalls": 1,
+    "usedFallback": false,
+    "localWarnings": ["Director timing locally clamped"],
+    "compositionSchema": "cuecut.composition/1",
+    "compositionSegments": 1,
+    "compositionEffects": 5,
+    "effectFamilies": ["quote-callout", "emphasis-marker", "title-pop-in", "title-pop-in", "lower-third"],
+    "srtReferencesPresent": true,
+    "firstEffectPreferenceLayout": { "nx": 0.735, "ny": 0.182, "scale": 0.91 }
+  },
+  "outputs": {
+    "srt": "F:\\CCPJ\\CueCut3\\renders\\ComfyUI_00001_qguot_1787042165-asr.srt",
+    "composition": "F:\\CCPJ\\CueCut3\\renders\\ComfyUI_00001_qguot_1787042165-cuecut-composition.json"
+  },
+  "automaticRetry": false,
+  "apiKeyRecorded": false,
+  "fullTranscriptRecorded": false
+}

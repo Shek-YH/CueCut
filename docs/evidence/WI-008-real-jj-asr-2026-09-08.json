@@ -1,0 +1,20 @@
+{
+  "scenario": "RT-03 attached jj.mp4 ASR segmentation",
+  "inputVideo": "F:\\CCPJ\\CueCut3\\测试素材与api\\jj.mp4",
+  "model": "qwen-audio-3.0-asr-flash",
+  "provider": "Alibaba Bailian",
+  "requestId": "a9d2c849-e6f1-99c3-ac52-f4b52d977410",
+  "processedDurationSec": 222,
+  "segmentCount": 66,
+  "firstTiming": {
+    "startSec": 0.2,
+    "endSec": 1.32
+  },
+  "lastTiming": {
+    "startSec": 221.31,
+    "endSec": 222.08
+  },
+  "outputSrt": "F:\\CCPJ\\CueCut3\\renders\\jj-asr.srt",
+  "apiKeyRecorded": false,
+  "fullTranscriptRecorded": false
+}

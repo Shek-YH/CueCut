@@ -1,0 +1,59 @@
+{
+  "durationMs": 850,
+  "tracks": [
+    {
+      "target": "card",
+      "property": "opacity",
+      "keyframes": [
+        [
+          0,
+          0
+        ],
+        [
+          100,
+          1
+        ],
+        [
+          760,
+          1
+        ],
+        [
+          850,
+          0
+        ]
+      ]
+    },
+    {
+      "target": "card",
+      "property": "scale",
+      "keyframes": [
+        [
+          0,
+          0.9
+        ],
+        [
+          180,
+          1.04
+        ],
+        [
+          280,
+          1.0
+        ]
+      ]
+    },
+    {
+      "target": "value",
+      "property": "progress",
+      "keyframes": [
+        [
+          120,
+          0
+        ],
+        [
+          700,
+          1
+        ]
+      ]
+    }
+  ]
+}

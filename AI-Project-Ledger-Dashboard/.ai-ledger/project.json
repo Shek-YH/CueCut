@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "projectId": "ai-project-ledger-dashboard-v1",
+  "name": "AI Project Ledger Dashboard V1",
+  "rootPath": "F:\\CCPJ\\CueCut3\\AI-Project-Ledger-Dashboard",
+  "createdAt": "2026-09-08T14:20:00-04:00",
+  "updatedAt": "2026-09-09T01:47:05.244Z",
+  "phases": [
+    {
+      "id": "P01",
+      "name": "项目分析与契约",
+      "order": 1
+    },
+    {
+      "id": "P02",
+      "name": "后端与机器状态",
+      "order": 2
+    },
+    {
+      "id": "P03",
+      "name": "Dashboard UI",
+      "order": 3
+    },
+    {
+      "id": "P04",
+      "name": "Skill 双写与迁移",
+      "order": 4
+    },
+    {
+      "id": "P05",
+      "name": "测试验收",
+      "order": 5
+    }
+  ]
+}

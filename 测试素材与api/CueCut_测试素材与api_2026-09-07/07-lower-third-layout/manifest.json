@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "07-lower-third-layout",
+  "name": "Layout Lower Third",
+  "category": "lower third",
+  "asset": "assets/layout-text-window-reverse.svg",
+  "preview": "preview.png",
+  "motion": "motion/keyframes.json",
+  "license": "MIT",
+  "textPolicy": "No user-facing text is baked into the image asset. Text is exposed as CueCut parameters where applicable.",
+  "dependencies": {
+    "fonts": [],
+    "javascript": [],
+    "remoteUrls": [],
+    "runtime": []
+  },
+  "recommendedParameters": {
+    "titleText": "可替换姓名/标题",
+    "subtitleText": "可替换说明",
+    "align": "left",
+    "widthPct": 42,
+    "barHeightPx": 86,
+    "iconColor": "#FFFFFF",
+    "backgroundOpacity": 0.88,
+    "durationMs": 900,
+    "safeMarginPct": 10
+  }
+}

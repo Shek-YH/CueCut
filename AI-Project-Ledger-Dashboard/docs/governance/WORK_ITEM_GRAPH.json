@@ -1,0 +1,7 @@
+{
+  "epic":"EPIC-GP-001",
+  "nodes":[
+    {"id":"WI-001","dependencies":[]},{"id":"WI-002","dependencies":["WI-001"]},{"id":"WI-003","dependencies":["WI-002"]},{"id":"WI-004","dependencies":["WI-001"]},{"id":"WI-005","dependencies":["WI-002","WI-003","WI-009"]},{"id":"WI-006","dependencies":["WI-001"]},{"id":"WI-007","dependencies":["WI-003","WI-004","WI-005","WI-006","WI-010"]},{"id":"WI-008","dependencies":["WI-007","WI-011","WI-012"]},{"id":"WI-009","dependencies":["WI-002","WI-003","WI-004"]},{"id":"WI-010","dependencies":["WI-002"]},{"id":"WI-011","dependencies":["WI-003","WI-004"]},{"id":"WI-012","dependencies":["WI-005","WI-011"]}
+  ],
+  "edges":[["WI-001","WI-002"],["WI-001","WI-004"],["WI-001","WI-006"],["WI-002","WI-003"],["WI-002","WI-005"],["WI-002","WI-009"],["WI-002","WI-010"],["WI-003","WI-005"],["WI-003","WI-007"],["WI-003","WI-009"],["WI-003","WI-011"],["WI-004","WI-007"],["WI-004","WI-009"],["WI-004","WI-011"],["WI-005","WI-007"],["WI-005","WI-012"],["WI-006","WI-007"],["WI-010","WI-007"],["WI-011","WI-012"],["WI-011","WI-008"],["WI-012","WI-008"],["WI-007","WI-008"]]
+}

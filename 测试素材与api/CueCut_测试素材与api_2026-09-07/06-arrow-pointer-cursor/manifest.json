@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "06-arrow-pointer-cursor",
+  "name": "Cursor Pointer",
+  "category": "arrow/pointer/spotlight",
+  "asset": "assets/cursor.svg",
+  "preview": "preview.png",
+  "motion": "motion/keyframes.json",
+  "license": "MIT",
+  "textPolicy": "No user-facing text is baked into the image asset. Text is exposed as CueCut parameters where applicable.",
+  "dependencies": {
+    "fonts": [],
+    "javascript": [],
+    "remoteUrls": [],
+    "runtime": []
+  },
+  "recommendedParameters": {
+    "color": "#FFFFFF",
+    "targetX": 0.5,
+    "targetY": 0.5,
+    "scale": 1.0,
+    "wiggleDeg": 6,
+    "dwellMs": 500,
+    "spotlightRadiusPct": 8,
+    "spotlightOpacity": 0.0,
+    "safeMarginPct": 10
+  }
+}

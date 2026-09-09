@@ -1,0 +1,30 @@
+{
+  "retrievedOn": "2026-09-07",
+  "sourcePage": "https://github.com/twbs/icons/blob/main/icons/asterisk.svg",
+  "directDownloadUrl": "https://raw.githubusercontent.com/twbs/icons/main/icons/asterisk.svg",
+  "officialLicenseUrl": "https://github.com/twbs/icons/blob/main/LICENSE",
+  "spdx": "MIT",
+  "repository": "twbs/icons",
+  "repositoryPath": "icons/asterisk.svg",
+  "githubBlobSha": "fbc13b7b237338a40c87d3727deea248d1018d04",
+  "commercialUse": true,
+  "modification": true,
+  "redistribution": true,
+  "redistributionCondition": "Retain the MIT copyright notice and license text in copies or substantial portions.",
+  "format": "SVG",
+  "transparentBackground": true,
+  "nativeSize": "16×16",
+  "aspectRatio": "1:1",
+  "dependencies": {
+    "fonts": false,
+    "javascript": false,
+    "remoteUrls": false,
+    "specificRuntime": false
+  },
+  "riskNotes": [
+    "MIT notice must be retained when redistributing the original or substantial portions.",
+    "The SVG uses currentColor; CueCut should resolve it through a local color parameter.",
+    "Sanitize SVG on import and reject scripts, foreignObject, external href/xlink references, CSS @import and remote URLs.",
+    "Do not imply endorsement by the upstream project or authors."
+  ]
+}

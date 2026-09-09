@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "projectId": "cuecut3-example",
+  "updatedAt": "2026-09-08T13:38:22-04:00",
+  "tasks": [
+    {
+      "id": "T-001",
+      "phaseId": "P01",
+      "parentId": null,
+      "title": "项目结构审计",
+      "description": "审计现有项目结构。",
+      "status": "COMPLETED",
+      "progress": 100,
+      "priority": "P0",
+      "roleId": "R01",
+      "agent": "codex",
+      "sessionId": "session-001",
+      "dependsOn": [],
+      "blockedReason": null,
+      "waitingUserReason": null,
+      "startedAt": "2026-09-08T12:00:00-04:00",
+      "updatedAt": "2026-09-08T12:30:00-04:00",
+      "completedAt": "2026-09-08T12:30:00-04:00",
+      "artifacts": [
+        "02_CURRENT_STATE_AUDIT.md"
+      ],
+      "children": []
+    },
+    {
+      "id": "T-002",
+      "phaseId": "P02",
+      "parentId": null,
+      "title": "接入 Effect Registry",
+      "description": "注册正式动效。",
+      "status": "IN_PROGRESS",
+      "progress": 56,
+      "priority": "P0",
+      "roleId": "R01",
+      "agent": "codex",
+      "sessionId": "session-002",
+      "dependsOn": [
+        "T-001"
+      ],
+      "blockedReason": null,
+      "waitingUserReason": null,
+      "startedAt": "2026-09-08T12:40:00-04:00",
+      "updatedAt": "2026-09-08T13:38:22-04:00",
+      "completedAt": null,
+      "artifacts": [
+        "src/motions/registry/index.ts"
+      ],
+      "children": []
+    },
+    {
+      "id": "T-003",
+      "phaseId": "P02",
+      "parentId": null,
+      "title": "Renderer 导出兼容",
+      "description": "检查导出渲染兼容。",
+      "status": "BLOCKED",
+      "progress": 35,
+      "priority": "P0",
+      "roleId": "R03",
+      "agent": "codex",
+      "sessionId": "session-003",
+      "dependsOn": [
+        "T-002"
+      ],
+      "blockedReason": "motion runtime 与 export renderer 存在兼容问题",
+      "waitingUserReason": null,
+      "startedAt": "2026-09-08T13:00:00-04:00",
+      "updatedAt": "2026-09-08T13:35:00-04:00",
+      "completedAt": null,
+      "artifacts": [],
+      "children": []
+    },
+    {
+      "id": "T-004",
+      "phaseId": "P03",
+      "parentId": null,
+      "title": "真实口播素材测试",
+      "description": "使用真实视频和 SRT 做测试。",
+      "status": "WAITING_USER",
+      "progress": 0,
+      "priority": "P1",
+      "roleId": "R06",
+      "agent": "codex",
+      "sessionId": null,
+      "dependsOn": [
+        "T-003"
+      ],
+      "blockedReason": null,
+      "waitingUserReason": "需要 9:16 口播视频和对应 SRT",
+      "startedAt": null,
+      "updatedAt": "2026-09-08T13:36:00-04:00",
+      "completedAt": null,
+      "artifacts": [],
+      "children": []
+    }
+  ]
+}

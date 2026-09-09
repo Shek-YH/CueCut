@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "09-subtitle-decoration-chat",
+  "name": "Subtitle Chat Decoration",
+  "category": "subtitle decoration",
+  "asset": "assets/chat-left-text.svg",
+  "preview": "preview.png",
+  "motion": "motion/keyframes.json",
+  "license": "MIT",
+  "textPolicy": "No user-facing text is baked into the image asset. Text is exposed as CueCut parameters where applicable.",
+  "dependencies": {
+    "fonts": [],
+    "javascript": [],
+    "remoteUrls": [],
+    "runtime": []
+  },
+  "recommendedParameters": {
+    "subtitleText": "可替换字幕",
+    "iconColor": "#FFFFFF",
+    "bubbleOpacity": 0.0,
+    "maxWidthPct": 72,
+    "paddingPx": 16,
+    "lineGapPx": 10,
+    "durationMs": 650,
+    "safeMarginPct": 10
+  }
+}

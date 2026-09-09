@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "01-emphasis-marker-asterisk",
+  "name": "Asterisk Emphasis Marker",
+  "category": "emphasis marker",
+  "asset": "assets/asterisk.svg",
+  "preview": "preview.png",
+  "motion": "motion/keyframes.json",
+  "license": "MIT",
+  "textPolicy": "No user-facing text is baked into the image asset. Text is exposed as CueCut parameters where applicable.",
+  "dependencies": {
+    "fonts": [],
+    "javascript": [],
+    "remoteUrls": [],
+    "runtime": []
+  },
+  "recommendedParameters": {
+    "color": "#FFFFFF",
+    "scale": 1.0,
+    "rotationDeg": 0,
+    "pulseScale": 1.18,
+    "pulseCount": 2,
+    "durationMs": 520,
+    "anchor": "center",
+    "safeMarginPct": 10
+  }
+}

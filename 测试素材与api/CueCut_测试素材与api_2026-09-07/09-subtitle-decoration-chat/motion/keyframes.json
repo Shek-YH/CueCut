@@ -1,0 +1,45 @@
+{
+  "durationMs": 650,
+  "tracks": [
+    {
+      "target": "icon",
+      "property": "scale",
+      "keyframes": [
+        [
+          0,
+          0.7
+        ],
+        [
+          130,
+          1.08
+        ],
+        [
+          220,
+          1.0
+        ]
+      ]
+    },
+    {
+      "target": "group",
+      "property": "opacity",
+      "keyframes": [
+        [
+          0,
+          0
+        ],
+        [
+          90,
+          1
+        ],
+        [
+          560,
+          1
+        ],
+        [
+          650,
+          0
+        ]
+      ]
+    }
+  ]
+}

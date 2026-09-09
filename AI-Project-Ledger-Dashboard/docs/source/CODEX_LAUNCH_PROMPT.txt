@@ -1,0 +1,13 @@
+请读取 AI_Project_Ledger_Dashboard_V1_PRD.md，并调用 AI_Autonomous_Project_Ledger_Skill_v1 自主完成项目开发。
+
+重点：
+- 项目文件夹 + projectId 是主键，Session ID 不是项目主键。
+- 保留 Markdown 台账，新增 .ai-ledger machine state。
+- 升级 Skill 为 MD + Machine Ledger 双写。
+- Dashboard V1 独立开发，暂不集成 Agent Board。
+- 使用 file watcher + SSE 做实时刷新。
+- V1 Dashboard 默认只读。
+- 状态颜色和状态枚举必须严格按 PRD。
+- 必须支持 Legacy Markdown Ledger 迁移。
+- 必须 dogfood：Dashboard 加载自身 .ai-ledger。
+- 除非必须用户本人操作，否则不中途停下来等待确认。

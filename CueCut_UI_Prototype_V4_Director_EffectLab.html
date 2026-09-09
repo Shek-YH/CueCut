@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CueCut V4 Director + Effect Lab</title>
+<style>
+:root{
+ --bg:#090b10;--panel:#10141c;--panel2:#151a24;--line:#28303f;--txt:#edf2fb;--muted:#8793a8;
+ --accent:#7868ff;--mint:#38d4bc;--red:#ff5e78;--gold:#ffd166;--blue:#63a7ff;--track:30px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+body{min-width:1400px;min-height:820px;overflow:auto}
+button,input,select,textarea{font:inherit}button{color:inherit;cursor:pointer}
+.app{width:max(100vw,1400px);height:max(100vh,820px);display:grid;grid-template-rows:54px minmax(450px,1fr) 286px;background:var(--bg)}
+.top{display:flex;align-items:center;gap:8px;padding:0 12px;background:#0b0f15;border-bottom:1px solid var(--line)}
+.logo{font-weight:900}.logo:before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;background:linear-gradient(135deg,var(--accent),var(--mint));margin-right:8px}
+.ver{font:800 8px ui-monospace;color:#758198}.btn{height:31px;padding:0 9px;border:1px solid var(--line);border-radius:7px;background:#151b25}.btn:hover{background:#1c2330}.btn.primary{background:var(--accent);border-color:var(--accent);font-weight:850}.btn.good{background:#14352f;border-color:#2b695b;color:#81e2c8}
+.time{font:750 11px ui-monospace;color:#cbd4e7}.spacer{flex:1}.pill{font:800 8px ui-monospace;border:1px solid #335049;background:#10211d;color:#7adfc3;border-radius:20px;padding:5px 8px}.director{font:800 8px ui-monospace;border:1px solid #514891;background:#211e3c;color:#d9d5ff;border-radius:20px;padding:5px 8px}
+
+/* main */
+.workspace{min-height:0;display:grid;grid-template-columns:66px 1fr;overflow:hidden}
+.nav{background:#0b0f15;border-right:1px solid var(--line);padding:8px 5px}
+.navitem{height:59px;border:1px solid transparent;border-radius:10px;margin-bottom:5px;color:#7d899e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:9px}
+.navitem b{font-size:18px}.navitem.active{background:#1d1933;border-color:#393165;color:#e0dcff}
+.views{min-height:0;overflow:hidden}.view{display:none;height:100%;min-height:0}.view.active{display:grid}
+.tiny{font:800 8px ui-monospace;color:#69758a;letter-spacing:1.1px}.muted{color:var(--muted)}
+
+/* edit */
+.edit{grid-template-columns:520px minmax(450px,1fr) 314px}
+.panel{min-height:0;display:flex;flex-direction:column;background:var(--panel);overflow:hidden}.side{border-right:1px solid var(--line)}.right{border-left:1px solid var(--line)}
+.phead{height:45px;flex:0 0 45px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;border-bottom:1px solid var(--line)}.phead strong{font-size:11px}
+.scroll{flex:1;min-height:0;overflow:auto;padding:9px}
+.editgrid{height:100%;display:grid;grid-template-columns:minmax(195px,.92fr) minmax(235px,1.08fr);gap:8px}
+.block{min-height:0;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:9px;background:#0e131a;overflow:hidden}.blockhead{height:38px;flex:0 0 38px;display:flex;align-items:center;justify-content:space-between;padding:0 8px;border-bottom:1px solid var(--line);font-size:9px;font-weight:850}.blockscroll{flex:1;min-height:0;overflow:auto;padding:7px}
+.layer{display:grid;grid-template-columns:24px 1fr auto;gap:6px;align-items:center;padding:7px;border:1px solid var(--line);border-radius:7px;background:#131821;margin-bottom:5px}.layer.sel{border-color:#5c53b9;background:#1a1830}.layer.video{border-color:#245348;background:#10211d}.badge{width:23px;height:23px;border-radius:6px;background:#242a3b;display:grid;place-items:center;font-size:7px}.lname{font-size:9px;font-weight:850}.meta{font-size:7px;color:#7f899d;margin-top:2px}
+.srt{border:1px solid var(--line);border-radius:7px;background:#121720;padding:7px;margin-bottom:6px;cursor:pointer}.srt.active{border-color:#5d55b8;background:#1a1830}.srttop{display:flex;justify-content:space-between;margin-bottom:4px}.srttime{font:800 7px ui-monospace;color:#8996aa}.srt textarea{width:100%;border:0;outline:0;background:transparent;color:#eaf0f8;resize:vertical;min-height:42px;font-size:8px;line-height:1.45;padding:0}
+
+/* stage */
+.stage{min-width:0;min-height:0;display:flex;flex-direction:column;background:#080a0f}.stagebar{height:35px;flex:0 0 35px;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 9px;font-size:8px;color:#7f8b9f}.stagebar span:last-child{margin-left:auto}
+.canvaswrap{flex:1;min-height:0;display:grid;place-items:center;overflow:auto;padding:12px;background:radial-gradient(circle,#171d2a 0,#090c12 64%)}
+.canvas{position:relative;width:min(88%,800px);min-width:430px;aspect-ratio:16/9;overflow:hidden;border:1px solid #343d50;background:#1a2230}.vbg{position:absolute;inset:0;z-index:0;background:linear-gradient(130deg,#35455f,#141b27)}.vlabel{position:absolute;left:9px;bottom:8px;font:800 7px ui-monospace;color:#76dfc0;background:#09110fcc;border:1px solid #2a574b;border-radius:5px;padding:4px 6px}
+.safe{position:absolute;z-index:2;inset:5% 5% 8%;border:1px dashed #ffffff20}.person{position:absolute;z-index:1;left:43%;top:18%;width:20%;height:69%;border-radius:44% 44% 23% 23%;background:#a8b8ce25;border:1px dashed #d0dbea38}
+.fx{position:absolute;z-index:100;border:1px solid #ffffff30;border-radius:10px;box-shadow:0 10px 26px #0006;transition:opacity .07s}.fx.off{opacity:.06}.fx.sel{outline:2px solid #958bff;outline-offset:2px}.fxtag{position:absolute;left:5px;top:-16px;font:800 6px ui-monospace;color:#dedaff;background:#272345;border:1px solid #564d9c;border-radius:4px;padding:3px 5px}
+.quote{left:7%;top:13%;width:31%;padding:10px;background:linear-gradient(135deg,#302b59ee,#151b28ee)}.quote b{font-size:10px}.ring{left:69%;top:14%;width:22%;height:27%;background:#101720ee;padding:8px;display:grid;grid-template-columns:46% 1fr;align-items:center}.circle{width:80%;aspect-ratio:1;border-radius:50%;border:5px solid var(--mint);border-left-color:#354052;display:grid;place-items:center;font:800 10px ui-monospace}.compare{left:9%;top:69%;width:38%;height:17%;padding:6px;display:grid;grid-template-columns:1fr 1fr;gap:5px;background:#111720ee}.col{font-size:7px;border:1px solid #384052;border-radius:6px;padding:5px}.col.good{background:#12241f;border-color:#376d61}
+
+/* inspector */
+.special{margin:-9px -9px 0;padding:10px;background:linear-gradient(180deg,#1a1730,#11151e);border-bottom:1px solid #3c346c}.ititle{display:flex;justify-content:space-between;font-size:9px;font-weight:850;margin-bottom:7px}.igroup{padding:10px 0;border-bottom:1px solid var(--line)}.field{margin-bottom:7px}.field label{display:flex;justify-content:space-between;font-size:7px;color:#929db0;margin-bottom:3px}.field input,.field select,.field textarea{width:100%;min-height:28px;border:1px solid var(--line);border-radius:6px;background:#11161f;color:#edf2fb;padding:5px 7px}.field input[type=range]{padding:0;accent-color:var(--accent)}.two{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+
+/* effect lab */
+.lab{grid-template-columns:292px minmax(520px,1fr) 350px;background:#0b0f15}
+.labcol{min-height:0;display:flex;flex-direction:column;background:var(--panel);border-right:1px solid var(--line)}.labcol:last-child{border-right:0;border-left:1px solid var(--line)}
+.labbody{flex:1;min-height:0;overflow:auto;padding:10px}.search{width:100%;height:31px;border:1px solid var(--line);background:#0d1219;border-radius:7px;color:#eef2fb;padding:0 8px;margin-bottom:8px}
+.aiChoice{border:1px solid #514a91;background:#1b1932;border-radius:9px;padding:9px;margin-bottom:9px}.aiChoice b{font-size:10px}.aiChoice p{font-size:7px;color:#a6afd0;margin:4px 0 0;line-height:1.5}
+.family{border:1px solid var(--line);border-radius:9px;background:#121720;padding:8px;margin-bottom:7px}.familytop{display:flex;gap:8px;align-items:center}.thumb{width:48px;height:40px;border-radius:7px;background:linear-gradient(135deg,#242b3b,#151a24);position:relative}.thumb.ring:after{content:"";position:absolute;inset:8px;border:4px solid var(--mint);border-left-color:#354052;border-radius:50%}.thumb.quote:after{content:"“";position:absolute;left:14px;top:0;font-size:29px;color:#bdb6ff}.f-title{font-size:9px;font-weight:850}.f-meta{font-size:7px;color:#8490a5;margin-top:2px}.variants{display:flex;gap:5px;margin-top:7px}.vbtn,.choice{height:25px;border:1px solid var(--line);border-radius:6px;background:#171d28;font-size:7px;padding:0 7px}.vbtn.on,.choice.on{border-color:#5c53b7;background:#211e3e;color:#e5e1ff}
+
+.previewStage{min-height:0;display:flex;flex-direction:column;background:#080a0f}.previewTop{height:46px;flex:0 0 46px;display:flex;align-items:center;gap:7px;padding:0 10px;border-bottom:1px solid var(--line)}.previewTop strong{font-size:10px}.previewTop .spacer{flex:1}.previewArea{flex:1;min-height:0;display:grid;place-items:center;padding:20px;background:radial-gradient(circle,#191f2d,#090c12 66%)}
+.previewCanvas{width:min(82%,780px);aspect-ratio:16/9;border:1px solid #343d50;background:linear-gradient(130deg,#28364b,#111722);position:relative;overflow:hidden}.previewPerson{position:absolute;left:42%;top:18%;width:20%;height:70%;border-radius:45% 45% 23% 23%;background:#b4c1d71e;border:1px dashed #d5deeb30}.previewCard{position:absolute;left:67%;top:18%;width:24%;height:28%;border:1px solid #ffffff32;border-radius:12px;background:#101720ee;padding:10px;display:grid;grid-template-columns:46% 1fr;align-items:center;box-shadow:0 12px 30px #0008;transform-origin:center}.previewRing{width:82%;aspect-ratio:1;border-radius:50%;border:6px solid var(--preview-color,#38d4bc);border-left-color:#364154;display:grid;place-items:center;font:900 12px ui-monospace}.previewCopy b{font-size:10px}.previewCopy span{display:block;font-size:7px;color:#909bb0;margin-top:4px}.draftBadge{position:absolute;left:10px;top:10px;font:800 7px ui-monospace;padding:4px 6px;border-radius:5px;background:#211e3ddd;color:#dcd7ff;border:1px solid #504890}
+.previewFooter{height:50px;flex:0 0 50px;display:flex;align-items:center;justify-content:center;gap:8px;border-top:1px solid var(--line);background:#0d1118}
+
+.controls{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}.groupTitle{font-size:8px;font-weight:850;margin:10px 0 6px}.motionGrid{display:grid;grid-template-columns:1fr 1fr;gap:5px}.motionBtn{min-height:31px;border:1px solid var(--line);border-radius:7px;background:#151b25;text-align:left;padding:6px 7px;font-size:7px}.motionBtn.on{border-color:#5c53b8;background:#211e3c;color:#e3dfff}.motionBtn small{display:block;color:#7f8a9f;margin-top:2px}.swatches{display:flex;gap:6px}.swatch{width:27px;height:27px;border-radius:6px;border:2px solid transparent}.swatch.on{border-color:white}.summary{border:1px solid var(--line);border-radius:8px;background:#0e131a;padding:8px;font:700 7px ui-monospace;color:#aab4c6;line-height:1.6}
+
+/* sfx lab */
+.sfxview{grid-template-columns:220px minmax(520px,1fr) 330px;background:#0b0f15}
+.cat{min-height:0;background:var(--panel);border-right:1px solid var(--line);padding:10px;overflow:auto}.catItem{height:32px;border-radius:7px;display:flex;align-items:center;justify-content:space-between;padding:0 8px;font-size:8px;color:#929db0;margin-bottom:3px}.catItem.active{background:#211e3c;color:#dedaff;border:1px solid #514a91}.count{font:800 7px ui-monospace;color:#6f7b91}
+.sfxlist{min-height:0;display:flex;flex-direction:column;background:#0e1219}.sfxhead{height:45px;display:flex;align-items:center;gap:7px;padding:0 10px;border-bottom:1px solid var(--line)}.sfxbody{flex:1;min-height:0;overflow:auto;padding:9px}.sound{display:grid;grid-template-columns:62px 1fr auto auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:8px;background:#121720;padding:8px;margin-bottom:6px}.wave{height:24px;display:flex;align-items:center;gap:2px}.wave i{width:3px;background:#42ceb7;border-radius:2px}.wave i:nth-child(1){height:8px}.wave i:nth-child(2){height:17px}.wave i:nth-child(3){height:22px}.wave i:nth-child(4){height:11px}.wave i:nth-child(5){height:19px}.wave i:nth-child(6){height:7px}.sname{font-size:9px;font-weight:850}.stags{font-size:7px;color:#8290a5;margin-top:2px}.star{width:29px;height:29px;border:1px solid var(--line);border-radius:7px;background:#171d28;color:#788398}.star.on{color:var(--gold);border-color:#66552a;background:#2a2110}.sfxdetail{min-height:0;background:var(--panel);border-left:1px solid var(--line);padding:10px;overflow:auto}.favNote{border:1px solid #66552a;background:#251e10;border-radius:8px;padding:8px;font-size:8px;color:#d8bd72;line-height:1.5}
+
+/* evolution */
+.learnview{grid-template-columns:260px minmax(550px,1fr) 330px;background:#0b0f15}.learnNav{background:var(--panel);border-right:1px solid var(--line);padding:10px}.learnItem{height:34px;border-radius:7px;padding:0 8px;display:flex;align-items:center;font-size:8px;color:#929db0;margin-bottom:3px}.learnItem.active{background:#211e3c;color:#ddd8ff;border:1px solid #514a91}.learnMain{min-height:0;overflow:auto;padding:12px}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:9px}.metric{border:1px solid var(--line);border-radius:8px;background:#11161f;padding:9px}.metric b{display:block;font:850 14px ui-monospace}.metric span{font-size:7px;color:#8490a5}.heat{height:190px;border:1px solid var(--line);border-radius:9px;position:relative;background:radial-gradient(circle at 73% 18%,rgba(120,104,255,.82),transparent 6%),radial-gradient(circle at 72% 19%,rgba(120,104,255,.28),transparent 20%),linear-gradient(#111722,#0d1118)}.target{position:absolute;left:73%;top:18%;width:11px;height:11px;border:2px solid white;border-radius:50%;transform:translate(-50%,-50%)}.log{display:grid;grid-template-columns:60px 1fr auto;gap:7px;padding:8px;border-bottom:1px solid #202634;font-size:8px}.delta{font:800 7px ui-monospace;color:#7fe0c2}.rules{background:var(--panel);border-left:1px solid var(--line);padding:10px;overflow:auto}.rule{border:1px solid var(--line);background:#121720;border-radius:8px;padding:8px;margin-bottom:6px;font-size:8px;line-height:1.5}.confidence{font:800 7px ui-monospace;color:#7fe0c2;margin-top:4px}
+
+/* timeline */
+.timeline{min-height:0;background:#0b0f15;border-top:1px solid var(--line);display:grid;grid-template-rows:40px 1fr;overflow:hidden}.tlbar{display:flex;align-items:center;gap:6px;padding:0 9px;border-bottom:1px solid var(--line)}.tlbar strong{font-size:9px}.tlspacer{flex:1}.zrange{width:100px;accent-color:var(--accent)}.toolval{width:38px;text-align:center;font:800 7px ui-monospace;color:#9ba6ba}
+.tlbody{min-height:0;display:grid;grid-template-columns:140px 1fr}.labels{padding-top:27px;border-right:1px solid var(--line)}.tlabel{height:var(--track);border-top:1px solid #181e28;display:flex;justify-content:space-between;align-items:center;padding:0 8px;font-size:7px;color:#818c9f}.tlabel.video{color:#65dcc0}.viewport{min-width:0;overflow-x:auto;overflow-y:hidden;position:relative}.content{height:100%;position:relative;min-width:100%;background:repeating-linear-gradient(90deg,transparent 0,transparent 119px,#181e28 120px)}.ruler{height:27px;border-bottom:1px solid #252c39;position:relative}.tick{position:absolute;top:0;height:27px;border-left:1px solid #394254;padding:7px 0 0 4px;font:6px ui-monospace;color:#778398}.track{height:var(--track);position:relative;border-bottom:1px solid #181e28}.clip{position:absolute;top:6px;height:18px;border:1px solid #59617a;border-radius:5px;color:#dbe2f1;font:800 6px ui-monospace;padding:4px 7px;cursor:grab;user-select:none;touch-action:none;min-width:18px}.clip.quote{background:#342e5e;border-color:#675db7}.clip.ring{background:#15372f;border-color:#378171}.clip.compare{background:#293650;border-color:#56719d}.clip.sfx{height:10px;top:10px;padding:1px 4px;background:#59402a;border-color:#8a6a44;cursor:default}.clip.sub{background:#252b37;border-color:#465063;cursor:default}.handle{position:absolute;top:-1px;width:7px;height:18px;background:#fff;opacity:0;border-radius:2px;cursor:ew-resize}.handle.left{left:-3px}.handle.right{right:-3px}.clip:hover .handle{opacity:.9}.videobar{position:absolute;left:0;right:0;top:6px;height:18px;background:#12342e;border:1px solid #2c5d52;border-radius:5px;color:#6de0c3;font:800 6px ui-monospace;padding:4px 7px}.playhead{position:absolute;top:0;bottom:0;width:1px;background:var(--red);z-index:50;pointer-events:none}.phit{position:absolute;top:0;bottom:0;width:14px;transform:translateX(-7px);z-index:51;cursor:ew-resize}.phit:before{content:"";position:absolute;top:0;left:1px;width:12px;height:12px;background:var(--red);clip-path:polygon(0 0,100% 0,50% 100%)}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+ <div class="logo">CueCut <span class="ver">V4 · DIRECTOR</span></div>
+ <button class="btn" id="play">▶ 播放</button><span class="time" id="tc"></span>
+ <span class="director">◆ AI Director 已完成 · 本项目 1 次调用</span>
+ <span class="pill">后续调整全部本地</span>
+ <div class="spacer"></div><button class="btn">↶</button><button class="btn">↷</button><button class="btn primary">导出</button>
+</header>
+
+<section class="workspace">
+<nav class="nav">
+ <div class="navitem active" data-view="edit"><b>✦</b><span>编辑</span></div>
+ <div class="navitem" data-view="lab"><b>◫</b><span>动效库</span></div>
+ <div class="navitem" data-view="sfx"><b>♫</b><span>音效库</span></div>
+ <div class="navitem" data-view="learn"><b>⌁</b><span>自进化</span></div>
+</nav>
+<div class="views">
+
+<!-- EDIT -->
+<div class="view edit active" id="view-edit">
+ <aside class="panel side"><div class="phead"><strong>编辑</strong><span class="tiny">LAYERS + SRT</span></div><div class="scroll">
+  <div class="editgrid">
+   <section class="block"><div class="blockhead"><span>图层</span><span class="tiny">MULTI FX</span></div><div class="blockscroll">
+    <div class="layer" data-id="quote"><span class="badge">F3</span><div><div class="lname">金句卡 B</div><div class="meta" id="m-quote"></div></div><span>◉</span></div>
+    <div class="layer sel" data-id="ring"><span class="badge">F2</span><div><div class="lname">指标环 A</div><div class="meta" id="m-ring"></div></div><span>◉</span></div>
+    <div class="layer" data-id="compare"><span class="badge">F1</span><div><div class="lname">对比卡 A</div><div class="meta" id="m-compare"></div></div><span>◉</span></div>
+    <div class="layer video"><span class="badge">V0</span><div><div class="lname">原始视频</div><div class="meta">0–30s · 永久 z0</div></div><span>🔒</span></div>
+   </div></section>
+   <section class="block"><div class="blockhead"><span>SRT</span><span class="tiny">CLICK TO SEEK</span></div><div class="blockscroll">
+    <div class="srt" data-start="2.2" data-end="5.7"><div class="srttop"><span class="srttime">02.20 → 05.70</span><span class="tiny">2 FX</span></div><textarea>很多人用 Codex 最浪费 Token 的地方，发生在真正开始执行之前。</textarea></div>
+    <div class="srt active" data-start="5.7" data-end="9.4"><div class="srttop"><span class="srttime">05.70 → 09.40</span><span class="tiny">3 FX</span></div><textarea>把前面的沟通交给 ChatGPT，可以明显降低真正执行阶段的消耗。</textarea></div>
+    <div class="srt" data-start="9.4" data-end="13.8"><div class="srttop"><span class="srttime">09.40 → 13.80</span><span class="tiny">1 FX</span></div><textarea>同一个内容，也可以通过不同的数字、对比或金句动效来表达。</textarea></div>
+   </div></section>
+  </div>
+ </div></aside>
+ <main class="stage"><div class="stagebar"><span>Canvas · AI 初稿已包含 Variant / Motion / Color / SFX</span><span id="stageStatus"></span></div><div class="canvaswrap"><div class="canvas">
+  <div class="vbg"><span class="vlabel" id="frame"></span></div><div class="person"></div><div class="safe"></div>
+  <div class="fx quote" data-id="quote"><span class="fxtag">Quote B · Slide Left</span><b>先把需求聊清楚，再让 AI 执行。</b></div>
+  <div class="fx ring sel" data-id="ring" id="mainRing"><span class="fxtag" id="mainRingTag">Ring A · Spring In</span><div class="circle" id="mainCircle">92.4</div><div style="font-size:8px;font-weight:850">比例指标</div></div>
+  <div class="fx compare" data-id="compare"><span class="fxtag">Compare A · Fly Right</span><div class="col">传统方式</div><div class="col good">AI 工作流</div></div>
+ </div></div></main>
+ <aside class="panel right"><div class="phead"><strong id="insName">指标环 A</strong><span class="tiny">AI CHOICE</span></div><div class="scroll">
+  <div class="special"><div class="ititle"><span>指标环专属设置</span><span class="tiny">SPECIAL</span></div><div class="field"><label><span>数值</span><b>92.4</b></label><input type="range" min="0" max="116" value="92"></div><div class="field"><label>单位</label><input value="%"></div></div>
+  <div class="igroup"><div class="ititle"><span>AI 生成结果</span><span class="tiny">ONE CALL</span></div><div class="summary">Variant: Ring A<br>Enter: Spring In · 0.52s<br>Exit: Scale Fade · 0.32s<br>Color: #38D4BC<br>SFX: Soft Pop 03</div></div>
+  <div class="igroup"><div class="ititle"><span>通用时间</span><span class="tiny">COMMON</span></div><div class="two"><div class="field"><label>开始</label><input id="startF"></div><div class="field"><label>结束</label><input id="endF"></div></div></div>
+  <div class="igroup"><button class="btn" id="openLab" style="width:100%">在 Effect Lab 中试模板 / 进出场 / 颜色</button></div>
+ </div></aside>
+</div>
+
+<!-- EFFECT LAB -->
+<div class="view lab" id="view-lab">
+ <aside class="labcol"><div class="phead"><strong>模板与 Variant</strong><span class="tiny">CURRENT CONTENT</span></div><div class="labbody">
+  <div class="aiChoice"><b>◆ AI 当前方案</b><p>指标环 A · Spring In · Scale Fade<br>内容、时间、坐标已从 Workspace 传入。</p></div>
+  <input class="search" placeholder="搜索同类动效…">
+  <div class="family"><div class="familytop"><div class="thumb ring"></div><div><div class="f-title">指标环 Family</div><div class="f-meta">KPI · 比例 · 数据</div></div></div><div class="variants"><button class="vbtn on" data-var="A">A</button><button class="vbtn" data-var="B">B</button><button class="vbtn" data-var="C">C</button></div></div>
+  <div class="family"><div class="familytop"><div class="thumb quote"></div><div><div class="f-title">数字强调 Family</div><div class="f-meta">兼容当前内容 · 可无损迁移</div></div></div><div class="variants"><button class="vbtn">Number A</button><button class="vbtn">Number B</button></div></div>
+  <div class="summary">Preview Draft 独立于主 Project。<br>只有点击「应用」才会产生一次 Undo Transaction。</div>
+ </div></aside>
+
+ <main class="previewStage">
+  <div class="previewTop"><strong>实时预览 · 使用当前真实内容</strong><span class="director">AI 初始选择</span><div class="spacer"></div><button class="btn" id="replay">↻ 重播</button><button class="btn" id="enterOnly">只看入场</button><button class="btn" id="exitOnly">只看出场</button></div>
+  <div class="previewArea"><div class="previewCanvas">
+   <div class="previewPerson"></div><span class="draftBadge">PREVIEW DRAFT · 不影响主项目</span>
+   <div class="previewCard" id="previewCard"><div class="previewRing" id="previewRing">92.4</div><div class="previewCopy"><b>比例指标</b><span>圆环注水到这个比例</span></div></div>
+  </div></div>
+  <div class="previewFooter"><button class="btn" id="resetDraft">恢复 AI 方案</button><button class="btn" id="cancelDraft">取消</button><button class="btn primary" id="applyDraft">应用到 Workspace</button></div>
+ </main>
+
+ <aside class="labcol"><div class="phead"><strong>Draft 设置</strong><span class="tiny">NO AI CALL</span></div><div class="labbody">
+  <div class="groupTitle">进场 Enter</div>
+  <div class="motionGrid">
+   <button class="motionBtn on" data-enter="spring">Spring In<small>轻微弹性</small></button>
+   <button class="motionBtn" data-enter="flyRight">从右侧飞入<small>画面外 → 目标</small></button>
+   <button class="motionBtn" data-enter="spin360">旋转 360°<small>旋转 + 缩放</small></button>
+   <button class="motionBtn" data-enter="spin720">旋转 720°<small>高强度 · 谨慎</small></button>
+   <button class="motionBtn" data-enter="pop">Pop<small>快速强调</small></button>
+   <button class="motionBtn" data-enter="fade">Fade<small>克制</small></button>
+  </div>
+  <div class="field" style="margin-top:8px"><label><span>入场时长</span><b>0.52s</b></label><input type="range" min="20" max="120" value="52"></div>
+
+  <div class="groupTitle">出场 Exit</div>
+  <div class="motionGrid">
+   <button class="motionBtn on" data-exit="scaleFade">Scale Fade<small>AI 推荐</small></button>
+   <button class="motionBtn" data-exit="flyLeft">向左飞出<small>离开画面</small></button>
+   <button class="motionBtn" data-exit="shrink">Shrink<small>缩小消失</small></button>
+   <button class="motionBtn" data-exit="spinOut">Spin Out<small>旋转退场</small></button>
+  </div>
+
+  <div class="groupTitle">颜色 Color</div>
+  <div class="swatches">
+   <button class="swatch on" data-color="#38d4bc" style="background:#38d4bc"></button>
+   <button class="swatch" data-color="#7868ff" style="background:#7868ff"></button>
+   <button class="swatch" data-color="#63a7ff" style="background:#63a7ff"></button>
+   <button class="swatch" data-color="#ffb34e" style="background:#ffb34e"></button>
+   <button class="swatch" data-color="#ff5e78" style="background:#ff5e78"></button>
+  </div>
+
+  <div class="groupTitle">音效 SFX</div>
+  <select id="labSfx" class="search"><option>★ Soft Pop 03 · AI选择</option><option>★ Studio Whoosh 02</option><option>Glass Ding 01</option><option>None</option></select>
+  <div class="summary" id="draftSummary">Variant A<br>Enter: Spring In<br>Exit: Scale Fade<br>Color: #38D4BC<br>SFX: Soft Pop 03</div>
+ </div></aside>
+</div>
+
+<!-- SFX -->
+<div class="view sfxview" id="view-sfx">
+ <aside class="cat">
+  <div class="phead" style="margin:-10px -10px 10px"><strong>音效分组</strong><span class="tiny">INTENT</span></div>
+  <div class="catItem active" data-cat="recommended">AI 推荐 <span class="count">8</span></div>
+  <div class="catItem" data-cat="favorite">★ 收藏 <span class="count" id="favCount">2</span></div>
+  <div class="catItem" data-cat="recent">最近使用 <span class="count">12</span></div>
+  <div class="catItem" data-cat="emphasis">强调 Pop <span class="count">42</span></div>
+  <div class="catItem" data-cat="transition">转场 Whoosh <span class="count">55</span></div>
+  <div class="catItem" data-cat="data">数字 Data <span class="count">31</span></div>
+  <div class="catItem" data-cat="impact">冲击 Impact <span class="count">27</span></div>
+  <div class="catItem" data-cat="digital">科技 Digital <span class="count">46</span></div>
+  <div class="catItem" data-cat="playful">趣味 Playful <span class="count">38</span></div>
+  <div class="catItem" data-cat="ambient">氛围 Ambient <span class="count">21</span></div>
+ </aside>
+ <main class="sfxlist">
+  <div class="sfxhead"><strong style="font-size:10px" id="sfxTitle">AI 推荐</strong><select class="btn"><option>Style: Studio</option><option>Minimal</option><option>Glass</option><option>Sci-Fi</option><option>Cinematic</option></select><div class="spacer"></div><input class="search" style="width:220px;margin:0" placeholder="搜索音效"></div>
+  <div class="sfxbody" id="soundList"></div>
+ </main>
+ <aside class="sfxdetail"><div class="phead" style="margin:-10px -10px 10px"><strong>当前音效</strong><span class="tiny">PREVIEW</span></div>
+  <div class="favNote">★ 收藏不仅是快捷入口，也会成为下一期 Director 的弱偏好信号；只有语义匹配时才加权。</div>
+  <div class="igroup"><div class="ititle"><span>Soft Pop 03</span><span class="tiny">STUDIO</span></div><div class="field"><label><span>音量</span><b>70%</b></label><input type="range" value="70"></div><div class="field"><label><span>偏移</span><b>+0.06s</b></label><input type="range" value="56"></div></div>
+  <button class="btn" style="width:100%;margin-bottom:6px">▶ 试听</button><button class="btn primary" style="width:100%">替换当前 Effect 的音效</button>
+ </aside>
+</div>
+
+<!-- LEARN -->
+<div class="view learnview" id="view-learn">
+ <aside class="learnNav"><div class="phead" style="margin:-10px -10px 10px"><strong>自进化</strong><span class="tiny">LOCAL</span></div>
+  <div class="learnItem active">总览</div><div class="learnItem">坐标偏好</div><div class="learnItem">Variant 偏好</div><div class="learnItem">Motion 偏好</div><div class="learnItem">SFX 偏好</div><div class="learnItem">成功案例</div><div class="learnItem">Director 规则</div>
+ </aside>
+ <main class="learnMain">
+  <div class="metrics"><div class="metric"><b>23</b><span>有效导出样本</span></div><div class="metric"><b>0.041</b><span>坐标误差</span></div><div class="metric"><b>74%</b><span>Motion 保留率</span></div><div class="metric"><b>81%</b><span>SFX 保留率</span></div></div>
+  <div class="family"><div class="ititle"><span>Semantic Preference · 坐标热区</span><span class="tiny">9:16 · NUMERIC · SUBJECT CENTER</span></div><div class="heat"><div class="target"></div></div><div class="variants"><button class="choice on">X 0.735</button><button class="choice">Y 0.182</button><button class="choice">Scale .91</button><button class="choice">Confidence .87</button></div></div>
+  <div class="family"><div class="ititle"><span>Episodic Memory · 最近成功样本</span><span class="tiny">EXPORT CONFIRMED</span></div>
+   <div class="log"><span>09/07</span><span>AI工具教程 · Ring A → B · Fly Right 保留</span><span class="delta">SIM 0.91</span></div>
+   <div class="log"><span>09/06</span><span>观点口播 · Quote C · Spring In</span><span class="delta">SIM 0.84</span></div>
+   <div class="log"><span>09/04</span><span>教程 · Compare B · Studio Whoosh</span><span class="delta">SIM 0.79</span></div>
+  </div>
+ </main>
+ <aside class="rules"><div class="phead" style="margin:-10px -10px 10px"><strong>Procedural Rules</strong><span class="tiny">DIRECTOR PROFILE</span></div>
+  <div class="rule">9:16 数字卡优先右上，但先避开人物扩展区。<div class="confidence">confidence .88 · 17 samples</div></div>
+  <div class="rule">普通解释段减少强旋转；Spin 720 只在高重要度钩子候选中出现。<div class="confidence">confidence .81 · 12 samples</div></div>
+  <div class="rule">Studio 风格 SFX 权重高；收藏音效只在 intent 匹配时加权。<div class="confidence">confidence .76 · 14 samples</div></div>
+  <div class="rule">目标密度约 8~10 FX/min；连续说明段允许留白。<div class="confidence">confidence .83 · 19 samples</div></div>
+ </aside>
+</div>
+
+</div>
+</section>
+
+<section class="timeline">
+ <div class="tlbar"><strong>时间轴</strong><span class="tiny">Playhead 与 Effect Timing 独立</span><div class="tlspacer"></div><button class="btn" id="fit">Fit</button><button class="btn" id="zminus">−</button><input class="zrange" id="zoom" type="range" min="50" max="400" value="100"><button class="btn" id="zplus">＋</button><span class="toolval" id="zval">100%</span></div>
+ <div class="tlbody"><div class="labels"><div class="tlabel">FX3</div><div class="tlabel">FX2</div><div class="tlabel">FX1</div><div class="tlabel">SFX</div><div class="tlabel">SUB</div><div class="tlabel video">VIDEO 🔒</div></div>
+  <div class="viewport" id="vp"><div class="content" id="content"><div class="ruler" id="ruler"></div>
+   <div class="track" data-track="quote"></div><div class="track" data-track="ring"></div><div class="track" data-track="compare"></div>
+   <div class="track"><div class="clip sfx" style="left:20%;width:3%">pop</div><div class="clip sfx" style="left:45%;width:3%">ding</div></div>
+   <div class="track"><div class="clip sub" style="left:7%;width:12%">字幕1</div><div class="clip sub" style="left:19%;width:13%">字幕2</div><div class="clip sub" style="left:32%;width:15%">字幕3</div></div>
+   <div class="track"><div class="videobar">原始视频 · Layer 0</div></div><div class="playhead" id="ph"></div><div class="phit" id="phit"></div>
+  </div></div>
+ </div>
+</section>
+</div>
+
+<script>
+const D=30,FPS=30;
+const effects={quote:{id:'quote',name:'金句卡 B',start:2.2,end:7.8,cls:'quote',min:.8},ring:{id:'ring',name:'指标环 A',start:5.7,end:12.3,cls:'ring',min:.8},compare:{id:'compare',name:'对比卡 A',start:4.3,end:10.4,cls:'compare',min:1}};
+let current=6.6,selected='ring',playing=false,timer=null,zoom=1,drag=null,phdrag=null,scrub=null;
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const vp=$('#vp'),content=$('#content'),ruler=$('#ruler'),ph=$('#ph'),phit=$('#phit');
+function sec(t){return t.toFixed(2)+'s'}
+function frame(t){let f=Math.round(t*FPS),ff=f%FPS,ss=Math.floor(f/FPS),s=ss%60,m=Math.floor(ss/60)%60,h=Math.floor(ss/3600);return[h,m,s,ff].map(v=>String(v).padStart(2,'0')).join(':')}
+function cw(){return content.getBoundingClientRect().width}
+function update(){
+ $('#tc').textContent=sec(current)+' / '+sec(D);$('#frame').textContent='VIDEO FRAME · '+frame(current);ph.style.left=current/D*100+'%';phit.style.left=current/D*100+'%';
+ let n=0;Object.values(effects).forEach(e=>{let on=current>=e.start&&current<=e.end;$(`.fx[data-id="${e.id}"]`).classList.toggle('off',!on);if(on)n++});$('#stageStatus').textContent=frame(current)+' · '+n+' FX active';
+ $$('.srt').forEach(x=>x.classList.toggle('active',current>=+x.dataset.start&&current<=+x.dataset.end));
+}
+function setCurrent(t){current=Math.max(0,Math.min(D,t));update()}
+function sync(){
+ Object.values(effects).forEach(e=>{$('#m-'+e.id).textContent=sec(e.start)+'–'+sec(e.end)});
+ const e=effects[selected];$('#insName').textContent=e.name;$('#startF').value=sec(e.start);$('#endF').value=sec(e.end);
+ $$('.layer[data-id]').forEach(x=>x.classList.toggle('sel',x.dataset.id===selected));$$('.fx').forEach(x=>x.classList.toggle('sel',x.dataset.id===selected));
+}
+$$('.layer[data-id],.fx[data-id]').forEach(x=>x.onclick=()=>{selected=x.dataset.id;sync()});
+$$('.srt').forEach(x=>x.addEventListener('click',e=>{if(e.target.tagName!=='TEXTAREA')setCurrent(+x.dataset.start)}));
+
+/* nav */
+function openView(v){$$('.navitem').forEach(n=>n.classList.toggle('active',n.dataset.view===v));$$('.view').forEach(x=>x.classList.toggle('active',x.id==='view-'+v));scheduleLayout();if(v==='lab')replay()}
+$$('.navitem').forEach(n=>n.onclick=()=>openView(n.dataset.view));$('#openLab').onclick=()=>openView('lab');
+
+/* Effect Lab draft */
+let draft={variant:'A',enter:'spring',exit:'scaleFade',color:'#38d4bc',sfx:'Soft Pop 03'};
+const pcard=$('#previewCard'),pring=$('#previewRing');
+function enterFrames(type){
+ if(type==='flyRight')return[{transform:'translateX(520px)',opacity:0},{transform:'translateX(-12px)',opacity:1,offset:.82},{transform:'translateX(0)',opacity:1}];
+ if(type==='spin360')return[{transform:'rotate(-360deg) scale(.35)',opacity:0},{transform:'rotate(12deg) scale(1.06)',opacity:1,offset:.82},{transform:'rotate(0) scale(1)',opacity:1}];
+ if(type==='spin720')return[{transform:'rotate(-720deg) scale(.25)',opacity:0},{transform:'rotate(20deg) scale(1.08)',opacity:1,offset:.86},{transform:'rotate(0) scale(1)',opacity:1}];
+ if(type==='pop')return[{transform:'scale(.2)',opacity:0},{transform:'scale(1.18)',opacity:1,offset:.7},{transform:'scale(1)',opacity:1}];
+ if(type==='fade')return[{opacity:0},{opacity:1}];
+ return[{transform:'translateY(24px) scale(.75)',opacity:0},{transform:'translateY(-7px) scale(1.05)',opacity:1,offset:.72},{transform:'translateY(0) scale(1)',opacity:1}];
+}
+function exitFrames(type){
+ if(type==='flyLeft')return[{transform:'translateX(0)',opacity:1},{transform:'translateX(-520px)',opacity:0}];
+ if(type==='shrink')return[{transform:'scale(1)',opacity:1},{transform:'scale(.1)',opacity:0}];
+ if(type==='spinOut')return[{transform:'rotate(0) scale(1)',opacity:1},{transform:'rotate(360deg) scale(.2)',opacity:0}];
+ return[{transform:'scale(1)',opacity:1},{transform:'scale(.72)',opacity:0}];
+}
+function runEnter(){pcard.getAnimations().forEach(a=>a.cancel());pcard.animate(enterFrames(draft.enter),{duration:650,easing:'cubic-bezier(.2,.9,.25,1)',fill:'both'})}
+function runExit(){pcard.getAnimations().forEach(a=>a.cancel());pcard.animate(exitFrames(draft.exit),{duration:520,easing:'cubic-bezier(.4,0,.6,1)',fill:'both'})}
+function replay(){pcard.getAnimations().forEach(a=>a.cancel());let a=pcard.animate(enterFrames(draft.enter),{duration:650,easing:'cubic-bezier(.2,.9,.25,1)',fill:'both'});a.finished.then(()=>setTimeout(runExit,950))}
+function summary(){$('#draftSummary').innerHTML=`Variant ${draft.variant}<br>Enter: ${draft.enter}<br>Exit: ${draft.exit}<br>Color: ${draft.color.toUpperCase()}<br>SFX: ${draft.sfx}`;pring.style.setProperty('--preview-color',draft.color)}
+$('#replay').onclick=replay;$('#enterOnly').onclick=runEnter;$('#exitOnly').onclick=runExit;
+$$('.vbtn[data-var]').forEach(b=>b.onclick=()=>{$$('.vbtn[data-var]').forEach(x=>x.classList.remove('on'));b.classList.add('on');draft.variant=b.dataset.var;summary();replay()});
+$$('[data-enter]').forEach(b=>b.onclick=()=>{$$('[data-enter]').forEach(x=>x.classList.remove('on'));b.classList.add('on');draft.enter=b.dataset.enter;summary();runEnter()});
+$$('[data-exit]').forEach(b=>b.onclick=()=>{$$('[data-exit]').forEach(x=>x.classList.remove('on'));b.classList.add('on');draft.exit=b.dataset.exit;summary();runExit()});
+$$('.swatch').forEach(b=>b.onclick=()=>{$$('.swatch').forEach(x=>x.classList.remove('on'));b.classList.add('on');draft.color=b.dataset.color;summary();pring.style.borderColor=draft.color;pring.style.borderLeftColor='#364154'});
+$('#labSfx').onchange=e=>{draft.sfx=e.target.options[e.target.selectedIndex].text.replace('★ ','').replace(' · AI选择','');summary()};
+function resetDraft(){draft={variant:'A',enter:'spring',exit:'scaleFade',color:'#38d4bc',sfx:'Soft Pop 03'};summary();replay()}
+$('#resetDraft').onclick=resetDraft;$('#cancelDraft').onclick=()=>{resetDraft();openView('edit')};
+$('#applyDraft').onclick=()=>{effects.ring.name='指标环 '+draft.variant;$('#mainRingTag').textContent=`Ring ${draft.variant} · ${draft.enter}`;$('#mainCircle').style.borderColor=draft.color;$('#mainCircle').style.borderLeftColor='#354052';openView('edit');sync()};
+
+/* sfx data/favorites */
+let sounds=[
+{id:'pop03',name:'Soft Pop 03',cat:'emphasis',style:'Studio',tags:'强调 · 数字',fav:true,ai:true},
+{id:'whoosh02',name:'Studio Whoosh 02',cat:'transition',style:'Studio',tags:'转场 · 移动',fav:true,ai:true},
+{id:'ding01',name:'Glass Ding 01',cat:'emphasis',style:'Glass',tags:'结论 · 完成',fav:false,ai:true},
+{id:'data04',name:'Digital Count 04',cat:'data',style:'Digital',tags:'数字 · 计数',fav:false,ai:true},
+{id:'impact07',name:'Soft Impact 07',cat:'impact',style:'Cinematic',tags:'强观点 · 冲击',fav:false,ai:false},
+{id:'holo02',name:'Holo Blip 02',cat:'digital',style:'Sci-Fi',tags:'科技 · AI',fav:false,ai:false},
+{id:'snap06',name:'Clean Snap 06',cat:'emphasis',style:'Minimal',tags:'步骤 · 对齐',fav:false,ai:false}
+];
+let cat='recommended';
+function renderSounds(){
+ let arr=sounds.filter(s=>cat==='favorite'?s.fav:cat==='recommended'?s.ai:cat==='recent'?true:s.cat===cat);
+ $('#soundList').innerHTML=arr.map(s=>`<div class="sound"><div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i></div><div><div class="sname">${s.name}</div><div class="stags">${s.tags} · ${s.style}</div></div><button class="btn" style="height:28px">▶</button><button class="star ${s.fav?'on':''}" data-star="${s.id}">★</button></div>`).join('');
+ $$('[data-star]').forEach(b=>b.onclick=()=>{let s=sounds.find(x=>x.id===b.dataset.star);s.fav=!s.fav;$('#favCount').textContent=sounds.filter(x=>x.fav).length;renderSounds()})
+}
+$$('.catItem').forEach(x=>x.onclick=()=>{$$('.catItem').forEach(y=>y.classList.remove('active'));x.classList.add('active');cat=x.dataset.cat;$('#sfxTitle').textContent=x.childNodes[0].textContent.trim();renderSounds()});
+renderSounds();
+
+/* timeline */
+function buildRuler(){ruler.innerHTML='';for(let t=0;t<=D;t+=2){let e=document.createElement('div');e.className='tick';e.style.left=t/D*100+'%';e.textContent=t+'s';ruler.appendChild(e)}}
+function renderClips(){Object.values(effects).forEach(e=>{let tr=$(`.track[data-track="${e.id}"]`);tr.innerHTML='';let c=document.createElement('div');c.className='clip '+e.cls;c.dataset.id=e.id;c.style.left=e.start/D*100+'%';c.style.width=(e.end-e.start)/D*100+'%';c.innerHTML=`<span class="handle left"></span>${e.name}<span class="handle right"></span>`;tr.appendChild(c);wire(c)});sync()}
+function wire(c){c.addEventListener('pointerdown',ev=>{if(ev.button!==0)return;ev.stopPropagation();selected=c.dataset.id;sync();let e=effects[selected],mode=ev.target.classList.contains('left')?'left':ev.target.classList.contains('right')?'right':'move';drag={id:selected,mode,x:ev.clientX,start:e.start,end:e.end,w:cw(),pid:ev.pointerId};c.setPointerCapture(ev.pointerId)});c.addEventListener('pointermove',ev=>{if(!drag||drag.pid!==ev.pointerId)return;let e=effects[drag.id],dt=(ev.clientX-drag.x)/drag.w*D;if(drag.mode==='move'){let d=drag.end-drag.start,n=Math.max(0,Math.min(D-d,drag.start+dt));e.start=n;e.end=n+d}else if(drag.mode==='left')e.start=Math.max(0,Math.min(drag.end-e.min,drag.start+dt));else e.end=Math.min(D,Math.max(drag.start+e.min,drag.end+dt));c.style.left=e.start/D*100+'%';c.style.width=(e.end-e.start)/D*100+'%';sync();update()});c.addEventListener('pointerup',()=>{drag=null;renderClips()})}
+function ptime(ev){let r=content.getBoundingClientRect();return Math.max(0,Math.min(D,(ev.clientX-r.left)/r.width*D))}
+phit.addEventListener('pointerdown',ev=>{ev.stopPropagation();phdrag={pid:ev.pointerId};phit.setPointerCapture(ev.pointerId)});phit.addEventListener('pointermove',ev=>{if(phdrag&&phdrag.pid===ev.pointerId)setCurrent(ptime(ev))});phit.addEventListener('pointerup',()=>phdrag=null);
+content.addEventListener('pointerdown',ev=>{if(ev.target.closest('.clip')||ev.target.closest('.phit'))return;scrub={pid:ev.pointerId};content.setPointerCapture(ev.pointerId);setCurrent(ptime(ev))});content.addEventListener('pointermove',ev=>{if(scrub&&scrub.pid===ev.pointerId)setCurrent(ptime(ev))});content.addEventListener('pointerup',()=>scrub=null);
+
+/* zoom stable */
+function doLayout(){let w=vp.clientWidth;if(w<100)return false;content.style.width=Math.max(w,w*zoom)+'px';buildRuler();renderClips();update();$('#zval').textContent=Math.round(zoom*100)+'%';return true}
+let raf=0;function scheduleLayout(){cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>requestAnimationFrame(doLayout))}
+function applyZoom(v){zoom=Math.max(.5,Math.min(4,v));$('#zoom').value=zoom*100;scheduleLayout()}
+$('#zoom').oninput=e=>applyZoom(+e.target.value/100);$('#zplus').onclick=()=>applyZoom(zoom+.25);$('#zminus').onclick=()=>applyZoom(zoom-.25);$('#fit').onclick=()=>applyZoom(1);
+
+/* playback */
+function toggle(){playing=!playing;$('#play').textContent=playing?'❚❚ 暂停':'▶ 播放';if(playing){let last=performance.now();timer=setInterval(()=>{let n=performance.now(),dt=(n-last)/1000;last=n;setCurrent(current+dt);if(current>=D){playing=false;clearInterval(timer);$('#play').textContent='▶ 播放'}},33)}else clearInterval(timer)}
+$('#play').onclick=toggle;document.addEventListener('keydown',e=>{let tag=document.activeElement?.tagName;if(e.code==='Space'&&!['INPUT','TEXTAREA','SELECT'].includes(tag)){e.preventDefault();toggle()}});
+
+/* robust initial layout */
+const ro=new ResizeObserver(scheduleLayout);ro.observe(vp);ro.observe(document.querySelector('.workspace'));
+window.addEventListener('load',()=>{scheduleLayout();setTimeout(scheduleLayout,60);setTimeout(scheduleLayout,180)});
+window.addEventListener('pageshow',scheduleLayout);window.addEventListener('resize',scheduleLayout);if(document.fonts?.ready)document.fonts.ready.then(scheduleLayout);
+summary();sync();setCurrent(current);scheduleLayout();
+</script>
+</body>
+</html>

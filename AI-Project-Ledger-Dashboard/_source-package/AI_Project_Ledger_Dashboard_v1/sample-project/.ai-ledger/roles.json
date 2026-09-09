@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "roles": [
+    {
+      "id": "R01",
+      "name": "Ledger Architecture",
+      "agent": "codex"
+    },
+    {
+      "id": "R03",
+      "name": "Renderer",
+      "agent": "codex"
+    },
+    {
+      "id": "R06",
+      "name": "QA",
+      "agent": "codex"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "name": "cuecut",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.19.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "test": "vitest",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "lint": "tsc -b --pretty false --noEmit",
+    "workflow:check": "node scripts/workflow.mjs check",
+    "workflow:next": "node scripts/workflow.mjs next",
+    "workflow:golden": "node scripts/workflow.mjs golden",
+    "workflow:readiness": "node scripts/workflow.mjs readiness"
+  },
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^26.4.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "jsdom": "^30.0.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2",
+    "vitest": "^5.0.0"
+  }
+}

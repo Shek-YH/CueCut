@@ -1,0 +1,17 @@
+{
+  "epic": "EPIC-GP-001",
+  "nodes": [
+    {"id":"WI-015","owner":"R02","verifier":"R90","status":"TODO","priority":"P0","dependencies":[]},
+    {"id":"WI-016","owner":"R01","verifier":"R90","status":"TODO","priority":"P0","dependencies":["WI-015"]},
+    {"id":"WI-017","owner":"R03","verifier":"R90","status":"TODO","priority":"P0","dependencies":["WI-016"]},
+    {"id":"WI-018","owner":"R04","verifier":"R90","status":"TODO","priority":"P0","dependencies":["WI-016","WI-017"]},
+    {"id":"WI-019","owner":"R05","verifier":"R90","status":"TODO","priority":"P0","dependencies":["WI-017"]},
+    {"id":"WI-020","owner":"R06","verifier":"R90","status":"TODO","priority":"P0","dependencies":["WI-015"]},
+    {"id":"WI-021","owner":"R07","verifier":"R90","status":"TODO","priority":"P0","dependencies":["WI-018","WI-019","WI-020"]},
+    {"id":"WI-022","owner":"R00","verifier":"R90","status":"TODO","priority":"P0","dependencies":["WI-021"]}
+  ],
+  "edges": [
+    ["WI-015","WI-016"],["WI-015","WI-020"],["WI-016","WI-017"],["WI-016","WI-018"],["WI-017","WI-018"],["WI-017","WI-019"],["WI-018","WI-021"],["WI-019","WI-021"],["WI-020","WI-021"],["WI-021","WI-022"]
+  ],
+  "parallelReadyAfterWI015": ["WI-016","WI-020"]
+}

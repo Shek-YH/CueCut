@@ -1,0 +1,41 @@
+{
+  "durationMs": 650,
+  "tracks": [
+    {
+      "target": "asset",
+      "property": "opacity",
+      "keyframes": [
+        [
+          0,
+          0
+        ],
+        [
+          80,
+          1
+        ],
+        [
+          560,
+          1
+        ],
+        [
+          650,
+          0
+        ]
+      ]
+    },
+    {
+      "target": "mask",
+      "property": "revealX",
+      "keyframes": [
+        [
+          0,
+          0
+        ],
+        [
+          420,
+          1
+        ]
+      ]
+    }
+  ]
+}

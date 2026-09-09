@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "10-particle-accent-sparkles",
+  "name": "Sparkles Accent",
+  "category": "simple particle or accent effect",
+  "asset": "assets/sparkles.svg",
+  "preview": "preview.png",
+  "motion": "motion/keyframes.json",
+  "license": "MIT",
+  "textPolicy": "No user-facing text is baked into the image asset. Text is exposed as CueCut parameters where applicable.",
+  "dependencies": {
+    "fonts": [],
+    "javascript": [],
+    "remoteUrls": [],
+    "runtime": []
+  },
+  "recommendedParameters": {
+    "color": "#FFFFFF",
+    "count": 3,
+    "spreadXPct": 12,
+    "spreadYPct": 10,
+    "scaleMin": 0.7,
+    "scaleMax": 1.25,
+    "twinkle": true,
+    "rotationDeg": 12,
+    "seed": 1,
+    "durationMs": 850,
+    "safeMarginPct": 10
+  }
+}
