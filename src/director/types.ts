@@ -89,6 +89,15 @@ export interface SelectionTraceEntry {
 export interface DirectorSemanticPlan {
   globalThemes: string[];
   units: VisualUnit[];
+  /** Local extraction is only a seed; the Director still receives the full source. */
+  planningMode: 'seed_only' | 'model_refined';
+  sourceTranscript: TranscriptInput[];
+}
+
+export interface NumericEvidence {
+  srt: number[];
+  user: number[];
+  projectData: number[];
 }
 
 export interface VisualContext {

@@ -4,7 +4,7 @@ Input: `测试素材与api/ComfyUI_00001_qguot_1787042165.mp4` (local only)
 
 ## Result
 
-The explicit real test `CUECUT_RUN_REAL_DIRECTOR=1 pnpm exec vitest run tests/director/real-regression.test.ts` passed on the final attempt after local repairs. Four real attempts were made in total: earlier attempts exposed malformed subtitle timing, overlong Effect durations, and unsafe layout dimensions; the final attempt exercised one real ASR call and one real Director call and asserted `usedFallback=false`, non-empty transcript, valid Composition schema, and non-empty SelectionTrace.
+The explicit real test `CUECUT_RUN_REAL_DIRECTOR=1 pnpm exec vitest run tests/director/real-regression.test.ts` passed again after the independent-review fixes. The earlier four real attempts exposed malformed subtitle timing, overlong Effect durations, and unsafe layout dimensions; this revalidation was the fifth real run and exercised one real ASR call and one real Director call. It asserted `usedFallback=false`, non-empty transcript, valid Composition schema, and non-empty SelectionTrace after candidate-scope and numeric-evidence validation.
 
 ## Observed metrics
 
@@ -13,12 +13,12 @@ The explicit real test `CUECUT_RUN_REAL_DIRECTOR=1 pnpm exec vitest run tests/di
 | usedFallback | false |
 | SRT subtitle blocks | 18 |
 | Visual Units / candidate bundles | 18 / 18 |
-| Composition segments | 7 |
-| Effect objects | 7 |
-| Visual events | 7 (no item reveal payload in this sample) |
-| Visual events per minute | 6.70 |
+| Composition segments | 6 |
+| Effect objects | 6 |
+| Visual events | 8 (6 effects + 2 major intent transitions; no item reveal payload in this sample) |
+| Visual events per minute | 7.66 |
 | Density target | 9.00 |
-| Effect family diversity | 6 distinct families; 7 objects |
+| Effect family diversity | 4 distinct families; 6 objects |
 | Data-contract failures | 0 after successful local validation |
 | Duration violations | 0 after explicit capability repair |
 | Ordered-process units | 0 detected in this sample; GOLDEN-001 covers the four-step fixture |
@@ -26,10 +26,14 @@ The explicit real test `CUECUT_RUN_REAL_DIRECTOR=1 pnpm exec vitest run tests/di
 | SelectionTrace coverage | 18/18 VisualUnits in the successful runtime path |
 | Provider Director calls | 1 |
 
+The ComfyUI sample itself does not contain a complete ordered four-step sequence. That acceptance case is now covered by the committed fixture `tests/fixtures/director/ai-reading-four-step.srt`: the planner recognizes the real conversational markers (`第一步`, `第二`, `第三步啊`, `第四步啊`) as one ordered-process VisualUnit, and the fixture composition test verifies all four item cues and completeness.
+
 ## Repairs observed
 
 - One malformed subtitle range was deterministically clamped before schema validation.
 - Seven Effect durations were bounded to registry capability maxima with an explicit warning.
 - Four oversized layout cases were normalized to the safe-area boundary.
+- Per-VisualUnit candidate scope was checked after global ID allow-list validation; an ID that is globally valid but absent from the unit bundle now falls back.
+- Numeric values are checked against the declared SRT/user/project-data evidence source; provenance labels alone are insufficient.
 
 These repairs are visible in warnings and do not become silent acceptance. No provider credential, raw audio, or full private transcript was written to the ledger or committed.

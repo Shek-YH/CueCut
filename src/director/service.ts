@@ -2,7 +2,8 @@ import { projectCompositionSchema, type ProjectComposition } from '../project/sc
 import { createOneCallGuard } from './oneCallGuard';
 import { assertCompositionCandidateIds, sanitizeCompositionCandidateIds, type CandidateIndexes } from './validator';
 import { lintComposition } from './compositionLinter';
-import type { EffectCapabilityCandidate, SelectionTraceEntry, VisualUnit } from './types';
+import { assertCompositionCandidateScopes } from './candidateScope';
+import type { EffectCapabilityCandidate, NumericEvidence, SelectionTraceEntry, VisualUnit } from './types';
 import { resolveCompositionLayout } from '../layout/compositionLayout';
 
 export interface DirectorResult {
@@ -28,7 +29,7 @@ export function createDirectorService(provider: DirectorProvider, fallback: Loca
           composition: fallback(input),
           usedFallback: true,
           warnings: [error instanceof Error ? error.message : 'Director provider failed'],
-          selectionTrace: getSelectionTrace(input),
+          selectionTrace: fallbackSelectionTrace(input),
         };
       }
 
@@ -40,7 +41,7 @@ export function createDirectorService(provider: DirectorProvider, fallback: Loca
           composition: fallback(input),
           usedFallback: true,
           warnings: ['Director structured output failed local schema validation; issues=' + summarizeSchemaIssues(result.error)],
-          selectionTrace: getSelectionTrace(input),
+          selectionTrace: fallbackSelectionTrace(input),
         };
       }
 
@@ -57,21 +58,33 @@ export function createDirectorService(provider: DirectorProvider, fallback: Loca
           assertCompositionCandidateIds(resolvedComposition, candidateIndexes);
         } catch (error) {
           const sanitized = sanitizeCompositionCandidateIds(resolvedComposition, candidateIndexes);
-          return { composition: sanitized.composition, usedFallback: true, warnings: [...timingWarnings, ...(sanitized.warnings.length ? sanitized.warnings : [error instanceof Error ? error.message : 'Director candidate validation failed'])], selectionTrace: getSelectionTrace(input) };
+          return { composition: sanitized.composition, usedFallback: true, warnings: [...timingWarnings, ...(sanitized.warnings.length ? sanitized.warnings : [error instanceof Error ? error.message : 'Director candidate validation failed'])], selectionTrace: fallbackSelectionTrace(input) };
         }
+      }
+
+      try {
+        assertCompositionCandidateScopes(resolvedComposition, getVisualUnits(input), getCandidateBundles(input));
+      } catch (error) {
+        return {
+          composition: fallback(input),
+          usedFallback: true,
+          warnings: [...timingWarnings, error instanceof Error ? error.message : 'Director candidate scope validation failed'],
+          selectionTrace: fallbackSelectionTrace(input),
+        };
       }
 
       const compositionLint = lintComposition(resolvedComposition, getEffectCapabilities(input), {
         safeMargin: getSafeMargin(input),
         visualUnits: getVisualUnits(input),
         visualContext: getVisualContext(input),
+        numericEvidence: getNumericEvidence(input),
       });
       if (!compositionLint.ok) {
         return {
           composition: fallback(input),
           usedFallback: true,
           warnings: [...timingWarnings, 'Director composition linter failed: ' + compositionLint.errors.map((error) => error.code).join(',')],
-          selectionTrace: getSelectionTrace(input),
+          selectionTrace: fallbackSelectionTrace(input),
           lint: compositionLint,
         };
       }
@@ -93,12 +106,28 @@ function getSelectionTrace(input: unknown): SelectionTraceEntry[] {
   return Array.isArray(trace) ? trace as SelectionTraceEntry[] : [];
 }
 
+function fallbackSelectionTrace(input: unknown): SelectionTraceEntry[] {
+  return getSelectionTrace(input).map((entry) => ({
+    ...entry,
+    selected: undefined,
+    dataContractPassed: false,
+    durationContractPassed: false,
+  }));
+}
+
+function getCandidateBundles(input: unknown): import('./types').CandidateBundle[] {
+  if (!input || typeof input !== 'object' || !('candidateBundles' in input)) return [];
+  const bundles = (input as { candidateBundles?: unknown }).candidateBundles;
+  return Array.isArray(bundles) ? bundles as import('./types').CandidateBundle[] : [];
+}
+
 function materializeSelectionTrace(
   input: unknown,
   composition: ProjectComposition,
   lint: import('./compositionLinter').CompositionLintResult,
 ): SelectionTraceEntry[] {
   const units = getVisualUnits(input);
+  if (units.length === 0) return getSelectionTrace(input);
   return getSelectionTrace(input).map((entry) => {
     const unit = units.find((candidate) => candidate.visualUnitId === entry.visualUnitId);
     const segmentIds = composition.segments
@@ -112,10 +141,35 @@ function materializeSelectionTrace(
     return {
       ...entry,
       selected: selectedEffect ? `${selectedEffect.familyId}:${selectedEffect.variantId}` : entry.selected,
-      dataContractPassed: !effectErrors.some((error) => /required|provenance|items/.test(error.code)),
-      durationContractPassed: !effectErrors.some((error) => error.code.startsWith('duration_')),
+      dataContractPassed: Boolean(selectedEffect) && !effectErrors.some((error) => /required|provenance|items|numeric_value_not_evidenced/.test(error.code)),
+      durationContractPassed: Boolean(selectedEffect) && !effectErrors.some((error) => error.code.startsWith('duration_')),
     };
   });
+}
+
+function getNumericEvidence(input: unknown): NumericEvidence | undefined {
+  if (!input || typeof input !== 'object') return undefined;
+  const record = input as { transcript?: unknown; preferences?: unknown };
+  const transcript = Array.isArray(record.transcript) ? record.transcript : [];
+  const srt = transcript.flatMap((segment) => typeof segment === 'object' && segment && 'text' in segment ? extractNumbers((segment as { text?: unknown }).text) : []);
+  const preferences = record.preferences && typeof record.preferences === 'object' ? record.preferences as Record<string, unknown> : {};
+  return {
+    srt,
+    user: extractNumbersFromValue(preferences.userData),
+    projectData: extractNumbersFromValue(preferences.projectData),
+  };
+}
+
+function extractNumbers(value: unknown): number[] {
+  if (typeof value !== 'string') return [];
+  return [...value.matchAll(/[-+]?\d+(?:\.\d+)?/g)].map((match) => Number(match[0])).filter(Number.isFinite);
+}
+
+function extractNumbersFromValue(value: unknown): number[] {
+  if (typeof value === 'number' && Number.isFinite(value)) return [value];
+  if (Array.isArray(value)) return value.flatMap(extractNumbersFromValue);
+  if (value && typeof value === 'object') return Object.values(value as Record<string, unknown>).flatMap(extractNumbersFromValue);
+  return extractNumbers(value);
 }
 
 function getVisualUnits(input: unknown): VisualUnit[] {

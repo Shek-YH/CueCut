@@ -1,6 +1,6 @@
 import type { ProjectComposition } from '../project/schema';
 import { validateEffectContent } from './capabilities';
-import type { EffectCapabilityCandidate, VisualContext, VisualUnit } from './types';
+import type { EffectCapabilityCandidate, NumericEvidence, VisualContext, VisualUnit } from './types';
 import { blockedZonesForVisualContext } from '../layout/visualContext';
 import { findMotion } from '../motions/registry';
 import { sfxRegistry } from '../sfx/registry';
@@ -25,7 +25,7 @@ export interface CompositionLintResult {
 export function lintComposition(
   composition: ProjectComposition,
   capabilities: EffectCapabilityCandidate[],
-  options: { safeMargin?: number; visualUnits?: VisualUnit[]; visualContext?: VisualContext } = {},
+  options: { safeMargin?: number; visualUnits?: VisualUnit[]; visualContext?: VisualContext; numericEvidence?: NumericEvidence } = {},
 ): CompositionLintResult {
   const errors: CompositionLintError[] = [];
   const safeMargin = options.safeMargin ?? options.visualContext?.safeMargins ?? 0;
@@ -40,7 +40,7 @@ export function lintComposition(
       errors.push({ code: 'unknown_effect_capability', path, message: `Effect capability is missing: ${effect.familyId}:${effect.variantId}` });
     }
     if (candidate) {
-      for (const issue of validateEffectContent(candidate, effect.content)) errors.push({ ...issue, path: [...path, 'content', ...issue.path] });
+      for (const issue of validateEffectContent(candidate, effect.content, options.numericEvidence)) errors.push({ ...issue, path: [...path, 'content', ...issue.path] });
       const duration = effect.time.endSec - effect.time.startSec;
       if (duration < candidate.minDurationSec) errors.push({ code: 'duration_below_capability', path: [...path, 'time'], message: `Effect duration ${duration} is below ${candidate.minDurationSec}` });
       if (duration > candidate.maxDurationSec && !candidate.timingCapabilities?.includes('persistent') && !candidate.timingCapabilities?.includes('item-reveal')) {
@@ -70,8 +70,13 @@ export function lintComposition(
   });
 
   const highImportanceUnits = (options.visualUnits ?? []).filter((unit) => unit.importance >= 0.8);
-  const highImportanceCoverage = highImportanceUnits.length === 0 ? 1 : highImportanceUnits.filter((unit) => composition.segments.some((segment) => segment.sourceSubtitleIds.some((id) => unit.sourceSubtitleIds.includes(id)))).length / highImportanceUnits.length;
-  if (highImportanceCoverage < 1) errors.push({ code: 'high_importance_coverage_missing', path: ['segments'], message: 'A high-importance VisualUnit has no linked composition segment' });
+  const highImportanceCoverage = highImportanceUnits.length === 0 ? 1 : highImportanceUnits.filter((unit) => {
+    const linkedSegmentIds = composition.segments
+      .filter((segment) => segment.sourceSubtitleIds.some((id) => unit.sourceSubtitleIds.includes(id)))
+      .map((segment) => segment.segmentId);
+    return composition.effects.some((effect) => linkedSegmentIds.includes(effect.segmentId));
+  }).length / highImportanceUnits.length;
+  if (highImportanceCoverage < 1) errors.push({ code: 'high_importance_coverage_missing', path: ['segments'], message: 'A high-importance VisualUnit has no linked visual effect' });
   for (const unit of options.visualUnits ?? []) {
     const supportedStructures = ['ordered_process', 'list', 'ranking', 'comparison'];
     if (!unit.structure || !supportedStructures.includes(unit.structure.type)) continue;
@@ -81,6 +86,8 @@ export function lintComposition(
     const expectedItemCount = unit.structure.items?.length ?? 0;
     if (expectedItemCount > 0 && actualItemCount < expectedItemCount) errors.push({ code: 'ordered_structure_incomplete', path: ['visualUnits', unit.visualUnitId], message: `VisualUnit requires ${expectedItemCount} items but linked composition contains ${actualItemCount}` });
   }
+  const majorIntentTransitions = composition.segments.filter((segment, index) => index > 0 && segment.intent !== composition.segments[index - 1]?.intent).length;
+  visualEventCount += majorIntentTransitions;
   const visualEventsPerMinute = composition.project.durationSec > 0 ? visualEventCount / (composition.project.durationSec / 60) : 0;
   if ((options.visualUnits?.length ?? 0) > 0 && composition.directorMeta.densityTargetPerMin > 0) {
     const target = composition.directorMeta.densityTargetPerMin;

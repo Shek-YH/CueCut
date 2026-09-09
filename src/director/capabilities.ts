@@ -1,5 +1,5 @@
 import type { EffectDefinition } from '../effects/registry';
-import type { EffectCapabilityCandidate, EffectDataContract, EffectDataContractKind } from './types';
+import type { EffectCapabilityCandidate, EffectDataContract, EffectDataContractKind, NumericEvidence } from './types';
 
 export interface EffectContentValidationIssue {
   code: string;
@@ -27,7 +27,7 @@ export function createEffectCapability(effect: Pick<EffectDefinition, 'familyId'
   };
 }
 
-export function validateEffectContent(candidate: EffectCapabilityCandidate, content: Record<string, unknown>): EffectContentValidationIssue[] {
+export function validateEffectContent(candidate: EffectCapabilityCandidate, content: Record<string, unknown>, evidence?: NumericEvidence): EffectContentValidationIssue[] {
   const issues: EffectContentValidationIssue[] = [];
   for (const slot of candidate.dataContract.requiredSlots) {
     if (!(slot in content)) issues.push({ code: 'required_slot_missing', path: [slot], message: `Required content slot is missing: ${slot}` });
@@ -37,6 +37,18 @@ export function validateEffectContent(candidate: EffectCapabilityCandidate, cont
     const value = content[slot];
     if (typeof value !== 'number' && !(typeof value === 'string' && value.trim() !== '' && Number.isFinite(Number(value)))) {
       issues.push({ code: 'numeric_value_required', path: [slot], message: `Numeric content is required for ${slot}` });
+      continue;
+    }
+    if (evidence) {
+      const provenance = content.provenance;
+      const source = provenance && typeof provenance === 'object' && !Array.isArray(provenance)
+        ? (provenance as Record<string, unknown>).source
+        : undefined;
+      const sourceValues = source === 'srt' ? evidence.srt : source === 'user' ? evidence.user : source === 'project-data' ? evidence.projectData : undefined;
+      const numericValue = typeof value === 'number' ? value : Number(value);
+      if (sourceValues && !sourceValues.some((candidateValue) => Math.abs(candidateValue - numericValue) < 1e-9)) {
+        issues.push({ code: 'numeric_value_not_evidenced', path: [slot], message: `Numeric content for ${slot} is not present in ${source} evidence` });
+      }
     }
   }
   for (const slot of candidate.dataContract.itemSlots) {
@@ -46,8 +58,8 @@ export function validateEffectContent(candidate: EffectCapabilityCandidate, cont
       issues.push({ code: 'items_required', path: [slot], message: `String items are required for ${slot}` });
       continue;
     }
-    if (candidate.dataContract.kind === 'steps' && items.some((item) => !hasCue(item))) {
-      issues.push({ code: 'item_cue_required', path: [slot], message: `Each step item requires a cue.startSec` });
+    if (['steps', 'list', 'ranking'].includes(candidate.dataContract.kind) && items.some((item) => !hasCue(item))) {
+      issues.push({ code: 'item_cue_required', path: [slot], message: `Each ${candidate.dataContract.kind} item requires a cue.startSec` });
     }
   }
   if (candidate.dataContract.provenanceRequired && content.provenance === undefined) {
@@ -82,12 +94,13 @@ function createDataContract(effect: Pick<EffectDefinition, 'familyId' | 'semanti
   const tags = [...effect.semanticTags, ...(effect.visualTags ?? []), effect.familyId].map((value) => value.toLowerCase());
   const numeric = tags.some((tag) => ['numeric', 'number', 'percentage', 'ratio', 'kpi', 'metric', 'progress', 'chart', 'data'].includes(tag));
   const steps = tags.some((tag) => ['steps', 'checklist', 'process', 'flow'].includes(tag));
-  const list = steps || tags.some((tag) => ['list', 'ranking'].includes(tag));
+  const ranking = tags.includes('ranking');
+  const list = steps || tags.includes('list') || ranking;
   const kind: EffectDataContractKind = numeric
     ? tags.includes('percentage') ? 'percentage' : tags.includes('progress') ? 'progress' : tags.includes('chart') || tags.includes('data') ? 'chart' : 'numeric'
     : tags.some((tag) => ['quote', 'quotation'].includes(tag)) ? 'quote'
       : tags.some((tag) => ['comparison', 'beforeafter', 'versus'].includes(tag)) ? 'comparison'
-        : steps ? 'steps' : list ? 'list' : effect.contentSlots.includes('text') ? 'text' : 'text';
+        : steps ? 'steps' : ranking ? 'ranking' : list ? 'list' : effect.contentSlots.includes('text') ? 'text' : 'text';
   const numericSlots = numeric ? effect.contentSlots.filter((slot) => ['value', 'maximum', 'startValue', 'percentage', 'amount', 'decimals'].includes(slot)) : [];
   if (numeric && !numericSlots.includes('value')) numericSlots.unshift('value');
   const itemSlots = list ? effect.contentSlots.filter((slot) => ['items', 'steps', 'entries'].includes(slot)) : [];

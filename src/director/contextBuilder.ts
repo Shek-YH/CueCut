@@ -72,8 +72,8 @@ export function buildDirectorInputV2(input: {
     visualUnitId: bundle.visualUnitId,
     semanticIntent: semanticPlan.units.find((unit) => unit.visualUnitId === bundle.visualUnitId)?.semanticIntent ?? 'neutral',
     retrievedCandidates: bundle.candidates.map((candidate) => `${candidate.familyId}:${candidate.variantId}`),
-    dataContractPassed: true,
-    durationContractPassed: true,
+    dataContractPassed: false,
+    durationContractPassed: false,
   }));
   return {
     project: input.project,

@@ -1,12 +1,14 @@
 import type { DirectorSemanticPlan, SemanticIntent, TranscriptInput, VisualUnit, VisualUnitItem } from './types';
 
-const orderedMarker = /^(?:第\s*([一二三四五六七八九十百\d]+)\s*步|步骤\s*([一二三四五六七八九十百\d]+))\s*[,，、:：.．]?\s*/;
+const orderedMarker = /(?:第\s*([一二三四五六七八九十百\d]+)\s*步?|步骤\s*([一二三四五六七八九十百\d]+))\s*(?:啊|呀|呢)?\s*(?:[,，、:：.．。！!？?]|\s|$)/;
 const chineseNumbers: Record<string, number> = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10, 百: 100 };
 
 export function planVisualUnits(transcript: TranscriptInput[]): DirectorSemanticPlan {
   const ordered = transcript
     .map((segment, index) => ({ segment, order: readOrder(segment.text), index }))
     .filter((entry): entry is { segment: TranscriptInput; order: number; index: number } => entry.order !== null);
+
+  ordered.sort((left, right) => left.order - right.order || left.index - right.index);
 
   const units: VisualUnit[] = [];
   if (ordered.length >= 2) units.push(createOrderedProcessUnit(ordered.map((entry) => entry.segment)));
@@ -19,15 +21,17 @@ export function planVisualUnits(transcript: TranscriptInput[]): DirectorSemantic
 
   units.sort((left, right) => left.startSec - right.startSec || left.visualUnitId.localeCompare(right.visualUnitId));
   return {
-    globalThemes: transcript.map((segment) => segment.text.trim()).filter(Boolean).slice(0, 3),
+    globalThemes: transcript.map((segment) => segment.text.trim()).filter(Boolean),
     units,
+    planningMode: 'seed_only',
+    sourceTranscript: transcript.map((segment) => ({ ...segment })),
   };
 }
 
 function createOrderedProcessUnit(segments: TranscriptInput[]): VisualUnit {
   const items: VisualUnitItem[] = segments.map((segment, index) => ({
     id: `item-${readOrder(segment.text) ?? index + 1}`,
-    text: segment.text.replace(orderedMarker, '').trim(),
+    text: orderedContent(segment.text),
     startSec: segment.startSec,
     endSec: segment.endSec,
   }));
@@ -68,6 +72,13 @@ function readOrder(text: string): number | null {
   if (value === '十') return 10;
   if (value.length === 2 && value.startsWith('十')) return 10 + (chineseNumbers[value[1]!] ?? 0);
   return chineseNumbers[value] ?? null;
+}
+
+function orderedContent(text: string): string {
+  const match = text.match(orderedMarker);
+  if (!match || match.index === undefined) return text.trim();
+  const markerEnd = match.index + match[0].length;
+  return text.slice(markerEnd).trim();
 }
 
 function classify(text: string, index: number): SemanticIntent {

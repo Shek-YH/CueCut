@@ -807,7 +807,10 @@
         "director-phase3-acceptance"
       ],
       "evidence": [
-        "docs/director-recovery/14_PRE_PUSH_ACCEPTANCE.md"
+        "docs/director-recovery/14_PRE_PUSH_ACCEPTANCE.md",
+        "tests/director/reviewer-regressions.test.ts",
+        "docs/director-recovery/CORE_FREEZE_AMENDMENT.md",
+        "docs/director-recovery/13_REAL_WORLD_REGRESSION.md"
       ],
       "completedAt": null
     },

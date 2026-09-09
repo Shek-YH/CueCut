@@ -138,6 +138,24 @@
       "path": "docs/director-recovery/14_PRE_PUSH_ACCEPTANCE.md",
       "kind": "acceptance-report",
       "status": "WAITING_REVIEW"
+    },
+    {
+      "id": "director-reviewer-regressions",
+      "path": "tests/director/reviewer-regressions.test.ts",
+      "kind": "independent-review-regression",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "director-four-step-fixture",
+      "path": "tests/fixtures/director/ai-reading-four-step.srt",
+      "kind": "real-world-fixture",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "director-core-freeze-amendment",
+      "path": "docs/director-recovery/CORE_FREEZE_AMENDMENT.md",
+      "kind": "architecture-amendment",
+      "status": "COMPLETED"
     }
   ]
 }
