@@ -87,7 +87,10 @@ export function lintComposition(
       const candidate = capabilityById.get(`${effect.familyId}:${effect.variantId}`);
       return Boolean(candidate?.dataContract.itemSlots.length && ['steps', 'list', 'ranking'].includes(candidate.dataContract.kind));
     });
-    const actualItems = structuredEffects.flatMap((effect) => getEffectItems(effect, capabilityById.get(`${effect.familyId}:${effect.variantId}`)));
+    const preferredEffect = structuredEffects
+      .map((effect) => ({ effect, items: getEffectItems(effect, capabilityById.get(`${effect.familyId}:${effect.variantId}`)) }))
+      .sort((left, right) => Math.abs(left.items.length - (unit.structure?.items?.length ?? 0)) - Math.abs(right.items.length - (unit.structure?.items?.length ?? 0)) || right.items.length - left.items.length)[0];
+    const actualItems = preferredEffect?.items ?? [];
     const actualItemCount = actualItems.length;
     const expectedItemCount = unit.structure.items?.length ?? 0;
     if (expectedItemCount > 0 && structuredEffects.length === 0) errors.push({ code: 'ordered_effect_capability_missing', path: ['visualUnits', unit.visualUnitId], message: 'Ordered/list structure requires a linked effect with an item-capable data contract' });

@@ -3,6 +3,7 @@ import { createOneCallGuard } from './oneCallGuard';
 import { assertCompositionCandidateIds, sanitizeCompositionCandidateIds, type CandidateIndexes } from './validator';
 import { lintComposition } from './compositionLinter';
 import { assertCompositionCandidateScopes, repairCompositionCandidateScopes } from './candidateScope';
+import { validateEffectContent } from './capabilities';
 import type { EffectCapabilityCandidate, NumericEvidence, SelectionTraceEntry, VisualUnit } from './types';
 import { resolveCompositionLayout } from '../layout/compositionLayout';
 
@@ -66,12 +67,16 @@ export function createDirectorService(provider: DirectorProvider, fallback: Loca
 
       let resolvedComposition = layoutComposition;
       let scopeRepairChanged = false;
+      let contractRepairWarnings: string[] = [];
       try {
         if (hasCandidateBundles(input)) {
           const repaired = repairCompositionCandidateScopes(resolvedComposition, getVisualUnits(input), getCandidateBundles(input));
           resolvedComposition = projectCompositionSchema.parse(repaired.composition);
           scopeRepairChanged = repaired.changed;
           assertCompositionCandidateScopes(resolvedComposition, getVisualUnits(input), getCandidateBundles(input));
+          const contractRepair = repairCompositionContracts(resolvedComposition, input);
+          resolvedComposition = projectCompositionSchema.parse(contractRepair.composition);
+          contractRepairWarnings = contractRepair.warnings;
         }
       } catch (error) {
         return {
@@ -81,7 +86,10 @@ export function createDirectorService(provider: DirectorProvider, fallback: Loca
           selectionTrace: fallbackSelectionTrace(input),
         };
       }
-      const scopeWarnings = scopeRepairChanged ? ['Director segments deterministically scoped to VisualUnits'] : [];
+      const scopeWarnings = [
+        ...(scopeRepairChanged ? ['Director segments deterministically scoped to VisualUnits'] : []),
+        ...contractRepairWarnings,
+      ];
 
       const compositionLint = lintComposition(resolvedComposition, getEffectCapabilities(input), {
         safeMargin: getSafeMargin(input),
@@ -137,6 +145,80 @@ function repairCompositionShape(input: unknown): { value: unknown; warnings: str
     if (after !== before) warnings.push(`Director shape dropped ${before - after} incomplete Effect object(s)`);
   }
   return { value: next, warnings };
+}
+
+function repairCompositionContracts(composition: ProjectComposition, input: unknown): { composition: ProjectComposition; warnings: string[] } {
+  const capabilities = getEffectCapabilities(input);
+  const capabilityById = new Map(capabilities.map((candidate) => [`${candidate.familyId}:${candidate.variantId}`, candidate]));
+  const visualUnits = getVisualUnits(input);
+  const evidence = getNumericEvidence(input);
+  const warnings: string[] = [];
+  const next = structuredClone(composition);
+  const repairedEffects = next.effects.map((effect) => {
+    const candidate = capabilityById.get(`${effect.familyId}:${effect.variantId}`);
+    if (!candidate) return effect;
+    const unit = visualUnits.find((visualUnit) => visualUnit.sourceSubtitleIds.some((id) => next.segments.find((segment) => segment.segmentId === effect.segmentId)?.sourceSubtitleIds.includes(id)));
+    let content = { ...effect.content };
+    let changed = false;
+    if (['steps', 'list', 'ranking'].includes(candidate.dataContract.kind)) {
+      for (const slot of candidate.dataContract.itemSlots) {
+        const rawItems = content[slot];
+        if (!Array.isArray(rawItems)) continue;
+        content[slot] = rawItems.map((item, index) => {
+          const text = typeof item === 'string' ? item : item && typeof item === 'object' && !Array.isArray(item) && typeof (item as Record<string, unknown>).text === 'string' ? (item as Record<string, unknown>).text : undefined;
+          if (text === undefined) return item;
+          const itemRecord: Record<string, unknown> = typeof item === 'object' && item !== null && !Array.isArray(item) ? { ...(item as Record<string, unknown>) } : { text: item };
+          if (itemRecord.cue && typeof itemRecord.cue === 'object' && !Array.isArray(itemRecord.cue)) return itemRecord;
+          const sourceCue = unit?.structure?.items?.[index]?.startSec;
+          const fallbackCue = effect.time.startSec + ((effect.time.endSec - effect.time.startSec) * index) / Math.max(1, rawItems.length - 1);
+          const cueStartSec = Math.min(effect.time.endSec, Math.max(effect.time.startSec, typeof sourceCue === 'number' ? sourceCue : fallbackCue));
+          changed = true;
+          return { ...itemRecord, text, cue: { startSec: cueStartSec } };
+        });
+      }
+    }
+    if (candidate.dataContract.numericSlots.length && content.provenance === undefined) {
+      const values = candidate.dataContract.numericSlots
+        .map((slot) => content[slot])
+        .filter((value): value is number | string => typeof value === 'number' || typeof value === 'string')
+        .map((value) => Number(value));
+      const sources: Array<[string, number[] | undefined]> = [['srt', evidence?.srt], ['user', evidence?.user], ['project-data', evidence?.projectData]];
+      const source = sources.find(([, available]) => available && values.length > 0 && values.every((value) => available.some((candidateValue) => Math.abs(candidateValue - value) < 1e-9)));
+      if (source) {
+        content.provenance = { source: source[0] };
+        changed = true;
+      }
+    }
+    if (changed) {
+      warnings.push(`Director content deterministically repaired for ${effect.effectId}`);
+      return { ...effect, content };
+    }
+    return effect;
+  });
+
+  const validEffects = repairedEffects.filter((effect) => {
+    const candidate = capabilityById.get(`${effect.familyId}:${effect.variantId}`);
+    if (!candidate) return true;
+    const fatalIssue = validateEffectContent(candidate, effect.content, evidence).find((issue) => ['required_slot_missing', 'numeric_value_required', 'numeric_evidence_missing', 'numeric_value_not_evidenced', 'provenance_required', 'provenance_source_invalid', 'items_required'].includes(issue.code));
+    if (!fatalIssue) return true;
+    warnings.push(`Director dropped unrepairable Effect ${effect.effectId}: ${fatalIssue.code}`);
+    return false;
+  });
+
+  const dedupedEffects: ProjectComposition['effects'] = [];
+  let previousFamily: string | undefined;
+  let consecutive = 0;
+  for (const effect of validEffects) {
+    consecutive = effect.familyId === previousFamily ? consecutive + 1 : 1;
+    previousFamily = effect.familyId;
+    if (consecutive > 3) {
+      warnings.push(`Director dropped excessive repeated Effect ${effect.effectId}`);
+      continue;
+    }
+    dedupedEffects.push(effect);
+  }
+  next.effects = dedupedEffects;
+  return { composition: next, warnings };
 }
 
 function isCompleteEffectShape(value: unknown): boolean {

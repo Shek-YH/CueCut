@@ -106,5 +106,5 @@ function createDataContract(effect: Pick<EffectDefinition, 'familyId' | 'semanti
   const itemSlots = list ? effect.contentSlots.filter((slot) => ['items', 'steps', 'entries'].includes(slot)) : [];
   if (list && !itemSlots.includes('items')) itemSlots.push('items');
   const requiredSlots = kind === 'quote' ? ['quoteText'] : kind === 'comparison' ? ['before', 'after'] : kind === 'text' ? effect.contentSlots.filter((slot) => slot === 'text') : kind === 'numeric' || kind === 'percentage' || kind === 'progress' || kind === 'chart' ? numericSlots.slice(0, 1) : itemSlots.slice(0, 1);
-  return { kind, requiredSlots, numericSlots, itemSlots, provenanceRequired: numeric || kind === 'comparison' || kind === 'chart' };
+  return { kind, requiredSlots, numericSlots, itemSlots, provenanceRequired: numeric || kind === 'chart' };
 }
