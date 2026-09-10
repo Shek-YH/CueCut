@@ -2,7 +2,7 @@ import { projectCompositionSchema, type ProjectComposition } from '../project/sc
 import { createOneCallGuard } from './oneCallGuard';
 import { assertCompositionCandidateIds, sanitizeCompositionCandidateIds, type CandidateIndexes } from './validator';
 import { lintComposition } from './compositionLinter';
-import { assertCompositionCandidateScopes } from './candidateScope';
+import { assertCompositionCandidateScopes, repairCompositionCandidateScopes } from './candidateScope';
 import type { EffectCapabilityCandidate, NumericEvidence, SelectionTraceEntry, VisualUnit } from './types';
 import { resolveCompositionLayout } from '../layout/compositionLayout';
 
@@ -34,7 +34,8 @@ export function createDirectorService(provider: DirectorProvider, fallback: Loca
       }
 
       const parsed = typeof raw === 'string' ? parseJson(raw) : raw;
-      const timingRepair = clampCompositionTiming(parsed);
+      const shapeRepair = repairCompositionShape(parsed);
+      const timingRepair = clampCompositionTiming(shapeRepair.value);
       const result = projectCompositionSchema.safeParse(timingRepair.value);
       if (!result.success) {
         return {
@@ -47,23 +48,31 @@ export function createDirectorService(provider: DirectorProvider, fallback: Loca
 
       const capabilityRepair = repairCompositionCapabilityDuration(result.data, getEffectCapabilities(input));
       const timingWarnings = [
+        ...shapeRepair.warnings,
         ...(timingRepair.changed ? ['Director timing locally clamped'] : []),
         ...(capabilityRepair.changed ? ['Director effect duration repaired to capability bounds'] : []),
       ];
-      const resolvedComposition = applyVisualContextLayout(capabilityRepair.value, input);
+      const layoutComposition = applyVisualContextLayout(capabilityRepair.value, input);
 
       const candidateIndexes = getCandidateIndexes(input);
       if (candidateIndexes) {
         try {
-          assertCompositionCandidateIds(resolvedComposition, candidateIndexes);
+          assertCompositionCandidateIds(layoutComposition, candidateIndexes);
         } catch (error) {
-          const sanitized = sanitizeCompositionCandidateIds(resolvedComposition, candidateIndexes);
+          const sanitized = sanitizeCompositionCandidateIds(layoutComposition, candidateIndexes);
           return { composition: sanitized.composition, usedFallback: true, warnings: [...timingWarnings, ...(sanitized.warnings.length ? sanitized.warnings : [error instanceof Error ? error.message : 'Director candidate validation failed'])], selectionTrace: fallbackSelectionTrace(input) };
         }
       }
 
+      let resolvedComposition = layoutComposition;
+      let scopeRepairChanged = false;
       try {
-        if (hasCandidateBundles(input)) assertCompositionCandidateScopes(resolvedComposition, getVisualUnits(input), getCandidateBundles(input));
+        if (hasCandidateBundles(input)) {
+          const repaired = repairCompositionCandidateScopes(resolvedComposition, getVisualUnits(input), getCandidateBundles(input));
+          resolvedComposition = projectCompositionSchema.parse(repaired.composition);
+          scopeRepairChanged = repaired.changed;
+          assertCompositionCandidateScopes(resolvedComposition, getVisualUnits(input), getCandidateBundles(input));
+        }
       } catch (error) {
         return {
           composition: fallback(input),
@@ -72,6 +81,7 @@ export function createDirectorService(provider: DirectorProvider, fallback: Loca
           selectionTrace: fallbackSelectionTrace(input),
         };
       }
+      const scopeWarnings = scopeRepairChanged ? ['Director segments deterministically scoped to VisualUnits'] : [];
 
       const compositionLint = lintComposition(resolvedComposition, getEffectCapabilities(input), {
         safeMargin: getSafeMargin(input),
@@ -83,7 +93,7 @@ export function createDirectorService(provider: DirectorProvider, fallback: Loca
         return {
           composition: fallback(input),
           usedFallback: true,
-          warnings: [...timingWarnings, 'Director composition linter failed: ' + compositionLint.errors.map((error) => `${error.code}@${error.path.join('.')}`).join(',')],
+          warnings: [...timingWarnings, ...scopeWarnings, 'Director composition linter failed: ' + compositionLint.errors.map((error) => `${error.code}@${error.path.join('.')}`).join(',')],
           selectionTrace: fallbackSelectionTrace(input),
           lint: compositionLint,
         };
@@ -95,14 +105,44 @@ export function createDirectorService(provider: DirectorProvider, fallback: Loca
         return {
           composition: fallback(input),
           usedFallback: true,
-          warnings: [...timingWarnings, selectionTraceIssue],
+          warnings: [...timingWarnings, ...scopeWarnings, selectionTraceIssue],
           selectionTrace: fallbackSelectionTrace(input),
           lint: compositionLint,
         };
       }
-      return { composition: resolvedComposition, usedFallback: false, warnings: timingWarnings, selectionTrace, lint: compositionLint };
+      return { composition: resolvedComposition, usedFallback: false, warnings: [...timingWarnings, ...scopeWarnings], selectionTrace, lint: compositionLint };
     },
   };
+}
+
+function repairCompositionShape(input: unknown): { value: unknown; warnings: string[] } {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return { value: input, warnings: [] };
+  const next = structuredClone(input) as Record<string, unknown>;
+  const warnings: string[] = [];
+  for (const key of ['subtitles', 'segments', 'soundEvents']) {
+    if (!Array.isArray(next[key])) {
+      next[key] = [];
+      warnings.push(`Director shape repaired missing ${key}`);
+    }
+  }
+  if (!next.directorMeta || typeof next.directorMeta !== 'object' || Array.isArray(next.directorMeta)) {
+    next.directorMeta = { densityTargetPerMin: 9, maxConcurrentFx: 3, notes: [] };
+    warnings.push('Director shape repaired missing directorMeta');
+  }
+  if (Array.isArray(next.effects)) {
+    const effects = next.effects;
+    const before = effects.length;
+    next.effects = effects.filter(isCompleteEffectShape);
+    const after = (next.effects as unknown[]).length;
+    if (after !== before) warnings.push(`Director shape dropped ${before - after} incomplete Effect object(s)`);
+  }
+  return { value: next, warnings };
+}
+
+function isCompleteEffectShape(value: unknown): boolean {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const effect = value as Record<string, unknown>;
+  return ['effectId', 'segmentId', 'familyId', 'variantId', 'time', 'content', 'layout', 'appearance', 'motion', 'sfx'].every((key) => key in effect);
 }
 
 function getEffectCapabilities(input: unknown): EffectCapabilityCandidate[] {

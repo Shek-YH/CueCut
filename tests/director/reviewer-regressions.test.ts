@@ -5,7 +5,7 @@ import { parseSrt } from '../../src/subtitles/srt';
 import { planVisualUnits } from '../../src/director/semanticPlanner';
 import { buildDirectorInputV2 } from '../../src/director/contextBuilder';
 import { createEffectCapability, validateEffectContent } from '../../src/director/capabilities';
-import { assertCompositionCandidateScopes } from '../../src/director/candidateScope';
+import { assertCompositionCandidateScopes, repairCompositionCandidateScopes } from '../../src/director/candidateScope';
 import { lintComposition } from '../../src/director/compositionLinter';
 import { createDirectorService } from '../../src/director/service';
 import { createFixtureProject } from '../../src/project/fixtures';
@@ -42,6 +42,7 @@ describe('Director independent-review regressions', () => {
     expect(result.units[0]?.structure?.items?.map((item) => item.text)).toEqual([
       '我先问骨架', '找出反常识的点', '好，基于我的情况。', '然后打开书亲自阅读啊。',
     ]);
+    expect(result.units[0]?.structure?.items?.[1]).toMatchObject({ startSec: 2, endSec: 4 });
   });
 
   it('rejects an effect selected from another VisualUnit bundle', () => {
@@ -67,6 +68,27 @@ describe('Director independent-review regressions', () => {
       { visualUnitId: 'vu-a', candidates: [numeric], retrievalReason: [] },
       { visualUnitId: 'vu-b', candidates: [], retrievalReason: [] },
     ])).toThrow(/scope/i);
+  });
+
+  it('narrows a wide provider segment to the candidate-bearing VisualUnit before assertion', () => {
+    const composition = createFixtureProject();
+    composition.effects = [composition.effects[0]!];
+    composition.segments = [{ ...composition.segments[0]!, sourceSubtitleIds: ['s-a', 's-b'] }];
+    const units: VisualUnit[] = [
+      { visualUnitId: 'vu-a', sourceSubtitleIds: ['s-a'], startSec: 0, endSec: 2, semanticIntent: 'evidence', importance: 0.5 },
+      { visualUnitId: 'vu-b', sourceSubtitleIds: ['s-b'], startSec: 2, endSec: 4, semanticIntent: 'quote', importance: 0.5 },
+    ];
+    const repaired = repairCompositionCandidateScopes(composition, units, [
+      { visualUnitId: 'vu-a', candidates: [numeric], retrievalReason: [] },
+      { visualUnitId: 'vu-b', candidates: [], retrievalReason: [] },
+    ]);
+
+    expect(repaired.changed).toBe(true);
+    expect(repaired.composition.segments[0]?.sourceSubtitleIds).toEqual(['s-a']);
+    expect(() => assertCompositionCandidateScopes(repaired.composition, units, [
+      { visualUnitId: 'vu-a', candidates: [numeric], retrievalReason: [] },
+      { visualUnitId: 'vu-b', candidates: [], retrievalReason: [] },
+    ])).not.toThrow();
   });
 
   it('rejects a numeric value that is labeled srt but absent from SRT evidence', () => {
@@ -210,5 +232,20 @@ describe('Director independent-review regressions', () => {
 
     expect(result.usedFallback).toBe(true);
     expect(result.warnings.join(' ')).toMatch(/trace|bundle|scope/i);
+  });
+
+  it('repairs missing global shape fields but drops incomplete orphan effects explicitly', async () => {
+    const composition = createFixtureProject();
+    const raw = structuredClone(composition) as Record<string, unknown>;
+    delete raw.soundEvents;
+    delete raw.directorMeta;
+    raw.effects = [...composition.effects, { effectId: 'orphan' }];
+    const service = createDirectorService(async () => raw, () => createFixtureProject());
+
+    const result = await service.generate({});
+
+    expect(result.usedFallback).toBe(false);
+    expect(result.composition.effects).toHaveLength(composition.effects.length);
+    expect(result.warnings.join(' ')).toMatch(/shape repaired|incomplete/i);
   });
 });

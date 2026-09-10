@@ -32,6 +32,7 @@ export function buildDirectorMessages(
         '必须保留输出骨架中的所有字段，尤其是 project.fps、project.canvasWidth、project.canvasHeight、project.aspectRatio、project.platformHint、project.contentStyleHint，以及每个 effect.layout 的 nx、ny、nw、nh、scale、anchor、preferredSide、relationToSubject。',
         '所有 Effect/Motion/SFX ID 只能来自 candidateIndexes；所有时间必须位于 project.durationSec 内。',
         'VisualUnit 是时间和语义的正式单位：每个 effect 必须引用对应的 segmentId，并只从该 VisualUnit 的 CandidateBundle 选择 Effect。',
+        '每个 Composition segment 的 sourceSubtitleIds 必须只属于一个 VisualUnit；如果内容跨越多个 VisualUnit，必须拆成多个 segment/effect，不得用一个宽 segment 规避作用域校验。',
         'CandidateBundle 中的 capability、contentSlots、duration、aspect ratio、useCases、avoidCases 与 dataContract 是硬约束，不得把未提供的候选当作可用候选。',
         'numeric、percentage、ring、progress、chart 和 data 内容必须可解析为 number，且 content.provenance.source 只能为 srt、user 或 project-data；不得发明字幕、用户或项目数据中不存在的数字。',
         '当候选能力支持 Steps、Checklist、List、Ranking 或 Process 时，保留完整 item 顺序；每个 item 必须包含 text 和 item cue（startSec），不得遗漏后续步骤。',

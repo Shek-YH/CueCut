@@ -18,7 +18,7 @@ export function planVisualUnits(transcript: TranscriptInput[]): DirectorSemantic
   const orderedSourceSegments = ordered.length >= 2
     ? transcript.slice(ordered[0]!.entries.reduce((min, entry) => Math.min(min, entry.index), ordered[0]!.entries[0]!.index), ordered[ordered.length - 1]!.entries.reduce((max, entry) => Math.max(max, entry.index), ordered[ordered.length - 1]!.entries[0]!.index) + 1)
     : [];
-  if (ordered.length >= 2) units.push(createOrderedProcessUnit(ordered.map((entry) => entry.representative.segment), orderedSourceSegments));
+  if (ordered.length >= 2) units.push(createOrderedProcessUnit(ordered, orderedSourceSegments));
 
   const orderedIds = new Set(orderedSourceSegments.map((segment) => segment.id));
   transcript.forEach((segment, index) => {
@@ -35,18 +35,18 @@ export function planVisualUnits(transcript: TranscriptInput[]): DirectorSemantic
   };
 }
 
-function createOrderedProcessUnit(segments: TranscriptInput[], sourceSegments: TranscriptInput[]): VisualUnit {
-  const items: VisualUnitItem[] = segments.map((segment, index) => ({
-    id: `item-${readOrder(segment.text) ?? index + 1}`,
-    text: orderedContent(segment.text),
-    startSec: segment.startSec,
-    endSec: segment.endSec,
+function createOrderedProcessUnit(groups: Array<{ entries: Array<{ segment: TranscriptInput; order: number; index: number }>; representative: { segment: TranscriptInput; order: number; index: number } }>, sourceSegments: TranscriptInput[]): VisualUnit {
+  const items: VisualUnitItem[] = groups.map((group, index) => ({
+    id: `item-${group.representative.order || index + 1}`,
+    text: orderedContent(group.representative.segment.text),
+    startSec: Math.min(...group.entries.map((entry) => entry.segment.startSec)),
+    endSec: Math.max(...group.entries.map((entry) => entry.segment.endSec)),
   }));
   return {
-    visualUnitId: `vu-${segments[0]!.id}`,
+    visualUnitId: `vu-${groups[0]!.representative.segment.id}`,
     sourceSubtitleIds: sourceSegments.map((segment) => segment.id),
-    startSec: Math.min(...segments.map((segment) => segment.startSec)),
-    endSec: Math.max(...segments.map((segment) => segment.endSec)),
+    startSec: Math.min(...groups.map((group) => group.representative.segment.startSec)),
+    endSec: Math.max(...groups.map((group) => group.representative.segment.endSec)),
     semanticIntent: 'ordered_process',
     importance: 1,
     structure: { type: 'ordered_process', items },
