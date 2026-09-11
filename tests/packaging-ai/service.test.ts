@@ -199,4 +199,33 @@ describe('single-pass packaging director', () => {
     expect(result.plan.transcriptRepair?.segments[0]?.id).toBe('transcript-2');
     expect(result.plan.timeline[0]?.id).toBe('transcript-1');
   });
+
+  it('renames duplicate explicit ids across the packaging plan and rewrites references', async () => {
+    const director = createPackagingDirector(async () => ({
+      schemaVersion: '1.0',
+      transcriptRepair: { segments: [{ id: 'shared', startSec: 0, endSec: 1, originalText: '原始', correctedText: '修正', correctionType: 'asr-recognition', confidence: 0.9, needsReview: false }] },
+      chapters: [{ id: 'shared', title: '章节', summary: '章节', startSec: 0, endSec: 5, sourceSubtitleIds: ['shared'], semanticRole: 'hook' }],
+      sections: [{ id: 'shared', chapterId: 'shared', title: '段落', summary: '段落', startSec: 0, endSec: 5, sourceSubtitleIds: ['shared'], semanticRole: 'quote', evidenceType: 'quote', keepForVisualPackaging: true, visualValue: 1, selectionReason: '核心', elementIds: ['shared'] }],
+      visualUnits: [{ id: 'shared', sectionId: 'shared', kind: 'quote', startSec: 1, endSec: 2, layer: 1, persistence: 'transient', sourceSubtitleIds: ['shared'], summary: '短句', selectionReason: '核心', visualIntent: 'quote', content: { text: '短句' }, cueTimesSec: [], placement: { preferredZones: ['center'], subjectRelation: 'avoid', anchor: 'scene-safe' }, templateQuery: { semanticRole: 'quote' } }],
+      timeline: [{ id: 'shared', chapterId: 'shared', sectionId: 'shared', sourceSubtitleIds: ['shared'], startSec: 2, endSec: 3, intent: 'quote', category: 'quote', content: { text: '时间轴短句' }, importance: 0.8, visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'normal' }, motionIntent: { entrance: 'fade_in', emphasis: 'none', exit: 'fade_out' }, placementIntent: { preferredZones: ['center'], subjectRelation: 'avoid', anchor: 'scene-safe' }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false } }],
+    }));
+
+    const result = await director.generate({ project: { projectId: 'duplicate-id-project', durationSec: 10, fps: 30, canvasWidth: 1080, canvasHeight: 1920, aspectRatio: '9:16' } });
+    const sourceIds = [
+      ...(result.plan.transcriptRepair?.segments.map((segment) => segment.id) ?? []),
+      ...(result.plan.chapters?.map((chapter) => chapter.id) ?? []),
+      ...(result.plan.sections?.map((section) => section.id) ?? []),
+      ...(result.plan.visualUnits?.map((unit) => unit.id) ?? []),
+      ...(result.plan.timeline.filter((item) => item.startSec === 2).map((item) => item.id)),
+    ];
+    const timelineItem = result.plan.timeline.find((item) => item.startSec === 2);
+
+    expect(sourceIds).toEqual(['shared', 'shared-2', 'shared-3', 'shared-4', 'shared-5']);
+    expect(new Set(sourceIds).size).toBe(sourceIds.length);
+    expect(new Set(result.plan.timeline.map((item) => item.id)).size).toBe(2);
+    expect(result.plan.chapters?.[0]?.id).toBe('shared-2');
+    expect(result.plan.sections?.[0]).toMatchObject({ id: 'shared-3', chapterId: 'shared-2', elementIds: ['shared-4'], sourceSubtitleIds: ['shared'] });
+    expect(result.plan.visualUnits?.[0]).toMatchObject({ id: 'shared-4', sectionId: 'shared-3', sourceSubtitleIds: ['shared'] });
+    expect(timelineItem).toMatchObject({ id: 'shared-5', chapterId: 'shared-2', sectionId: 'shared-3', sourceSubtitleIds: ['shared'] });
+  });
 });

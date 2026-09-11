@@ -12,10 +12,13 @@ type VisualValue = boolean | number;
 
 export const LOW_VISUAL_VALUE_THRESHOLD = 0.25;
 
-type IdAllocator = { next: (prefix: string) => string };
+type IdNamespace = 'transcript' | 'chapter' | 'section' | 'element' | 'visualUnit' | 'timeline';
+type IdReferences = Record<IdNamespace, Map<string, string>>;
+type IdAllocator = { next: (prefix: string) => string; claim: (value: unknown, prefix: string) => string; hasDuplicates: boolean };
 
 function createIdAllocator(value: unknown): IdAllocator {
-  const used = new Set<string>();
+  const reserved = new Set<string>();
+  const counts = new Map<string, number>();
   const collect = (current: unknown): void => {
     if (Array.isArray(current)) {
       current.forEach(collect);
@@ -23,18 +26,38 @@ function createIdAllocator(value: unknown): IdAllocator {
     }
     if (!current || typeof current !== 'object') return;
     for (const [key, entry] of Object.entries(current)) {
-      if (key === 'id' && typeof entry === 'string' && entry.length > 0) used.add(entry);
+      if (key === 'id' && typeof entry === 'string' && entry.length > 0) {
+        reserved.add(entry);
+        counts.set(entry, (counts.get(entry) ?? 0) + 1);
+      }
       collect(entry);
     }
   };
   collect(value);
+  const used = new Set<string>();
+  const next = (prefix: string): string => {
+    let index = 1;
+    let id = `${prefix}-${index}`;
+    while (reserved.has(id) || used.has(id)) id = `${prefix}-${++index}`;
+    used.add(id);
+    return id;
+  };
   return {
-    next(prefix) {
-      let index = 1;
-      let id = `${prefix}-${index}`;
-      while (used.has(id)) id = `${prefix}-${++index}`;
-      used.add(id);
-      return id;
+    hasDuplicates: [...counts.values()].some((count) => count > 1),
+    next,
+    claim(valueToClaim, prefix) {
+      if (typeof valueToClaim === 'string' && valueToClaim.length > 0 && !used.has(valueToClaim)) {
+        used.add(valueToClaim);
+        return valueToClaim;
+      }
+      if (typeof valueToClaim === 'string' && valueToClaim.length > 0) {
+        let suffix = 2;
+        let id = `${valueToClaim}-${suffix}`;
+        while (reserved.has(id) || used.has(id)) id = `${valueToClaim}-${++suffix}`;
+        used.add(id);
+        return id;
+      }
+      return next(prefix);
     },
   };
 }
@@ -45,6 +68,23 @@ const stringValue = (value: unknown): string | undefined => typeof value === 'st
 const clamp = (value: number, min: number, max: number): number => Math.max(min, Math.min(max, value));
 const intClamp = (value: number, min: number, max: number): number => Math.round(clamp(value, min, max));
 const numberArray = (value: unknown): number[] => Array.isArray(value) ? value.flatMap((entry) => numberValue(entry) === null ? [] : [numberValue(entry)!]) : [];
+
+function createIdReferences(): IdReferences {
+  return { transcript: new Map(), chapter: new Map(), section: new Map(), element: new Map(), visualUnit: new Map(), timeline: new Map() };
+}
+
+function rememberId(map: Map<string, string>, rawId: unknown, normalizedId: string): void {
+  if (typeof rawId === 'string' && rawId.length > 0 && !map.has(rawId)) map.set(rawId, normalizedId);
+}
+
+function rewriteId(value: unknown, map: Map<string, string> | undefined): string | undefined {
+  if (typeof value !== 'string' || value.length === 0) return undefined;
+  return map?.get(value) ?? value;
+}
+
+function rewriteElementId(value: string, references: IdReferences): string {
+  return references.visualUnit.get(value) ?? references.element.get(value) ?? references.timeline.get(value) ?? value;
+}
 
 function parseLocally(value: unknown): { value: unknown; repaired: boolean } {
   if (typeof value !== 'string') return { value, repaired: false };
@@ -210,17 +250,19 @@ function templateQueryFor(value: unknown, role: Role | undefined, visualIntent: 
   };
 }
 
-function normalizeTranscriptRepair(value: unknown, context: Context, ids: IdAllocator): R {
+function normalizeTranscriptRepair(value: unknown, context: Context, ids: IdAllocator, references: IdReferences): R {
   const values = Array.isArray(record(value).segments) ? record(value).segments as unknown[] : [];
   return { segments: values.flatMap((entry) => {
     const raw = record(entry);
+    const id = ids.claim(raw.id, 'transcript');
+    rememberId(references.transcript, raw.id, id);
     const startSec = clamp(numberValue(raw.startSec) ?? 0, 0, context.durationSec - 0.01);
     const endSec = clamp(numberValue(raw.endSec) ?? Math.min(context.durationSec, startSec + 0.01), startSec + 0.01, context.durationSec);
-    return [{ id: stringValue(raw.id) || ids.next('transcript'), startSec, endSec, originalText: stringValue(raw.originalText) ?? stringValue(raw.text) ?? '', correctedText: stringValue(raw.correctedText) ?? stringValue(raw.originalText) ?? stringValue(raw.text) ?? '', correctionType: ['none', 'homophone', 'asr-recognition', 'duplicate-word', 'punctuation', 'segmentation', 'english-normalization', 'number-normalization', 'proper-noun', 'context-repair', 'uncertain'].includes(String(raw.correctionType)) ? String(raw.correctionType) : 'uncertain', confidence: clamp(numberValue(raw.confidence) ?? 0.5, 0, 1), needsReview: raw.needsReview === true }];
+    return [{ id, startSec, endSec, originalText: stringValue(raw.originalText) ?? stringValue(raw.text) ?? '', correctedText: stringValue(raw.correctedText) ?? stringValue(raw.originalText) ?? stringValue(raw.text) ?? '', correctionType: ['none', 'homophone', 'asr-recognition', 'duplicate-word', 'punctuation', 'segmentation', 'english-normalization', 'number-normalization', 'proper-noun', 'context-repair', 'uncertain'].includes(String(raw.correctionType)) ? String(raw.correctionType) : 'uncertain', confidence: clamp(numberValue(raw.confidence) ?? 0.5, 0, 1), needsReview: raw.needsReview === true }];
   }) };
 }
 
-function normalizeTimelineItem(value: unknown, index: number, context: Context, inherited: R = {}, ids?: IdAllocator): R {
+function normalizeTimelineItem(value: unknown, index: number, context: Context, inherited: R = {}, ids?: IdAllocator, references?: IdReferences, namespace: 'element' | 'timeline' = 'timeline'): R {
   const raw = record(value);
   const role = semanticRoleFor(raw.semanticRole ?? inherited.semanticRole);
   const evidence = evidenceTypeFor(raw.evidenceType ?? inherited.evidenceType);
@@ -232,11 +274,16 @@ function normalizeTimelineItem(value: unknown, index: number, context: Context, 
   const cueTimesSec = numberArray(raw.cueTimesSec).map((cue) => clamp(cue, startSec, endSec));
   const templateQuery = templateQueryFor(raw.templateQuery ?? inherited.templateQuery, role, raw.visualIntent ?? inherited.visualIntent, category, content, placement.preferredZones as Zone[]);
   const cadence = cadenceFor(raw.cadence ?? inherited.cadence, cueTimesSec, startSec, endSec);
+  const id = ids?.claim(raw.id, 'overlay') ?? stringValue(raw.id) ?? 'overlay-' + (index + 1);
+  const chapterId = rewriteId(raw.chapterId ?? inherited.chapterId, references?.chapter);
+  const sectionId = rewriteId(raw.sectionId ?? inherited.sectionId, references?.section);
+  const sourceSubtitleIds = subtitleIdsForRange(raw.sourceSubtitleIds ?? inherited.sourceSubtitleIds, context.transcript, startSec, endSec).map((sourceId) => references?.transcript.get(sourceId) ?? sourceId);
+  if (references) rememberId(references[namespace], raw.id, id);
   const item: R = {
-    id: stringValue(raw.id) || ids?.next('overlay') || 'overlay-' + (index + 1),
-    ...(stringValue(raw.chapterId ?? inherited.chapterId) ? { chapterId: stringValue(raw.chapterId ?? inherited.chapterId) } : {}),
-    ...(stringValue(raw.sectionId ?? inherited.sectionId) ? { sectionId: stringValue(raw.sectionId ?? inherited.sectionId) } : {}),
-    sourceSubtitleIds: subtitleIdsForRange(raw.sourceSubtitleIds ?? inherited.sourceSubtitleIds, context.transcript, startSec, endSec),
+    id,
+    ...(chapterId ? { chapterId } : {}),
+    ...(sectionId ? { sectionId } : {}),
+    sourceSubtitleIds,
     sequence: intClamp(numberValue(raw.sequence) ?? index + 1, 1, 10000),
     ...(role ? { semanticRole: role } : {}),
     ...(evidence ? { evidenceType: evidence } : {}),
@@ -262,29 +309,34 @@ function normalizeTimelineItem(value: unknown, index: number, context: Context, 
   return item;
 }
 
-function normalizeChapter(value: unknown, index: number, context: Context, ids: IdAllocator): R {
+function normalizeChapter(value: unknown, index: number, context: Context, ids: IdAllocator, references: IdReferences): R {
   const raw = record(value);
+  const id = ids.claim(raw.id, 'chapter');
+  rememberId(references.chapter, raw.id, id);
   const startSec = clamp(numberValue(raw.startSec) ?? numberValue(raw.start) ?? 0, 0, context.durationSec - 0.01);
   const endSec = clamp(numberValue(raw.endSec) ?? numberValue(raw.end) ?? Math.min(context.durationSec, startSec + 0.01), startSec + 0.01, context.durationSec);
-  return { id: stringValue(raw.id) || ids.next('chapter'), title: stringValue(raw.title) || 'Chapter ' + (index + 1), summary: stringValue(raw.summary) || stringValue(raw.title) || 'Chapter ' + (index + 1), startSec, endSec, sourceSubtitleIds: subtitleIdsForRange(raw.sourceSubtitleIds, context.transcript, startSec, endSec), semanticRole: semanticRoleFor(raw.semanticRole) ?? 'neutral' };
+  return { id, title: stringValue(raw.title) || 'Chapter ' + (index + 1), summary: stringValue(raw.summary) || stringValue(raw.title) || 'Chapter ' + (index + 1), startSec, endSec, sourceSubtitleIds: subtitleIdsForRange(raw.sourceSubtitleIds, context.transcript, startSec, endSec).map((sourceId) => references.transcript.get(sourceId) ?? sourceId), semanticRole: semanticRoleFor(raw.semanticRole) ?? 'neutral' };
 }
 
-function normalizeSection(value: unknown, index: number, context: Context, ids: IdAllocator): R {
+function normalizeSection(value: unknown, index: number, context: Context, ids: IdAllocator, references: IdReferences): R {
   const raw = record(value);
+  const id = ids.claim(raw.id, 'section');
+  rememberId(references.section, raw.id, id);
   const startSec = clamp(numberValue(raw.startSec) ?? numberValue(raw.start) ?? 0, 0, context.durationSec - 0.01);
   const endSec = clamp(numberValue(raw.endSec) ?? numberValue(raw.end) ?? Math.min(context.durationSec, startSec + 0.01), startSec + 0.01, context.durationSec);
   const role = semanticRoleFor(raw.semanticRole) ?? 'neutral';
   const evidence = evidenceTypeFor(raw.evidenceType) ?? 'none';
   const source = Array.isArray(raw.elements) ? raw.elements : Array.isArray(raw.items) ? raw.items : [];
-  const sectionId = stringValue(raw.id) || ids.next('section');
-  const chapterId = stringValue(raw.chapterId) || ids.next('chapter');
-  const elements = source.map((entry, elementIndex) => normalizeTimelineItem(entry, elementIndex, context, { chapterId, sectionId, startSec, endSec, semanticRole: role, evidenceType: evidence, selectionReason: raw.selectionReason, visualValue: raw.visualValue, keepForVisualPackaging: raw.keepForVisualPackaging }, ids));
+  const chapterId = rewriteId(raw.chapterId, references.chapter) ?? ids.next('chapter');
+  const elements = source.map((entry, elementIndex) => normalizeTimelineItem(entry, elementIndex, context, { chapterId, sectionId: id, startSec, endSec, semanticRole: role, evidenceType: evidence, selectionReason: raw.selectionReason, visualValue: raw.visualValue, keepForVisualPackaging: raw.keepForVisualPackaging }, ids, references, 'element'));
   const elementIds = Array.isArray(raw.elementIds) ? raw.elementIds.filter((entry): entry is string => typeof entry === 'string') : elements.map((entry) => String(entry.id));
-  return { id: sectionId, chapterId, title: stringValue(raw.title) || stringValue(raw.summary) || 'Section ' + (index + 1), summary: stringValue(raw.summary) || stringValue(raw.title) || 'Section ' + (index + 1), startSec, endSec, sourceSubtitleIds: subtitleIdsForRange(raw.sourceSubtitleIds, context.transcript, startSec, endSec), semanticRole: role, evidenceType: evidence, keepForVisualPackaging: raw.keepForVisualPackaging !== false, visualValue: raw.visualValue === false ? false : clamp(numberValue(raw.visualValue) ?? 1, 0, 1), selectionReason: stringValue(raw.selectionReason) || 'AI selected this section for visual packaging', elementIds, ...(elements.length > 0 ? { elements } : {}) };
+  return { id, chapterId, title: stringValue(raw.title) || stringValue(raw.summary) || 'Section ' + (index + 1), summary: stringValue(raw.summary) || stringValue(raw.title) || 'Section ' + (index + 1), startSec, endSec, sourceSubtitleIds: subtitleIdsForRange(raw.sourceSubtitleIds, context.transcript, startSec, endSec).map((sourceId) => references.transcript.get(sourceId) ?? sourceId), semanticRole: role, evidenceType: evidence, keepForVisualPackaging: raw.keepForVisualPackaging !== false, visualValue: raw.visualValue === false ? false : clamp(numberValue(raw.visualValue) ?? 1, 0, 1), selectionReason: stringValue(raw.selectionReason) || 'AI selected this section for visual packaging', elementIds, ...(elements.length > 0 ? { elements } : {}) };
 }
 
-function normalizeVisualUnit(value: unknown, context: Context, ids: IdAllocator): R {
+function normalizeVisualUnit(value: unknown, context: Context, ids: IdAllocator, references: IdReferences): R {
   const raw = record(value);
+  const id = ids.claim(raw.id, 'unit');
+  rememberId(references.visualUnit, raw.id, id);
   const startSec = clamp(numberValue(raw.startSec) ?? numberValue(raw.start) ?? 0, 0, context.durationSec - 0.01);
   const endSec = clamp(numberValue(raw.endSec) ?? numberValue(raw.end) ?? Math.min(context.durationSec, startSec + 0.01), startSec + 0.01, context.durationSec);
   const role = semanticRoleFor(raw.semanticRole) ?? semanticRoleFor(record(raw.templateQuery).semanticRole);
@@ -293,7 +345,8 @@ function normalizeVisualUnit(value: unknown, context: Context, ids: IdAllocator)
   const placement = placementFor(raw.placement ?? raw.placementIntent, role, category);
   const cueTimesSec = numberArray(raw.cueTimesSec).map((cue) => clamp(cue, startSec, endSec));
   const visualValue = visualValueFor(raw.visualValue);
-  return { id: stringValue(raw.id) || ids.next('unit'), sectionId: stringValue(raw.sectionId) || 'section-1', kind: stringValue(raw.kind) || category, startSec, endSec, layer: intClamp(numberValue(raw.layer) ?? 1, 0, 3), persistence: persistenceFor(raw.persistence) ?? 'transient', sourceSubtitleIds: subtitleIdsForRange(raw.sourceSubtitleIds, context.transcript, startSec, endSec), summary: stringValue(raw.summary) || readableContent(content) || 'Visual packaging unit', selectionReason: stringValue(raw.selectionReason) || 'AI selected this visual unit', visualIntent: typeof raw.visualIntent === 'string' || (raw.visualIntent && typeof raw.visualIntent === 'object' && !Array.isArray(raw.visualIntent)) ? raw.visualIntent : 'emphasize-key-claim', content, cueTimesSec, placement, templateQuery: templateQueryFor(raw.templateQuery, role, raw.visualIntent, category, content, placement.preferredZones as Zone[]), ...(visualValue !== undefined ? { visualValue } : {}), ...(raw.keepForVisualPackaging !== undefined ? { keepForVisualPackaging: raw.keepForVisualPackaging === true } : {}) };
+  const sectionId = rewriteId(raw.sectionId, references.section) ?? 'section-1';
+  return { id, sectionId, kind: stringValue(raw.kind) || category, startSec, endSec, layer: intClamp(numberValue(raw.layer) ?? 1, 0, 3), persistence: persistenceFor(raw.persistence) ?? 'transient', sourceSubtitleIds: subtitleIdsForRange(raw.sourceSubtitleIds, context.transcript, startSec, endSec).map((sourceId) => references.transcript.get(sourceId) ?? sourceId), summary: stringValue(raw.summary) || readableContent(content) || 'Visual packaging unit', selectionReason: stringValue(raw.selectionReason) || 'AI selected this visual unit', visualIntent: typeof raw.visualIntent === 'string' || (raw.visualIntent && typeof raw.visualIntent === 'object' && !Array.isArray(raw.visualIntent)) ? raw.visualIntent : 'emphasize-key-claim', content, cueTimesSec, placement, templateQuery: templateQueryFor(raw.templateQuery, role, raw.visualIntent, category, content, placement.preferredZones as Zone[]), ...(visualValue !== undefined ? { visualValue } : {}), ...(raw.keepForVisualPackaging !== undefined ? { keepForVisualPackaging: raw.keepForVisualPackaging === true } : {}) };
 }
 
 function keepVisual(item: R): boolean {
@@ -333,17 +386,19 @@ function timelineItemFromUnit(unit: R, index: number, context: Context, section?
 function repairPackagingPlan(value: unknown, request: unknown): { value: unknown; repaired: boolean } {
   const raw = record(value);
   const ids = createIdAllocator(value);
+  const references = createIdReferences();
   const hasPackagingEnvelope = Array.isArray(raw.chapters) || Array.isArray(raw.sections) || Array.isArray(raw.visualUnits);
   const parsed = packagingPlanSchema.safeParse(value);
-  if (parsed.success && !hasPackagingEnvelope) return { value: parsed.data, repaired: raw.schemaVersion === 1 };
+  if (parsed.success && !hasPackagingEnvelope && !ids.hasDuplicates) return { value: parsed.data, repaired: raw.schemaVersion === 1 };
   if (Object.keys(raw).length === 0) return { value, repaired: false };
   const context = buildContext(raw, request);
-  const chapters = Array.isArray(raw.chapters) ? raw.chapters.map((entry, index) => normalizeChapter(entry, index, context, ids)) : undefined;
-  const sections = Array.isArray(raw.sections) ? raw.sections.map((entry, index) => normalizeSection(entry, index, context, ids)) : undefined;
-  const normalizedUnits = Array.isArray(raw.visualUnits) ? raw.visualUnits.map((entry) => normalizeVisualUnit(entry, context, ids)) : undefined;
+  const transcriptRepair = raw.transcriptRepair !== undefined ? normalizeTranscriptRepair(raw.transcriptRepair, context, ids, references) : undefined;
+  const chapters = Array.isArray(raw.chapters) ? raw.chapters.map((entry, index) => normalizeChapter(entry, index, context, ids, references)) : undefined;
+  const sections = Array.isArray(raw.sections) ? raw.sections.map((entry, index) => normalizeSection(entry, index, context, ids, references)) : undefined;
+  const normalizedUnits = Array.isArray(raw.visualUnits) ? raw.visualUnits.map((entry) => normalizeVisualUnit(entry, context, ids, references)) : undefined;
   const units = normalizedUnits?.filter((unit) => keepVisualUnit(unit, Array.isArray(sections) ? sections.find((section) => section.id === unit.sectionId) : undefined));
   const sectionElements = (sections ?? []).flatMap((section) => Array.isArray(section.elements) ? section.elements as R[] : []);
-  const rawTimeline = Array.isArray(raw.timeline) ? raw.timeline.map((entry, index) => normalizeTimelineItem(entry, index, context, {}, ids)) : [];
+  const rawTimeline = Array.isArray(raw.timeline) ? raw.timeline.map((entry, index) => normalizeTimelineItem(entry, index, context, {}, ids, references, 'timeline')) : [];
   const candidates = [...rawTimeline, ...sectionElements, ...(units ?? []).map((unit, index) => timelineItemFromUnit(unit, index, context, sections?.find((section) => section.id === unit.sectionId)))];
   const seenIds = new Set<string>();
   const timeline = candidates.filter((item) => {
@@ -364,7 +419,10 @@ function repairPackagingPlan(value: unknown, request: unknown): { value: unknown
   const finalSections = sections?.map((section) => ({
     ...section,
     elementIds: Array.isArray(section.elementIds)
-      ? section.elementIds.filter((id): id is string => typeof id === 'string' && timelineIds.has(id))
+      ? section.elementIds
+        .filter((id): id is string => typeof id === 'string')
+        .map((id) => rewriteElementId(id, references))
+        .filter((id, index, idsForSection): id is string => timelineIds.has(id) && idsForSection.indexOf(id) === index)
       : [],
   }));
   const canvas = record(raw.canvas);
@@ -379,7 +437,7 @@ function repairPackagingPlan(value: unknown, request: unknown): { value: unknown
     projectId: stringValue(raw.projectId) || stringValue(context.project.projectId) || 'packaging-project',
     canvas: { width: Math.max(1, Math.round(numberValue(canvas.width) ?? numberValue(context.project.canvasWidth) ?? context.width)), height: Math.max(1, Math.round(numberValue(canvas.height) ?? numberValue(context.project.canvasHeight) ?? context.height)), aspectRatio: stringValue(canvas.aspectRatio) || stringValue(context.project.aspectRatio) || (context.height > context.width ? '9:16' : '16:9'), fps: clamp(numberValue(canvas.fps) ?? numberValue(context.project.fps) ?? numberValue(context.videoMeta.fps) ?? 30, 1, 240) },
     globalStyle: { visualStyle: stringValue(style.visualStyle) || stringValue(preferences.style) || 'clean-tech', energy: clamp(numberValue(style.energy) ?? numberValue(preferences.energy) ?? 0.5, 0, 1), density: densityFor(style.density ?? preferences.density), paletteIntent: stringValue(style.paletteIntent) || 'derive-from-brand', motionIntensity: clamp(numberValue(style.motionIntensity) ?? numberValue(preferences.motionIntensity) ?? 0.5, 0, 1) },
-    ...(raw.transcriptRepair !== undefined ? { transcriptRepair: normalizeTranscriptRepair(raw.transcriptRepair, context, ids) } : {}),
+    ...(transcriptRepair ? { transcriptRepair } : {}),
     ...(chapters ? { chapters } : {}),
     ...(finalSections ? { sections: finalSections } : {}),
     ...(finalUnits ? { visualUnits: finalUnits } : {}),
