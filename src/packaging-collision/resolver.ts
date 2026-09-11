@@ -9,6 +9,7 @@ export interface CollisionOverlay {
   endSec?: number;
   subjectRelation?: string;
   locked?: boolean;
+  layer?: number;
 }
 
 export interface CollisionRepair {
@@ -41,7 +42,7 @@ export function resolveOverlayCollisions<T extends CollisionOverlay>(input: { ov
     const fixed = [...input.subtitleRects, ...(input.allowSubjectOverlap?.(overlay) ? [] : input.subjectRects)];
     const candidates = [overlay.rect, ...overlay.candidates];
     const hasFixedSafeCandidate = candidates.some((candidate) => fixed.every((other) => !overlaps(candidate, other)));
-    const blocked = [...fixed, ...resolved.filter((item) => overlapsInTime(overlay, item)).map((item) => item.rect)];
+    const blocked = [...fixed, ...resolved.filter((item) => overlapsInTime(overlay, item) && (item.layer ?? 0) === (overlay.layer ?? 0)).map((item) => item.rect)];
     const next = candidates.find((candidate) => blocked.every((other) => !overlaps(candidate, other)));
     if (next) {
       if (next !== overlay.rect) repairs.push({ overlayId: overlay.id, action: 'move' });
