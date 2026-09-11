@@ -10,7 +10,7 @@ type Zone = (typeof placementZones)[number];
 type Persistence = (typeof persistenceModes)[number];
 type VisualValue = boolean | number;
 
-const LOW_VISUAL_VALUE_THRESHOLD = 0.25;
+export const LOW_VISUAL_VALUE_THRESHOLD = 0.25;
 
 const record = (value: unknown): R => value && typeof value === 'object' && !Array.isArray(value) ? value as R : {};
 const numberValue = (value: unknown): number | null => typeof value === 'number' && Number.isFinite(value) ? value : null;
@@ -272,6 +272,13 @@ function keepVisual(item: R): boolean {
   return item.visualValue !== false && !(typeof item.visualValue === 'number' && item.visualValue < LOW_VISUAL_VALUE_THRESHOLD);
 }
 
+function keepVisualUnit(unit: R, section?: R): boolean {
+  return unit.keepForVisualPackaging !== false && section?.keepForVisualPackaging !== false && keepVisual({
+    ...unit,
+    visualValue: unit.visualValue ?? section?.visualValue,
+  });
+}
+
 function timelineItemFromUnit(unit: R, index: number, context: Context, section?: R): R {
   const templateQuery = record(unit.templateQuery);
   return normalizeTimelineItem({
@@ -304,15 +311,16 @@ function repairPackagingPlan(value: unknown, request: unknown): { value: unknown
   const context = buildContext(raw, request);
   const chapters = Array.isArray(raw.chapters) ? raw.chapters.map((entry, index) => normalizeChapter(entry, index, context)) : undefined;
   const sections = Array.isArray(raw.sections) ? raw.sections.map((entry, index) => normalizeSection(entry, index, context)) : undefined;
-  const units = Array.isArray(raw.visualUnits) ? raw.visualUnits.map((entry, index) => normalizeVisualUnit(entry, index, context)) : undefined;
+  const normalizedUnits = Array.isArray(raw.visualUnits) ? raw.visualUnits.map((entry, index) => normalizeVisualUnit(entry, index, context)) : undefined;
+  const units = normalizedUnits?.filter((unit) => keepVisualUnit(unit, Array.isArray(sections) ? sections.find((section) => section.id === unit.sectionId) : undefined));
   const sectionElements = (sections ?? []).flatMap((section) => Array.isArray(section.elements) ? section.elements as R[] : []);
   const rawTimeline = Array.isArray(raw.timeline) ? raw.timeline.map((entry, index) => normalizeTimelineItem(entry, index, context)) : [];
   const candidates = [...rawTimeline, ...sectionElements, ...(units ?? []).map((unit, index) => timelineItemFromUnit(unit, index, context, sections?.find((section) => section.id === unit.sectionId)))];
   const timeline = candidates.filter((item, index, all) => {
-    const unit = units?.find((candidate) => candidate.id === item.id);
+    const unit = normalizedUnits?.find((candidate) => candidate.id === item.id);
     const section = sections?.find((candidate) => candidate.id === item.sectionId);
     const sectionIsVisual = section?.keepForVisualPackaging !== false;
-    const unitIsVisual = unit?.keepForVisualPackaging !== false;
+    const unitIsVisual = unit ? keepVisualUnit(unit, section) : true;
     return keepVisual({ ...item, visualValue: item.visualValue ?? unit?.visualValue ?? section?.visualValue }) && sectionIsVisual && unitIsVisual && all.findIndex((candidate) => candidate.id === item.id) === index;
   });
   const canvas = record(raw.canvas);

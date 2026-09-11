@@ -97,6 +97,7 @@ describe('single-pass packaging director', () => {
     }));
     const result = await director.generate({ project: { projectId: 'value-project', durationSec: 10, fps: 30, canvasWidth: 1080, canvasHeight: 1920, aspectRatio: '9:16' }, preferences: { style: 'clean-tech', density: 'auto' } });
     expect(result.plan.timeline.map((item) => item.id)).toEqual(['keep']);
+    expect(result.plan.visualUnits?.map((unit) => unit.id)).toEqual(['keep']);
   });
 
   it('skips a visual unit explicitly excluded from visual packaging', async () => {
