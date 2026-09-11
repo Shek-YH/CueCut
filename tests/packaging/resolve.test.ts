@@ -126,9 +126,9 @@ describe('packaging plan resolver', () => {
 
     const result = resolvePackagingPlan({ ...base, timeline: [item('avoid', 'avoid'), item('foreground', 'foreground')] }, { subjectRects: [{ x: 0, y: 0, width: 1, height: 1 }] });
 
-    expect(result.overlays).toEqual([]);
-    expect(result.diagnostics.dropped).toEqual(['avoid', 'foreground']);
-    expect(result.diagnostics.warnings).toEqual(['fixed collision prevented overlay avoid from placement', 'fixed collision prevented overlay foreground from placement']);
+    expect(result.overlays.map((overlay) => overlay.id)).toEqual(['foreground']);
+    expect(result.diagnostics.dropped).toEqual(['avoid']);
+    expect(result.diagnostics.warnings).toEqual(['fixed collision prevented overlay avoid from placement']);
   });
 
   it('keeps the most important concurrent overlays and reports deterministic drops', () => {

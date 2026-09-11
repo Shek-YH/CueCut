@@ -1,5 +1,6 @@
 import type { PackagingPlan } from '../packaging-ir/schema';
-import { resolvePackagingEffect, type RegistryTemplateQuery } from '../packaging-registry/resolver';
+import { resolvePackagingEffect } from '../packaging-registry/resolver';
+import type { PackagingTemplateQuery } from '../packaging-ir/schema';
 import { solvePackagingLayout, type PackagingZone } from '../packaging-layout/solver';
 import { resolveOverlayCollisions, type CollisionOverlay, type CollisionRepair } from '../packaging-collision/resolver';
 import { compileResolvedTimeline, type RuntimeTimelineItem } from '../packaging-timeline/compiler';
@@ -24,7 +25,7 @@ export interface ResolvedPackagingOverlay extends CollisionOverlay {
   visualValue?: boolean | number;
   layer?: number;
   persistence?: 'transient' | 'section' | 'chapter' | 'persistent';
-  templateQuery?: Record<string, unknown>;
+  templateQuery?: PackagingTemplateQuery;
   cueTimesSec?: number[];
   cadence?: { stepMs?: number; staggerMs?: number; emphasisAtMs?: number; cueOffsetsMs?: number[] };
   dimAtSec?: number;
@@ -32,7 +33,7 @@ export interface ResolvedPackagingOverlay extends CollisionOverlay {
   userOverride?: { locked: boolean; zone?: PackagingZone };
 }
 
-type ResolvablePackagingTimelineItem = Omit<PackagingPlan['timeline'][number], 'templateQuery'> & { templateQuery?: RegistryTemplateQuery };
+type ResolvablePackagingTimelineItem = Omit<PackagingPlan['timeline'][number], 'templateQuery'> & { templateQuery?: PackagingTemplateQuery };
 type ResolvablePackagingPlan = Omit<PackagingPlan, 'timeline'> & { timeline: ResolvablePackagingTimelineItem[] };
 export interface PackagingSpatialContext {
   subtitleRects?: NormalizedRect[];
@@ -126,7 +127,7 @@ export function resolvePackagingPlan(plan: ResolvablePackagingPlan, spatialConte
       layoutFallback: layout.fallbackUsed,
     } satisfies ResolvedPackagingOverlay & { registryFallback: boolean; layoutFallback: boolean };
   });
-  const collision = resolveOverlayCollisions({ overlays: initial, subtitleRects: spatial.subtitleRects, subjectRects: spatial.subjectRects.map((rect) => expandRect(rect, plan.constraints.subjectAvoidPadding)), allowSubjectOverlap: (overlay) => plan.constraints.allowBehindSubject && overlay.subjectRelation === 'behind' });
+  const collision = resolveOverlayCollisions({ overlays: initial, subtitleRects: spatial.subtitleRects, subjectRects: spatial.subjectRects.map((rect) => expandRect(rect, plan.constraints.subjectAvoidPadding)), allowSubjectOverlap: (overlay) => overlay.subjectRelation === 'foreground' || (plan.constraints.allowBehindSubject && overlay.subjectRelation === 'behind') });
   const concurrency = limitConcurrentOverlays(collision.overlays, plan.constraints.maxConcurrentOverlays);
   const runtimeTimeline = compileResolvedTimeline({ engineVersion: '1.0', registryVersion: '1.0', overlays: concurrency.overlays });
   const repairs = [...collision.repairs, ...concurrency.repairs];

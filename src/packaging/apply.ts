@@ -104,7 +104,7 @@ export function applyResolvedPackagingToProject(project: ProjectComposition, res
       variantId: entry.adapterId,
       time: { startSec: overlay.startSec, endSec: overlay.endSec },
       content: effectContent(overlay, next.subtitles),
-      layout: { nx: overlay.rect.x, ny: overlay.rect.y, nw: overlay.rect.width, nh: overlay.rect.height, scale: 1, anchor: 'scene-safe', preferredSide: 'center', relationToSubject: 'avoid' },
+      layout: { nx: overlay.rect.x, ny: overlay.rect.y, nw: overlay.rect.width, nh: overlay.rect.height, scale: 1, anchor: 'scene-safe', preferredSide: 'center', relationToSubject: overlay.subjectRelation ?? 'avoid' },
       appearance: { accent: next.project.palette.accent, theme: 'dark' as const },
       motion: { enter: { motionId: runtimeMotion(overlay.motion.entrance, 'enter'), durationSec: Math.min(0.6, (overlay.endSec - overlay.startSec) / 3), intensity: 0.6 }, exit: { motionId: runtimeMotion(overlay.motion.exit, 'exit'), durationSec: Math.min(0.6, (overlay.endSec - overlay.startSec) / 3), intensity: 0.4 } },
       sfx: null,

@@ -58,7 +58,7 @@ const cadenceSchema = z.object({
   cueOffsetsMs: z.array(z.number().finite().min(0).max(120000)).max(32).optional(),
 }).strict();
 
-const templateQuerySchema = z.object({
+export const templateQuerySchema = z.object({
   semanticRole: z.enum(semanticRoles).optional(),
   visualIntent: z.string().min(1).max(120).optional(),
   tags: z.array(z.string().min(1).max(64)).max(24).optional(),
@@ -66,9 +66,12 @@ const templateQuerySchema = z.object({
   requiredContentSlots: z.array(z.string().min(1).max(64)).max(24).optional(),
   durationRangeSec: z.tuple([z.number().finite().min(0), z.number().finite().min(0)]).optional(),
   preferredZones: z.array(z.enum(placementZones)).max(4).optional(),
-}).strict().superRefine((value, context) => {
+  persistence: z.enum(persistenceModes).optional(),
+}).catchall(z.unknown()).superRefine((value, context) => {
   if (value.durationRangeSec && value.durationRangeSec[1] < value.durationRangeSec[0]) context.addIssue({ code: 'custom', path: ['durationRangeSec', 1], message: 'duration max must be >= min' });
 });
+
+export type PackagingTemplateQuery = z.infer<typeof templateQuerySchema>;
 
 const visualValueSchema = z.union([z.boolean(), z.number().finite().min(0).max(1)]);
 

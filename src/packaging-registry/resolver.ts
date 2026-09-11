@@ -1,17 +1,8 @@
 import { packagingEffectCatalog } from './catalog';
 import type { PackagingEffectManifest } from './manifest';
+import type { PackagingTemplateQuery } from '../packaging-ir/schema';
 
-export interface RegistryTemplateQuery {
-  semanticRole?: 'hook' | 'pain-point' | 'evidence' | 'definition' | 'comparison' | 'ordered-process' | 'quote' | 'conclusion' | 'neutral';
-  visualIntent?: string;
-  tags?: string[];
-  requiredContentSlots?: string[];
-  itemCount?: number;
-  durationRangeSec?: [number, number];
-  preferredZones?: PackagingEffectManifest['supportedZones'];
-  persistence?: 'transient' | 'section' | 'chapter' | 'persistent';
-  [key: string]: unknown;
-}
+export type RegistryTemplateQuery = PackagingTemplateQuery;
 
 export const registryScoreWeights = {
   category: 30,

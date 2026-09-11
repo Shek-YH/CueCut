@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { findMotion } from '../motions/registry';
-import { persistenceModes, placementZones, semanticRoles } from '../packaging-ir/schema';
+import { persistenceModes, placementZones, templateQuerySchema } from '../packaging-ir/schema';
 
 const hexColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be a six-digit hex color');
 
@@ -45,19 +45,6 @@ const subtitleSchema = z.object({
   if (value.endSec <= value.startSec) context.addIssue({ code: 'custom', path: ['endSec'], message: 'subtitle endSec must be greater than startSec' });
 });
 
-const packagingTemplateQuerySchema = z.object({
-  semanticRole: z.enum(semanticRoles).optional(),
-  visualIntent: z.string().min(1).max(120).optional(),
-  tags: z.array(z.string().min(1).max(64)).max(24).optional(),
-  requiredContentSlots: z.array(z.string().min(1).max(64)).max(24).optional(),
-  itemCount: z.number().int().positive().max(32).optional(),
-  durationRangeSec: z.tuple([z.number().finite().min(0), z.number().finite().min(0)]).optional(),
-  preferredZones: z.array(z.enum(placementZones)).max(4).optional(),
-  persistence: z.enum(persistenceModes).optional(),
-}).strict().superRefine((value, context) => {
-  if (value.durationRangeSec && value.durationRangeSec[1] < value.durationRangeSec[0]) context.addIssue({ code: 'custom', path: ['durationRangeSec', 1], message: 'duration max must be >= min' });
-});
-
 const packagingCadenceSchema = z.object({
   stepMs: z.number().finite().min(0).max(120000).optional(),
   staggerMs: z.number().finite().min(0).max(120000).optional(),
@@ -74,7 +61,7 @@ const packagingSegmentMetadataSchema = z.object({
   locked: z.boolean().optional(),
   zone: z.enum(placementZones).optional(),
   persistence: z.enum(persistenceModes).optional(),
-  templateQuery: packagingTemplateQuerySchema.optional(),
+  templateQuery: templateQuerySchema.optional(),
   cadence: packagingCadenceSchema.optional(),
 }).strict();
 

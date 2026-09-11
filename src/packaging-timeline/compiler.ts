@@ -1,5 +1,6 @@
 import { compileMotionIntent, type CompiledMotion, type PackagingMotionIntent } from '../packaging-motion/compiler';
 import type { NormalizedRect } from '../packaging-layout/safeArea';
+import type { PackagingTemplateQuery } from '../packaging-ir/schema';
 
 export interface ResolvedOverlayInput {
   id: string;
@@ -21,7 +22,7 @@ export interface ResolvedOverlayInput {
   visualValue?: boolean | number;
   layer?: number;
   persistence?: 'transient' | 'section' | 'chapter' | 'persistent';
-  templateQuery?: Record<string, unknown>;
+  templateQuery?: PackagingTemplateQuery;
   cueTimesSec?: number[];
   cadence?: { stepMs?: number; staggerMs?: number; emphasisAtMs?: number; cueOffsetsMs?: number[] };
   dimAtSec?: number;
@@ -48,7 +49,7 @@ export interface RuntimeTimelineItem {
   visualValue?: boolean | number;
   layer?: number;
   persistence?: 'transient' | 'section' | 'chapter' | 'persistent';
-  templateQuery?: Record<string, unknown>;
+  templateQuery?: PackagingTemplateQuery;
   cueTimesSec?: number[];
   cadence?: { stepMs?: number; staggerMs?: number; emphasisAtMs?: number; cueOffsetsMs?: number[] };
   dimAtSec?: number;

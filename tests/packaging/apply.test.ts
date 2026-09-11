@@ -10,7 +10,7 @@ describe('apply resolved packaging to project', () => {
       overlays: [{
         id: 'overlay-1', effectId: 'cuecut-ring-metric', startSec: 1, endSec: 3,
         rect: { x: 0.1, y: 0.2, width: 0.36, height: 0.12 }, content: { value: '67%', text: 'Token 67%' },
-        motion: { entrance: 'scale_punch', emphasis: 'scale_pulse', exit: 'fade_out' }, seed: 1, locked: true, userOverride: { locked: true, zone: 'lower-right' },
+        motion: { entrance: 'scale_punch', emphasis: 'scale_pulse', exit: 'fade_out' }, seed: 1, locked: true, subjectRelation: 'foreground', userOverride: { locked: true, zone: 'lower-right' },
         candidates: [], importance: 0.8,
       }],
     });
@@ -21,7 +21,7 @@ describe('apply resolved packaging to project', () => {
       familyId: 'pack-0-2-percentage',
       variantId: 'pack:cuecut-ring-metric',
       time: { startSec: 1, endSec: 3 },
-      layout: { nx: 0.1, ny: 0.2, nw: 0.36, nh: 0.12 },
+      layout: { nx: 0.1, ny: 0.2, nw: 0.36, nh: 0.12, relationToSubject: 'foreground' },
       userFlags: { locked: true, lockedZone: 'lower-right', manual: false },
     });
   });
