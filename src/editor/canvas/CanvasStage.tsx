@@ -235,7 +235,7 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
             const sceneItem = scene.items.find((item) => item.effectId === effect.effectId);
             const isActive = sceneItem?.visible ?? false;
             const selected = effect.effectId === selectedEffectId;
-            const isNumber = sceneItem?.content.kind === 'number';
+            const isMetric = sceneItem?.visualKind === 'metric';
             const position = preview[effect.effectId] ?? effect.layout;
             const positionedItem = sceneItem ? { ...sceneItem, layout: { ...sceneItem.layout, ...position } } : null;
             const box = positionedItem ? sceneItemBox(positionedItem, project.project.canvasWidth, project.project.canvasHeight) : { x: position.nx * project.project.canvasWidth, y: position.ny * project.project.canvasHeight, width: position.nw * project.project.canvasWidth, height: position.nh * project.project.canvasHeight };
@@ -265,10 +265,10 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
                 type="button"
               >
                 <span className="fxtag">{definition?.displayName ?? effect.familyId}</span>
-                {isNumber ? (
+                {isMetric ? (
                   <>
-                    <span className="circle"><FittedText canvasWidth={project.project.canvasWidth} className="fit-value" region={textRegions[0] ?? { text: String(sceneItem?.content.kind === 'number' ? sceneItem.content.value : effect.content.value ?? '0'), x: 0, y: 0, width: box.width, height: box.height, fontSize: 42, maxLines: 2, align: 'center', weight: 700 }} /></span>
-                    <span className="card-copy"><FittedText canvasWidth={project.project.canvasWidth} className="fit-label" region={textRegions[1] ?? { text: '', x: 0, y: 0, width: box.width, height: box.height, fontSize: 18, maxLines: 2, align: 'center', weight: 600 }} /></span>
+                    <span className="circle"><FittedText canvasWidth={project.project.canvasWidth} className="fit-value" region={textRegions[0]!} /></span>
+                    <span className="card-copy"><FittedText canvasWidth={project.project.canvasWidth} className="fit-label" region={textRegions[1]!} /></span>
                   </>
                 ) : (
                   <strong className="card-content">{textRegions[0] ? <FittedText canvasWidth={project.project.canvasWidth} region={textRegions[0]} /> : null}</strong>

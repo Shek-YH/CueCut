@@ -133,10 +133,12 @@ function baseRegion(item: SceneItem, width: number, height: number): TextRegion 
 }
 
 export function textRegionsForSceneItem(item: SceneItem, width: number, height: number): TextRegion[] {
-  if (item.visualKind === 'metric' && item.content.kind === 'number') {
+  if (item.visualKind === 'metric') {
+    const value = item.content.kind === 'number' ? String(item.content.value) : '';
+    const label = item.content.kind === 'number' ? item.content.label : contentText(item.content);
     return [
-      { text: String(item.content.value), x: 0, y: height * 0.12, width: width * 0.36, height: height * 0.68, fontSize: 42, maxLines: 2, align: 'center', weight: 700 },
-      { text: item.content.label, x: width * 0.38, y: height * 0.25, width: width * 0.58, height: height * 0.52, fontSize: 18, maxLines: 3, align: 'center', weight: 600 },
+      { text: value, x: 0, y: height * 0.12, width: width * 0.36, height: height * 0.68, fontSize: 42, maxLines: 2, align: 'center', weight: 700 },
+      { text: label, x: width * 0.38, y: height * 0.25, width: width * 0.58, height: height * 0.52, fontSize: 18, maxLines: 3, align: 'center', weight: 600 },
     ];
   }
   const region = baseRegion(item, width, height);

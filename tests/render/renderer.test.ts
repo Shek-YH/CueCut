@@ -3,7 +3,7 @@ import { renderSceneFrameToRgba } from '../../src/export/renderer';
 import { createCanvasRenderer } from '../../src/render/canvasRenderer';
 import { createFixtureProject } from '../../src/project/fixtures';
 import { evaluateSceneAtTime } from '../../src/render/scene';
-import { sceneItemBox } from '../../src/render/textFit';
+import { sceneItemBox, textRegionsForSceneItem } from '../../src/render/textFit';
 
 describe('unified render runtime', () => {
   it('evaluates active effects at a frame without using React DOM', () => {
@@ -117,5 +117,37 @@ describe('unified render runtime', () => {
     const offset = (sampleY * width + sampleX) * 4;
 
     expect([...buffer.subarray(offset, offset + 4)]).toEqual([255, 255, 255, 220]);
+  });
+
+  it('keeps quote visual semantics when its content is numeric across Canvas and export layout', () => {
+    const project = createFixtureProject();
+    project.effects = [{ ...project.effects[1]!, familyId: 'quote-callout', variantId: 'quote', content: { value: 92, label: '完成率' } }];
+    const frame = evaluateSceneAtTime(project, 4);
+    const item = frame.items.find((entry) => entry.effectId === 'fx-quote');
+    if (!item) throw new Error('Quote fixture item missing');
+
+    expect(item.visualKind).toBe('quote');
+    expect(textRegionsForSceneItem(item, 600, 220)).toHaveLength(1);
+
+    const context = {
+      canvas: { width: 1920, height: 1080 },
+      fillStyle: '',
+      globalAlpha: 1,
+      font: '',
+      textAlign: 'left',
+      filter: 'none',
+      fillRect: vi.fn(),
+      fillText: vi.fn(),
+      strokeRect: vi.fn(),
+      save: vi.fn(),
+      restore: vi.fn(),
+      translate: vi.fn(),
+      rotate: vi.fn(),
+      scale: vi.fn(),
+    } as unknown as CanvasRenderingContext2D;
+
+    createCanvasRenderer(project).renderFrame(4, context);
+    expect(context.strokeRect).not.toHaveBeenCalled();
+    expect(context.fillText).toHaveBeenCalledWith('92', expect.any(Number), expect.any(Number));
   });
 });

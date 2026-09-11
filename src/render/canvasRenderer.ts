@@ -50,7 +50,7 @@ export function createCanvasRenderer(project: ProjectComposition, options: { bac
       target.fillStyle = item.appearance.accent;
       [0.28, 0.52, 0.4, 0.76, 0.62].forEach((bar, index) => target.fillRect(10 + index * (width / 6), height * (1 - bar), Math.max(4, width / 12), height * bar));
       drawTextRegion(target, textRegions[0]!, textColor);
-    } else if (item.visualKind === 'metric' || item.content.kind === 'number') {
+    } else if (item.visualKind === 'metric') {
       target.fillRect(0, 0, width, height);
       target.strokeStyle = item.appearance.accent;
       target.strokeRect(8, 8, Math.max(12, Math.min(width, height) - 16), Math.max(12, Math.min(width, height) - 16));
@@ -79,11 +79,6 @@ export function createCanvasRenderer(project: ProjectComposition, options: { bac
       target.fillRect(0, 0, width, height);
       target.fillStyle = item.appearance.accent;
       target.fillRect(width * 0.08, height * 0.2, Math.min(width * 0.22, height * 0.5), Math.min(height * 0.3, width * 0.22));
-      drawTextRegion(target, textRegions[0]!, textColor);
-    } else if (item.content.kind === 'text') {
-      drawTextRegion(target, textRegions[0]!, textColor);
-    } else if (item.content.kind === 'list') {
-      target.fillRect(0, 0, width, height);
       drawTextRegion(target, textRegions[0]!, textColor);
     } else {
       target.globalAlpha *= 0.85;
