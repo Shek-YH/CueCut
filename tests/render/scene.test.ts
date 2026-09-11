@@ -41,6 +41,25 @@ describe('deterministic SceneFrame evaluation', () => {
     expect(item?.visualTags).toEqual(expect.arrayContaining(['Chart', 'Metric']));
   });
 
+  it('prioritizes metric over chart when a ring metric carries both tags', () => {
+    const project = createFixtureProject();
+    project.effects[0]!.familyId = 'pack-0-2-percentage';
+    project.effects[0]!.variantId = 'pack:cuecut-ring-metric';
+
+    const item = evaluateSceneAtTime(project, 6).items.find((entry) => entry.effectId === 'fx-ring');
+
+    expect(item?.visualKind).toBe('metric');
+  });
+
+  it('keeps a chart-only effect in the chart visual family', () => {
+    const project = createFixtureProject();
+    project.effects = [{ ...project.effects[0]!, familyId: 'chart', variantId: 'chart' }];
+
+    const item = evaluateSceneAtTime(project, 6).items[0];
+
+    expect(item?.visualKind).toBe('chart');
+  });
+
   it('keeps list entries available to layout so long steps are not collapsed or discarded', () => {
     const project = createFixtureProject();
     project.effects[1]!.content = {
