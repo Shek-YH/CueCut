@@ -3,7 +3,7 @@ import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent }
 import { defaultSubtitleSettings, type ProjectComposition } from '../../project/schema';
 import type { ProjectStore } from '../../project/store';
 import { evaluateSceneAtTime } from '../../render/scene';
-import { fitText, sceneItemBox, textRegionsForSceneItem, type TextRegion } from '../../render/textFit';
+import { sceneItemBox, textLayoutPlanForSceneItem, type TextLayoutRegion } from '../../render/textFit';
 import { findEffectDefinition } from '../../effects/registry';
 import { previewTimeForEffect } from '../selection/previewTime';
 
@@ -19,29 +19,29 @@ interface CanvasStageProps {
   onSelect: (effectId: string) => void;
 }
 
-function FittedText({ region, canvasWidth, className }: { region: TextRegion; canvasWidth: number; className?: string }) {
-  const fitted = fitText({ text: region.text, maxWidth: region.width, maxHeight: region.height, fontSize: region.fontSize, maxLines: region.maxLines });
+function FittedText({ region, canvasWidth, className, fillContainer = false }: { region: TextLayoutRegion; canvasWidth: number; className?: string; fillContainer?: boolean }) {
   const scale = 100 / canvasWidth;
   return (
     <span
       className={className}
-      data-text-overflow={fitted.overflow ? 'true' : 'false'}
-      aria-label={fitted.overflow ? '文案超出卡片，已保留完整内容并记录诊断' : undefined}
+      data-text-overflow={region.overflow ? 'true' : 'false'}
+      aria-label={region.overflow ? '文案超出卡片，已保留完整内容并记录诊断' : undefined}
       style={{
         display: 'block',
         position: 'relative',
         minWidth: 0,
         overflowWrap: 'anywhere',
-        width: `${region.width * scale}cqw`,
-        height: `${region.height * scale}cqw`,
-        fontSize: `${fitted.fontSize * scale}cqw`,
-        lineHeight: `${fitted.lineHeight * scale}cqw`,
+        width: fillContainer ? '100%' : `${region.width * scale}cqw`,
+        height: fillContainer ? '100%' : `${region.height * scale}cqw`,
+        fontSize: `${region.fontSize * scale}cqw`,
+        lineHeight: `${region.lineHeight * scale}cqw`,
+        letterSpacing: `${region.letterSpacing * scale}cqw`,
         fontWeight: region.weight,
         textAlign: region.align,
       }}
     >
       <span className="fit-lines" style={{ display: 'block', width: '100%', height: '100%', overflow: 'hidden' }}>
-        {fitted.lines.map((line, index) => <span className="fit-line" key={`${index}-${line}`}>{line}</span>)}
+        {region.lines.map((line, index) => <span className="fit-line" key={`${index}-${line}`}>{line}</span>)}
       </span>
     </span>
   );
@@ -217,9 +217,7 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
   const scene = evaluateSceneAtTime(project, currentTime);
   const subtitleSettings = project.subtitleSettings ?? defaultSubtitleSettings;
   const subtitleTop = { top: '8%', center: '42%', bottom: '78%' }[subtitleSettings.position];
-  const subtitleFontSize = `${subtitleSettings.fontSize / project.project.canvasWidth * 100}cqw`;
   const subtitleStrokeWidth = `${subtitleSettings.strokeWidth / project.project.canvasWidth * 100}cqw`;
-  const subtitleLetterSpacing = `${subtitleSettings.letterSpacing / project.project.canvasWidth * 100}cqw`;
 
   return (
     <main className="stage" data-testid="canvas-stage">
@@ -244,7 +242,7 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
             const position = preview[effect.effectId] ?? effect.layout;
             const positionedItem = sceneItem ? { ...sceneItem, layout: { ...sceneItem.layout, ...position } } : null;
             const box = positionedItem ? sceneItemBox(positionedItem, project.project.canvasWidth, project.project.canvasHeight) : { x: position.nx * project.project.canvasWidth, y: position.ny * project.project.canvasHeight, width: position.nw * project.project.canvasWidth, height: position.nh * project.project.canvasHeight };
-            const textRegions = positionedItem ? textRegionsForSceneItem(positionedItem, box.width, box.height) : [];
+            const textRegions = positionedItem ? textLayoutPlanForSceneItem(positionedItem, box.width, box.height).regions : [];
             const definition = findEffectDefinition(effect.familyId, effect.variantId);
             return (
               <button
@@ -298,13 +296,14 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
                 opacity: subtitle.opacity,
                 zIndex: subtitle.zIndex,
                 color: subtitleSettings.color,
-                fontSize: subtitleFontSize,
-                lineHeight: subtitleSettings.lineHeight,
-                letterSpacing: subtitleLetterSpacing,
                 WebkitTextStroke: `${subtitleStrokeWidth} ${subtitleSettings.strokeColor}`,
               }}
             >
-              {subtitle.content.kind === 'text' ? subtitle.content.text : ''}
+              <FittedText
+                canvasWidth={project.project.canvasWidth}
+                fillContainer
+                region={textLayoutPlanForSceneItem(subtitle, project.project.canvasWidth * 0.9, project.project.canvasHeight * 0.17, { fontSize: subtitleSettings.fontSize, maxLines: 3, letterSpacing: subtitleSettings.letterSpacing, lineHeightMultiplier: subtitleSettings.lineHeight }).regions[0]!}
+              />
             </div>
           ))}
         </div>

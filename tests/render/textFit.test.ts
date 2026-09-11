@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { fitText } from '../../src/render/textFit';
+import { createFixtureProject } from '../../src/project/fixtures';
+import { evaluateSceneAtTime } from '../../src/render/scene';
+import { textLayoutPlanForSceneItem } from '../../src/render/textFit';
 
 describe('fitText', () => {
   it('wraps Chinese and long English text deterministically without overflowing the width', () => {
@@ -52,5 +55,19 @@ describe('fitText', () => {
 
     expect(result.lines.join('')).toContain('performance');
     expect(performance.now() - started).toBeLessThan(500);
+  });
+
+  it('creates one shared subtitle layout plan and retains all long subtitle text', () => {
+    const project = createFixtureProject();
+    const text = '这是一条很长的字幕，用于确认预览和导出共享相同的区域、行数、行高、字距与完整文本布局。';
+    project.subtitles = [{ id: 'subtitle-1', startSec: 0, endSec: 10, text }];
+    const item = evaluateSceneAtTime(project, 2).items.find((entry) => entry.effectId === 'subtitle-1');
+    if (!item) throw new Error('Subtitle fixture item missing');
+
+    const plan = textLayoutPlanForSceneItem(item, 1728, 183.6);
+    const region = plan.regions[0];
+    expect(region).toMatchObject({ maxLines: 3, letterSpacing: 0, x: expect.any(Number), y: expect.any(Number), width: expect.any(Number), height: expect.any(Number) });
+    expect(region?.lines.join('').replace(/\s+/gu, '')).toContain(text);
+    expect(region?.lineHeight).toBeGreaterThan(0);
   });
 });

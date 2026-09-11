@@ -1,28 +1,30 @@
 import type { ProjectComposition } from '../project/schema';
 import { evaluateSceneAtTime, type SceneDiagnostic, type SceneItem } from './scene';
-import { fitText, sceneItemBox, textRegionsForSceneItem, type TextRegion } from './textFit';
+import { defaultSubtitleSettings } from '../project/schema';
+import { sceneItemBox, textLayoutPlanForSceneItem, type TextLayoutOptions, type TextLayoutRegion } from './textFit';
 import { visualSurfaceForKind } from './visualSurface';
 import type { Renderer } from './types';
 
-function clipToRect(target: CanvasRenderingContext2D, region: Pick<TextRegion, 'x' | 'y' | 'width' | 'height'>): void {
+function clipToRect(target: CanvasRenderingContext2D, region: Pick<TextLayoutRegion, 'x' | 'y' | 'width' | 'height'>): void {
   if (typeof target.beginPath !== 'function' || typeof target.rect !== 'function' || typeof target.clip !== 'function') return;
   target.beginPath();
   target.rect(region.x, region.y, region.width, region.height);
   target.clip();
 }
 
-function drawTextRegion(target: CanvasRenderingContext2D, region: TextRegion, color: string, effectId: string, diagnostics: SceneDiagnostic[]): void {
-  const fitted = fitText({ text: region.text, maxWidth: region.width, maxHeight: region.height, fontSize: region.fontSize, maxLines: region.maxLines });
+function drawTextRegion(target: CanvasRenderingContext2D, region: TextLayoutRegion, color: string, effectId: string, diagnostics: SceneDiagnostic[]): void {
   target.save();
   clipToRect(target, region);
   target.fillStyle = color;
-  target.font = `${region.weight} ${fitted.fontSize}px sans-serif`;
+  target.font = `${region.weight} ${region.fontSize}px sans-serif`;
   target.textAlign = region.align;
+  const canvasWithSpacing = target as CanvasRenderingContext2D & { letterSpacing?: string };
+  if ('letterSpacing' in canvasWithSpacing) canvasWithSpacing.letterSpacing = `${region.letterSpacing}px`;
   const x = region.align === 'center' ? region.x + region.width / 2 : region.x;
-  const firstBaseline = region.y + Math.max(fitted.fontSize, (region.height - fitted.lines.length * fitted.lineHeight) / 2 + fitted.fontSize);
-  fitted.lines.forEach((line, index) => target.fillText(line, x, firstBaseline + index * fitted.lineHeight));
+  const firstBaseline = region.y + Math.max(region.fontSize, (region.height - region.lines.length * region.lineHeight) / 2 + region.fontSize);
+  region.lines.forEach((line, index) => target.fillText(line, x, firstBaseline + index * region.lineHeight));
   target.restore();
-  if (fitted.overflow) diagnostics.push({ effectId, code: 'text-overflow', message: 'Text exceeds its fitted region; full text was retained and clipped to the region.' });
+  if (region.overflow) diagnostics.push({ effectId, code: 'text-overflow', message: 'Text exceeds its fitted region; full text was retained and clipped to the region.' });
 }
 
 function clipToItemBox(target: CanvasRenderingContext2D, width: number, height: number): void {
@@ -32,13 +34,22 @@ function clipToItemBox(target: CanvasRenderingContext2D, width: number, height: 
   target.clip();
 }
 
+export function canvasTextLayoutForItem(item: SceneItem, width: number, height: number, options?: TextLayoutOptions) {
+  return textLayoutPlanForSceneItem(item, width, height, options);
+}
+
 export function createCanvasRenderer(project: ProjectComposition, options: { background?: string } = {}): Renderer {
   const evaluate = (timeSec: number) => evaluateSceneAtTime(project, timeSec);
+
+  const subtitleSettings = project.subtitleSettings ?? defaultSubtitleSettings;
+  const layoutOptionsForItem = (item: SceneItem): TextLayoutOptions | undefined => item.variantId === 'subtitle'
+    ? { fontSize: subtitleSettings.fontSize, maxLines: 3, letterSpacing: subtitleSettings.letterSpacing, lineHeightMultiplier: subtitleSettings.lineHeight }
+    : undefined;
 
   const renderItem = (target: CanvasRenderingContext2D, item: SceneItem, diagnostics: SceneDiagnostic[]) => {
     const box = sceneItemBox(item, target.canvas.width, target.canvas.height);
     const { width, height } = box;
-    const textRegions = textRegionsForSceneItem(item, width, height);
+    const textRegions = canvasTextLayoutForItem(item, width, height, layoutOptionsForItem(item)).regions;
     target.save();
     target.globalAlpha = item.opacity;
     target.filter = item.blur > 0 ? `blur(${item.blur}px)` : 'none';

@@ -1,6 +1,6 @@
 /// <reference types="node" />
-import { evaluateSceneAtTime, type SceneFrame } from '../render/scene';
-import { fitText, sceneItemBox, textRegionsForSceneItem, type TextRegion } from '../render/textFit';
+import { evaluateSceneAtTime, type SceneFrame, type SceneItem } from '../render/scene';
+import { sceneItemBox, textLayoutPlanForSceneItem, type TextLayoutOptions, type TextLayoutRegion } from '../render/textFit';
 import { visualSurfaceForKind } from '../render/visualSurface';
 import { defaultSubtitleSettings, type ProjectComposition, type SubtitleSettings } from '../project/schema';
 
@@ -34,49 +34,53 @@ function glyphSeed(character: string): number {
   return seed;
 }
 
-function drawGlyphs(buffer: Buffer, canvasWidth: number, canvasHeight: number, region: TextRegion, x: number, y: number, scale: number, alpha: number): void {
-  const fitted = fitText({ text: region.text, maxWidth: region.width, maxHeight: region.height, fontSize: region.fontSize, maxLines: region.maxLines });
+export function exportTextLayoutForItem(item: SceneItem, width: number, height: number, options?: TextLayoutOptions) {
+  return textLayoutPlanForSceneItem(item, width, height, options);
+}
+
+function drawGlyphs(buffer: Buffer, canvasWidth: number, canvasHeight: number, region: TextLayoutRegion, x: number, y: number, scale: number, alpha: number): void {
   const renderWidth = region.width * scale;
   const renderHeight = region.height * scale;
-  const lineHeight = fitted.lineHeight * scale;
-  const lineCells = fitted.lines.map((line) => Math.max(1, Math.floor(Math.min(fitted.fontSize * scale / 7, renderWidth / Math.max(1, line.length * 6)))));
-  const contentHeight = fitted.lines.length * lineHeight;
+  const lineHeight = region.lineHeight * scale;
+  const letterSpacing = region.letterSpacing * scale;
+  const lineCells = region.lines.map((line) => Math.max(1, Math.floor(Math.min(region.fontSize * scale / 7, (renderWidth - Math.max(0, line.length - 1) * letterSpacing) / Math.max(1, line.length * 6)))));
+  const contentHeight = region.lines.length * lineHeight;
   const startY = y + region.y * scale + Math.max(0, (renderHeight - contentHeight) / 2);
-  fitted.lines.forEach((line, lineIndex) => {
+  region.lines.forEach((line, lineIndex) => {
     const lineY = startY + lineIndex * lineHeight;
-    if (lineY >= y + (region.y + region.height) * scale || lineY + fitted.fontSize * scale <= y + region.y * scale) return;
+    if (lineY >= y + (region.y + region.height) * scale || lineY + region.fontSize * scale <= y + region.y * scale) return;
     const cell = lineCells[lineIndex]!;
-    const lineWidth = line.length * cell * 6;
+    const lineWidth = line.length * cell * 6 + Math.max(0, line.length - 1) * letterSpacing;
     const startX = x + region.x * scale + (region.align === 'center' ? Math.max(0, (renderWidth - lineWidth) / 2) : 0);
     [...line].forEach((character, charIndex) => {
       const seed = glyphSeed(character);
       for (let glyphY = 0; glyphY < 7; glyphY += 1) {
         for (let glyphX = 0; glyphX < 5; glyphX += 1) {
           const bit = (seed >>> ((glyphY * 5 + glyphX) % 24)) & 1;
-          if (bit || glyphY === 0 || glyphY === 6) drawRectClipped(buffer, canvasWidth, canvasHeight, startX + charIndex * cell * 6 + glyphX * cell, lineY + glyphY * cell, cell, cell, x + region.x * scale, y + region.y * scale, renderWidth, renderHeight, [255, 255, 255, Math.round(Math.min(1, alpha) * 255)]);
+          if (bit || glyphY === 0 || glyphY === 6) drawRectClipped(buffer, canvasWidth, canvasHeight, startX + charIndex * (cell * 6 + letterSpacing) + glyphX * cell, lineY + glyphY * cell, cell, cell, x + region.x * scale, y + region.y * scale, renderWidth, renderHeight, [255, 255, 255, Math.round(Math.min(1, alpha) * 255)]);
         }
       }
     });
   });
 }
 
-function drawSubtitleGlyphs(buffer: Buffer, width: number, height: number, text: string, settings: SubtitleSettings, opacity: number, projectCanvasWidth: number): void {
+function drawSubtitleGlyphs(buffer: Buffer, width: number, height: number, item: SceneItem, settings: SubtitleSettings, opacity: number, projectCanvasWidth: number): void {
   const scale = width / Math.max(1, projectCanvasWidth);
   const regionX = width * 0.05;
   const regionY = ({ top: 0.08, center: 0.42, bottom: 0.78 }[settings.position]) * height;
   const regionWidth = width * 0.9;
   const regionHeight = height * 0.17;
-  const fitted = fitText({ text, maxWidth: regionWidth, maxHeight: regionHeight, fontSize: settings.fontSize * scale, maxLines: 3 });
-  const lineHeight = fitted.fontSize * settings.lineHeight;
-  const contentHeight = fitted.lines.length * lineHeight;
+  const region = exportTextLayoutForItem(item, regionWidth, regionHeight, { fontSize: settings.fontSize * scale, maxLines: 3, letterSpacing: settings.letterSpacing * scale, lineHeightMultiplier: settings.lineHeight }).regions[0]!;
+  const lineHeight = region.lineHeight;
+  const contentHeight = region.lines.length * lineHeight;
   const startY = regionY + Math.max(0, (regionHeight - contentHeight) / 2);
   const fill = [...colorFromHex(settings.color), Math.round(Math.min(1, opacity) * 255)] as [number, number, number, number];
   const stroke = [...colorFromHex(settings.strokeColor), Math.round(Math.min(1, opacity) * 255)] as [number, number, number, number];
   const strokeWidth = settings.strokeWidth * scale;
-  const letterSpacing = settings.letterSpacing * scale;
+  const letterSpacing = region.letterSpacing;
 
-  fitted.lines.forEach((line, lineIndex) => {
-    const cell = Math.max(1, Math.floor(Math.min(fitted.fontSize / 7, regionWidth / Math.max(1, line.length * 6))));
+  region.lines.forEach((line, lineIndex) => {
+    const cell = Math.max(1, Math.floor(Math.min(region.fontSize / 7, (regionWidth - Math.max(0, line.length - 1) * letterSpacing) / Math.max(1, line.length * 6))));
     const lineWidth = line.length * cell * 6 + Math.max(0, line.length - 1) * letterSpacing;
     const startX = regionX + Math.max(0, (regionWidth - lineWidth) / 2);
     const lineY = startY + lineIndex * lineHeight;
@@ -129,11 +133,11 @@ export function renderSceneFrameToRgba(frame: SceneFrame, width: number, height:
     } else {
       drawRect(buffer, width, height, x, y, itemWidth, itemHeight, [red, green, blue, backgroundAlpha]);
     }
-    textRegionsForSceneItem(item, box.width, box.height).forEach((region) => drawGlyphs(buffer, width, height, region, x, y, scale, contentAlpha));
+    exportTextLayoutForItem(item, box.width, box.height).regions.forEach((region) => drawGlyphs(buffer, width, height, region, x, y, scale, contentAlpha));
   });
   if (subtitleSettings.visible) {
     [...frame.items].filter((item) => item.variantId === 'subtitle' && item.visible && item.opacity > 0).forEach((item) => {
-      if (item.content.kind === 'text') drawSubtitleGlyphs(buffer, width, height, item.content.text, subtitleSettings, item.opacity, projectCanvasWidth);
+      drawSubtitleGlyphs(buffer, width, height, item, subtitleSettings, item.opacity, projectCanvasWidth);
     });
   }
   return buffer;

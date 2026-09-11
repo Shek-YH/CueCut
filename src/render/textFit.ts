@@ -6,6 +6,8 @@ export interface FitTextOptions {
   maxHeight: number;
   fontSize: number;
   maxLines: number;
+  letterSpacing?: number;
+  lineHeightMultiplier?: number;
 }
 
 export interface FitTextResult {
@@ -25,6 +27,14 @@ export interface TextRegion {
   maxLines: number;
   align: 'left' | 'center';
   weight: number;
+  letterSpacing: number;
+  lineHeightMultiplier: number;
+}
+
+export interface TextLayoutRegion extends TextRegion, FitTextResult {}
+
+export interface TextLayoutPlan {
+  regions: TextLayoutRegion[];
 }
 
 export interface SceneItemBox {
@@ -49,7 +59,7 @@ function characterWidthFactor(character: string): number {
   return 0.62;
 }
 
-function wrapParagraph(paragraph: string, fontSize: number, maxWidth: number): string[] {
+function wrapParagraph(paragraph: string, fontSize: number, maxWidth: number, letterSpacing: number): string[] {
   if (paragraph.length === 0) return [''];
   const lines: string[] = [];
   let line: string[] = [];
@@ -61,7 +71,7 @@ function wrapParagraph(paragraph: string, fontSize: number, maxWidth: number): s
   };
 
   for (const character of [...paragraph]) {
-    const width = characterWidthFactor(character) * fontSize;
+    const width = characterWidthFactor(character) * fontSize + (line.length > 0 ? letterSpacing : 0);
     if (line.length > 0 && lineWidth + width > maxWidth) pushLine();
     line.push(character);
     lineWidth += width;
@@ -70,11 +80,11 @@ function wrapParagraph(paragraph: string, fontSize: number, maxWidth: number): s
   return lines;
 }
 
-function wrapText(text: string, fontSize: number, maxWidth: number): string[] {
-  return text.replace(/\r\n?/gu, '\n').split('\n').flatMap((paragraph) => wrapParagraph(paragraph, fontSize, maxWidth));
+function wrapText(text: string, fontSize: number, maxWidth: number, letterSpacing: number): string[] {
+  return text.replace(/\r\n?/gu, '\n').split('\n').flatMap((paragraph) => wrapParagraph(paragraph, fontSize, maxWidth, letterSpacing));
 }
 
-export function fitText({ text, maxWidth, maxHeight, fontSize, maxLines }: FitTextOptions): FitTextResult {
+export function fitText({ text, maxWidth, maxHeight, fontSize, maxLines, letterSpacing, lineHeightMultiplier }: FitTextOptions): FitTextResult {
   const safeText = String(text);
   const safeWidth = Math.max(1, Number.isFinite(maxWidth) ? maxWidth : 1);
   const safeHeight = Math.max(1, Number.isFinite(maxHeight) ? maxHeight : 1);
@@ -82,6 +92,8 @@ export function fitText({ text, maxWidth, maxHeight, fontSize, maxLines }: FitTe
   const maximumFontSize = Math.max(1, Math.floor(safeFontSize));
   const minimumFontSize = Math.min(MIN_FONT_SIZE, maximumFontSize);
   const safeMaxLines = Math.max(1, Math.floor(Number.isFinite(maxLines) ? maxLines : 1));
+  const safeLetterSpacing = Number.isFinite(letterSpacing) ? letterSpacing! : 0;
+  const safeLineHeightMultiplier = Number.isFinite(lineHeightMultiplier) ? Math.max(0.5, lineHeightMultiplier!) : 1.2;
   const hasOverwideGlyph = [...safeText].some((character) => character !== '\n' && character !== '\r' && characterWidthFactor(character) * minimumFontSize > safeWidth);
 
   let low = minimumFontSize;
@@ -90,8 +102,8 @@ export function fitText({ text, maxWidth, maxHeight, fontSize, maxLines }: FitTe
   let steps = 0;
   while (low <= high && steps < MAX_FONT_SEARCH_STEPS) {
     const candidate = Math.floor((low + high) / 2);
-    const lineHeight = candidate * 1.2;
-    const lines = wrapText(safeText, candidate, safeWidth);
+    const lineHeight = candidate * safeLineHeightMultiplier;
+    const lines = wrapText(safeText, candidate, safeWidth, safeLetterSpacing);
     if (lines.length <= safeMaxLines && lines.length * lineHeight <= safeHeight + 0.01) {
       best = { lines, fontSize: candidate, lineHeight, overflow: false };
       low = candidate + 1;
@@ -102,8 +114,8 @@ export function fitText({ text, maxWidth, maxHeight, fontSize, maxLines }: FitTe
   }
   if (best && !hasOverwideGlyph) return best;
 
-  const lineHeight = minimumFontSize * 1.2;
-  const lines = wrapText(safeText, minimumFontSize, safeWidth);
+  const lineHeight = minimumFontSize * safeLineHeightMultiplier;
+  const lines = wrapText(safeText, minimumFontSize, safeWidth, safeLetterSpacing);
   return { lines, fontSize: minimumFontSize, lineHeight, overflow: true };
 }
 
@@ -126,16 +138,28 @@ function baseRegion(item: SceneItem, width: number, height: number): TextRegion 
     maxLines: kind === 'list' ? Math.max(4, contentText(item.content).split('\n').length * 4) : 4,
     align: kind === 'list' || kind === 'quote' ? 'left' : 'center',
     weight: kind === 'quote' ? 700 : 600,
+    letterSpacing: 0,
+    lineHeightMultiplier: 1.2,
   };
 }
 
-export function textRegionsForSceneItem(item: SceneItem, width: number, height: number): TextRegion[] {
+export interface TextLayoutOptions {
+  fontSize?: number;
+  maxLines?: number;
+  letterSpacing?: number;
+  lineHeightMultiplier?: number;
+}
+
+export function textRegionsForSceneItem(item: SceneItem, width: number, height: number, options: TextLayoutOptions = {}): TextRegion[] {
+  if (item.variantId === 'subtitle') {
+    return [{ text: contentText(item.content), x: 0, y: 0, width: Math.max(1, width), height: Math.max(1, height), fontSize: options.fontSize ?? 42, maxLines: options.maxLines ?? 3, align: 'center', weight: 600, letterSpacing: options.letterSpacing ?? 0, lineHeightMultiplier: options.lineHeightMultiplier ?? 1.2 }];
+  }
   if (item.visualKind === 'metric') {
     const value = item.content.kind === 'number' ? String(item.content.value) : '';
     const label = item.content.kind === 'number' ? item.content.label : contentText(item.content);
     return [
-      { text: value, x: 0, y: height * 0.12, width: width * 0.36, height: height * 0.68, fontSize: 42, maxLines: 2, align: 'center', weight: 700 },
-      { text: label, x: width * 0.38, y: height * 0.25, width: width * 0.58, height: height * 0.52, fontSize: 18, maxLines: 3, align: 'center', weight: 600 },
+      { text: value, x: 0, y: height * 0.12, width: width * 0.36, height: height * 0.68, fontSize: 42, maxLines: 2, align: 'center', weight: 700, letterSpacing: 0, lineHeightMultiplier: 1.2 },
+      { text: label, x: width * 0.38, y: height * 0.25, width: width * 0.58, height: height * 0.52, fontSize: 18, maxLines: 3, align: 'center', weight: 600, letterSpacing: 0, lineHeightMultiplier: 1.2 },
     ];
   }
   const region = baseRegion(item, width, height);
@@ -149,6 +173,14 @@ export function textRegionsForSceneItem(item: SceneItem, width: number, height: 
     region.width = Math.max(1, width - 32);
   }
   return [region];
+}
+
+export function textLayoutPlanForSceneItem(item: SceneItem, width: number, height: number, options: TextLayoutOptions = {}): TextLayoutPlan {
+  const regions = textRegionsForSceneItem(item, width, height, options);
+  return { regions: regions.map((region) => {
+    const fitted = fitText({ text: region.text, maxWidth: region.width, maxHeight: region.height, fontSize: region.fontSize, maxLines: region.maxLines, letterSpacing: region.letterSpacing, lineHeightMultiplier: region.lineHeightMultiplier });
+    return { ...region, ...fitted };
+  }) };
 }
 
 export function sceneItemBox(item: SceneItem, canvasWidth: number, canvasHeight: number): SceneItemBox {
@@ -166,6 +198,7 @@ export function sceneItemBox(item: SceneItem, canvasWidth: number, canvasHeight:
       maxHeight: Number.MAX_SAFE_INTEGER,
       fontSize: 24,
       maxLines: Math.max(4, listText.split('\n').length * 4),
+      letterSpacing: 0,
     });
     const desiredHeight = 20 + probe.lines.length * probe.lineHeight;
     height = Math.max(baseHeight, Math.min(maxLocalHeight * 0.5, desiredHeight));

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { renderSceneFrameToRgba } from '../../src/export/renderer';
-import { createCanvasRenderer } from '../../src/render/canvasRenderer';
+import { exportTextLayoutForItem } from '../../src/export/renderer';
+import { canvasTextLayoutForItem, createCanvasRenderer } from '../../src/render/canvasRenderer';
 import { createFixtureProject } from '../../src/project/fixtures';
 import { evaluateSceneAtTime } from '../../src/render/scene';
 import { sceneItemBox, textRegionsForSceneItem } from '../../src/render/textFit';
@@ -294,5 +295,17 @@ describe('unified render runtime', () => {
     const buffer = renderSceneFrameToRgba(frame, 1920, 1080);
     const offset = (Math.floor(box.y + 1) * 1920 + Math.floor(box.x + 1)) * 4;
     expect([...buffer.subarray(offset, offset + 4)]).toEqual([17, 24, 39, 235]);
+  });
+
+  it('compares Canvas/export text layout plans instead of comparing only pixels', () => {
+    const project = createFixtureProject();
+    project.subtitles = [{ id: 'subtitle-1', startSec: 0, endSec: 10, text: 'A long subtitle 中文内容 must wrap consistently.' }];
+    const item = evaluateSceneAtTime(project, 2).items.find((entry) => entry.effectId === 'subtitle-1');
+    if (!item) throw new Error('Subtitle fixture item missing');
+
+    const canvasPlan = canvasTextLayoutForItem(item, 1728, 183.6);
+    const exportPlan = exportTextLayoutForItem(item, 1728, 183.6);
+    expect(exportPlan.regions).toEqual(canvasPlan.regions);
+    expect(exportPlan.regions[0]).toMatchObject({ lines: expect.any(Array), fontSize: expect.any(Number), lineHeight: expect.any(Number), letterSpacing: 0, x: expect.any(Number), y: expect.any(Number), width: expect.any(Number), height: expect.any(Number) });
   });
 });
