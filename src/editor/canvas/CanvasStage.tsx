@@ -42,13 +42,13 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !videoSrc || Math.abs(video.currentTime - currentTime) < 0.08) return;
+    if (!video || !videoSrc || (playing && Math.abs(video.currentTime - currentTime) < 0.08)) return;
     try {
       video.currentTime = currentTime;
     } catch {
       // Ignore seeks before metadata is ready; the next clock update retries.
     }
-  }, [currentTime, videoSrc]);
+  }, [currentTime, playing, videoSrc]);
 
   const beginDrag = (event: ReactPointerEvent<HTMLButtonElement>, effectId: string, mode: 'move' | 'resize' = 'move') => {
     event.stopPropagation();

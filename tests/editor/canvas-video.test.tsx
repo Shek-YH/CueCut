@@ -74,6 +74,26 @@ describe('Canvas video surface', () => {
     expect(video.currentTime).toBe(8);
   });
 
+  it('seeks exactly to a paused target even when the old video time is within one debounce window', () => {
+    const props = {
+      onSelect: () => undefined,
+      onVideoMetadata: () => undefined,
+      onVideoTime: () => undefined,
+      playing: false,
+      project: createFixtureProject(),
+      selectedEffectId: 'fx-quote',
+      store: createProjectStore(createFixtureProject()),
+      videoSrc: 'blob:fixture',
+    };
+    const { rerender } = render(<CanvasStage {...props} currentTime={2.30} />);
+    const video = screen.getByTestId('preview-video');
+    Object.defineProperty(video, 'currentTime', { configurable: true, writable: true, value: 2.30 });
+
+    rerender(<CanvasStage {...props} currentTime={2.35} />);
+
+    expect(video.currentTime).toBe(2.35);
+  });
+
   it('seeks the native video to the current frame when metadata arrives after a clock seek', () => {
     render(
       <CanvasStage
