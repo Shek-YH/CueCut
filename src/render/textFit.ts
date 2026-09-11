@@ -15,8 +15,6 @@ export interface FitTextResult {
   overflow: boolean;
 }
 
-export const TEXT_OVERFLOW_DIAGNOSTIC = '⚠';
-
 export interface TextRegion {
   text: string;
   x: number;
@@ -37,49 +35,36 @@ export interface SceneItemBox {
 }
 
 const MIN_FONT_SIZE = 8;
+const MAX_FONT_SEARCH_STEPS = 16;
 
-function characterWidth(character: string, fontSize: number): number {
-  if (/\s/u.test(character)) return fontSize * 0.34;
+function characterWidthFactor(character: string): number {
+  if (/\s/u.test(character)) return 0.34;
   if (/\p{Mark}/u.test(character)) return 0;
-  if (/\p{Script=Han}|\p{Script=Hiragana}|\p{Script=Katakana}|\p{Script=Hangul}/u.test(character)) return fontSize;
-  if (/\p{Extended_Pictographic}/u.test(character)) return fontSize;
-  if (/[A-Z]/u.test(character)) return fontSize * 0.68;
-  if (/[a-z]/u.test(character)) return fontSize * 0.56;
-  if (/[0-9]/u.test(character)) return fontSize * 0.58;
-  if (/[.,:;!?()[\]{}'"`]/u.test(character)) return fontSize * 0.42;
-  return fontSize * 0.62;
-}
-
-function measureLine(line: string, fontSize: number): number {
-  return [...line].reduce((width, character) => width + characterWidth(character, fontSize), 0);
+  if (/\p{Script=Han}|\p{Script=Hiragana}|\p{Script=Katakana}|\p{Script=Hangul}/u.test(character)) return 1;
+  if (/\p{Extended_Pictographic}/u.test(character)) return 1;
+  if (/[A-Z]/u.test(character)) return 0.68;
+  if (/[a-z]/u.test(character)) return 0.56;
+  if (/[0-9]/u.test(character)) return 0.58;
+  if (/[.,:;!?()[\]{}'"`]/u.test(character)) return 0.42;
+  return 0.62;
 }
 
 function wrapParagraph(paragraph: string, fontSize: number, maxWidth: number): string[] {
   if (paragraph.length === 0) return [''];
   const lines: string[] = [];
-  let line = '';
+  let line: string[] = [];
+  let lineWidth = 0;
   const pushLine = () => {
-    if (line.length > 0) lines.push(line.trimEnd());
-    line = '';
+    if (line.length > 0) lines.push(line.join('').trimEnd());
+    line = [];
+    lineWidth = 0;
   };
 
-  for (const token of paragraph.match(/\s+|[^\s]+/gu) ?? [paragraph]) {
-    if (/^\s+$/u.test(token)) {
-      if (line.length > 0 && measureLine(line + ' ', fontSize) <= maxWidth) line += ' ';
-      else if (line.length > 0) pushLine();
-      continue;
-    }
-
-    if (measureLine(line + token, fontSize) <= maxWidth) {
-      line += token;
-      continue;
-    }
-
-    if (line.length > 0) pushLine();
-    for (const character of [...token]) {
-      if (line.length > 0 && measureLine(line + character, fontSize) > maxWidth) pushLine();
-      line += character;
-    }
+  for (const character of [...paragraph]) {
+    const width = characterWidthFactor(character) * fontSize;
+    if (line.length > 0 && lineWidth + width > maxWidth) pushLine();
+    line.push(character);
+    lineWidth += width;
   }
   if (line.length > 0 || lines.length === 0) pushLine();
   return lines;
@@ -93,17 +78,29 @@ export function fitText({ text, maxWidth, maxHeight, fontSize, maxLines }: FitTe
   const safeText = String(text);
   const safeWidth = Math.max(1, Number.isFinite(maxWidth) ? maxWidth : 1);
   const safeHeight = Math.max(1, Number.isFinite(maxHeight) ? maxHeight : 1);
-  const safeFontSize = Math.max(MIN_FONT_SIZE, Number.isFinite(fontSize) ? fontSize : MIN_FONT_SIZE);
-  const minimumFontSize = Math.max(1, Math.min(MIN_FONT_SIZE, safeWidth));
+  const safeFontSize = Math.max(1, Number.isFinite(fontSize) ? fontSize : MIN_FONT_SIZE);
+  const maximumFontSize = Math.max(1, Math.floor(safeFontSize));
+  const minimumFontSize = Math.min(MIN_FONT_SIZE, maximumFontSize);
   const safeMaxLines = Math.max(1, Math.floor(Number.isFinite(maxLines) ? maxLines : 1));
+  const hasOverwideGlyph = [...safeText].some((character) => character !== '\n' && character !== '\r' && characterWidthFactor(character) * minimumFontSize > safeWidth);
 
-  for (let candidate = safeFontSize; candidate >= minimumFontSize; candidate -= 1) {
+  let low = minimumFontSize;
+  let high = maximumFontSize;
+  let best: FitTextResult | null = null;
+  let steps = 0;
+  while (low <= high && steps < MAX_FONT_SEARCH_STEPS) {
+    const candidate = Math.floor((low + high) / 2);
     const lineHeight = candidate * 1.2;
     const lines = wrapText(safeText, candidate, safeWidth);
     if (lines.length <= safeMaxLines && lines.length * lineHeight <= safeHeight + 0.01) {
-      return { lines, fontSize: candidate, lineHeight, overflow: false };
+      best = { lines, fontSize: candidate, lineHeight, overflow: false };
+      low = candidate + 1;
+    } else {
+      high = candidate - 1;
     }
+    steps += 1;
   }
+  if (best && !hasOverwideGlyph) return best;
 
   const lineHeight = minimumFontSize * 1.2;
   const lines = wrapText(safeText, minimumFontSize, safeWidth);
@@ -155,8 +152,11 @@ export function textRegionsForSceneItem(item: SceneItem, width: number, height: 
 }
 
 export function sceneItemBox(item: SceneItem, canvasWidth: number, canvasHeight: number): SceneItemBox {
-  const width = Math.min(canvasWidth, Math.max(1, item.layout.nw * canvasWidth));
-  const baseHeight = Math.min(canvasHeight, Math.max(1, item.layout.nh * canvasHeight));
+  const transformScale = Math.max(0.01, Number.isFinite(item.scale) ? item.scale : 1);
+  const maxLocalWidth = canvasWidth / transformScale;
+  const maxLocalHeight = canvasHeight / transformScale;
+  const width = Math.min(maxLocalWidth, Math.max(1, item.layout.nw * canvasWidth));
+  const baseHeight = Math.min(maxLocalHeight, Math.max(1, item.layout.nh * canvasHeight));
   let height = baseHeight;
   if (item.visualKind === 'list') {
     const listText = contentText(item.content);
@@ -168,12 +168,17 @@ export function sceneItemBox(item: SceneItem, canvasWidth: number, canvasHeight:
       maxLines: Math.max(4, listText.split('\n').length * 4),
     });
     const desiredHeight = 20 + probe.lines.length * probe.lineHeight;
-    height = Math.max(baseHeight, Math.min(canvasHeight * 0.5, desiredHeight));
+    height = Math.max(baseHeight, Math.min(maxLocalHeight * 0.5, desiredHeight));
   }
 
+  const desiredX = item.layout.nx * canvasWidth + (Number.isFinite(item.translate.x) ? item.translate.x : 0);
+  const desiredY = item.layout.ny * canvasHeight + (Number.isFinite(item.translate.y) ? item.translate.y : 0);
+  const maxX = Math.max(0, canvasWidth - width * transformScale);
+  const maxY = Math.max(0, canvasHeight - height * transformScale);
+
   return {
-    x: Math.min(Math.max(0, item.layout.nx * canvasWidth), Math.max(0, canvasWidth - width)),
-    y: Math.min(Math.max(0, item.layout.ny * canvasHeight), Math.max(0, canvasHeight - height)),
+    x: Math.min(Math.max(0, desiredX), maxX),
+    y: Math.min(Math.max(0, desiredY), maxY),
     width,
     height,
   };

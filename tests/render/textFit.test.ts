@@ -37,4 +37,20 @@ describe('fitText', () => {
     expect(result.overflow).toBe(true);
     expect(result.lines.join('').replace(/\s+/gu, '')).toBe(text);
   });
+
+  it('marks a single glyph wider than maxWidth as overflow instead of shrinking into a false fit', () => {
+    const result = fitText({ text: 'W', maxWidth: 1, maxHeight: 100, fontSize: 20, maxLines: 1 });
+
+    expect(result.overflow).toBe(true);
+    expect(result.lines.join('')).toBe('W');
+  });
+
+  it('fits 5000 characters without quadratic repeated line measurement', () => {
+    const text = 'performance '.repeat(5000 / 12);
+    const started = performance.now();
+    const result = fitText({ text, maxWidth: 100000, maxHeight: 100000, fontSize: 24, maxLines: 1 });
+
+    expect(result.lines.join('')).toContain('performance');
+    expect(performance.now() - started).toBeLessThan(500);
+  });
 });

@@ -33,6 +33,13 @@ export interface SceneFrame {
   timeSec: number;
   items: SceneItem[];
   activeEffectIds: string[];
+  diagnostics?: SceneDiagnostic[];
+}
+
+export interface SceneDiagnostic {
+  effectId: string;
+  code: 'text-overflow';
+  message: string;
 }
 
 function contentForEffect(effect: EffectInstance, timeSec: number): SceneContent {

@@ -3,7 +3,7 @@ import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent }
 import type { ProjectComposition } from '../../project/schema';
 import type { ProjectStore } from '../../project/store';
 import { evaluateSceneAtTime } from '../../render/scene';
-import { fitText, sceneItemBox, TEXT_OVERFLOW_DIAGNOSTIC, textRegionsForSceneItem, type TextRegion } from '../../render/textFit';
+import { fitText, sceneItemBox, textRegionsForSceneItem, type TextRegion } from '../../render/textFit';
 import { findEffectDefinition } from '../../effects/registry';
 import { previewTimeForEffect } from '../selection/previewTime';
 
@@ -26,6 +26,7 @@ function FittedText({ region, canvasWidth, className }: { region: TextRegion; ca
     <span
       className={className}
       data-text-overflow={fitted.overflow ? 'true' : 'false'}
+      aria-label={fitted.overflow ? '文案超出卡片，已保留完整内容并记录诊断' : undefined}
       style={{
         display: 'block',
         position: 'relative',
@@ -42,7 +43,6 @@ function FittedText({ region, canvasWidth, className }: { region: TextRegion; ca
       <span className="fit-lines" style={{ display: 'block', width: '100%', height: '100%', overflow: 'hidden' }}>
         {fitted.lines.map((line, index) => <span className="fit-line" key={`${index}-${line}`}>{line}</span>)}
       </span>
-      {fitted.overflow ? <span aria-label="文案超出卡片，已保留完整内容" className="fit-overflow-diagnostic">{TEXT_OVERFLOW_DIAGNOSTIC}</span> : null}
     </span>
   );
 }
@@ -260,7 +260,7 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
                   zIndex: effect.zIndex,
                   opacity: sceneItem?.opacity ?? 0,
                   filter: sceneItem?.blur ? `blur(${sceneItem.blur}px)` : undefined,
-                  transform: sceneItem ? `translate(${sceneItem.translate.x}px, ${sceneItem.translate.y}px) scale(${sceneItem.scale}) rotate(${sceneItem.rotation}deg)` : undefined,
+                  transform: sceneItem ? `scale(${sceneItem.scale}) rotate(${sceneItem.rotation}deg)` : undefined,
                 }}
                 type="button"
               >

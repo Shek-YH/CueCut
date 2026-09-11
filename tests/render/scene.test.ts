@@ -73,7 +73,24 @@ describe('deterministic SceneFrame evaluation', () => {
 
     expect(box.height).toBeGreaterThan(project.effects[1]!.layout.nh * project.project.canvasHeight);
     expect(box.y).toBeGreaterThanOrEqual(0);
-    expect(box.y + box.height).toBeLessThanOrEqual(project.project.canvasHeight);
+    expect(box.y + box.height * item.scale).toBeLessThanOrEqual(project.project.canvasHeight);
     expect(box.y).toBeLessThan(project.effects[1]!.layout.ny * project.project.canvasHeight);
+  });
+
+  it('keeps a low list card inside the canvas after scale and translate are applied', () => {
+    const project = createFixtureProject();
+    project.effects[1] = { ...project.effects[1]!, familyId: 'list', variantId: 'animated-list', layout: { ...project.effects[1]!.layout, ny: 0.9, nh: 0.08 } };
+    project.effects[1]!.content = { items: ['第一步：长列表内容在放大并向下平移后仍必须完整留在画布安全区域内', '第二步：继续保留第二条内容'] };
+
+    const item = evaluateSceneAtTime(project, 6).items.find((entry) => entry.effectId === 'fx-quote');
+    if (!item) throw new Error('List fixture item missing');
+    item.scale = 1.35;
+    item.translate = { x: 80, y: 90 };
+    const box = sceneItemBox(item, project.project.canvasWidth, project.project.canvasHeight);
+
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.y).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width * item.scale).toBeLessThanOrEqual(project.project.canvasWidth);
+    expect(box.y + box.height * item.scale).toBeLessThanOrEqual(project.project.canvasHeight);
   });
 });

@@ -89,7 +89,7 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .vlabel { position: absolute; left: 9px; bottom: 8px; z-index: 4; padding: 4px 6px; border: 1px solid #2a574b; border-radius: 5px; background: #09110fcc; color: #76dfc0; font: 800 7px ui-monospace, SFMono-Regular, Consolas, monospace; }
 .safe { position: absolute; z-index: 2; inset: 5% 5% 8%; border: 1px dashed #ffffff20; pointer-events: none; }
 .person { position: absolute; z-index: 1; left: 43%; top: 18%; width: 20%; height: 69%; border: 1px dashed #d0dbea38; border-radius: 44% 44% 23% 23%; background: #a8b8ce25; pointer-events: none; }
-.fx { position: absolute; display: flex; align-items: center; justify-content: center; border: 1px solid #ffffff30; border-radius: 10px; box-shadow: 0 10px 26px #0006; background: #121720ee; transition: opacity .07s, transform .15s; }
+.fx { position: absolute; display: flex; align-items: center; justify-content: center; transform-origin: top left; border: 1px solid #ffffff30; border-radius: 10px; box-shadow: 0 10px 26px #0006; background: #121720ee; transition: opacity .07s, transform .15s; }
 .fx.off { opacity: .06; }
 .fx.sel { outline: 2px solid #958bff; outline-offset: 2px; }
 .fx.quote { padding: 10px; background: linear-gradient(135deg, #302b59ee, #151b28ee); }
@@ -112,7 +112,6 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .fx strong, .fx .card-copy { min-width: 0; max-width: 100%; overflow: hidden; overflow-wrap: anywhere; white-space: normal; }
 .fx strong { font-size: 10px; }
 .fit-line { display: block; min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
-.fit-overflow-diagnostic { position: absolute; right: 0; top: 0; z-index: 2; display: grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; background: #5b3515; color: #ffcf8c; font: 900 10px ui-monospace, monospace; pointer-events: none; }
 .canvas-subtitle { position: absolute; display: flex; align-items: center; justify-content: center; padding: 5px 8px; border: 1px solid #7868ff88; border-radius: 6px; background: #10141ccc; color: #fff; font-size: 10px; line-height: 1.2; text-align: center; pointer-events: none; }
 .fxtag { position: absolute; left: 5px; top: -16px; padding: 3px 5px; border: 1px solid #564d9c; border-radius: 4px; background: #272345; color: #dedaff; font: 800 6px ui-monospace, SFMono-Regular, Consolas, monospace; white-space: nowrap; }
 .resize-handle { position: absolute; width: 10px; height: 10px; border: 1px solid #fff; border-radius: 2px; background: #7868ff; opacity: 0; }

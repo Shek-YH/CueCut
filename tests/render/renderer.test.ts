@@ -94,9 +94,10 @@ describe('unified render runtime', () => {
       scale: vi.fn(),
     } as unknown as CanvasRenderingContext2D;
 
-    createCanvasRenderer(project).renderFrame(6, context);
+    const frame = createCanvasRenderer(project).renderFrame(6, context);
 
-    expect(fillText.mock.calls.some(([value]) => String(value).includes('⚠'))).toBe(true);
+    expect(frame.diagnostics).toEqual([{ effectId: 'fx-quote', code: 'text-overflow', message: expect.any(String) }]);
+    expect(fillText.mock.calls.some(([value]) => String(value).includes('⚠'))).toBe(false);
   });
 
   it('uses visualKind for export drawing even when visualTags are absent', () => {
@@ -116,7 +117,7 @@ describe('unified render runtime', () => {
     const buffer = renderSceneFrameToRgba(frame, width, height);
     const offset = (sampleY * width + sampleX) * 4;
 
-    expect([...buffer.subarray(offset, offset + 4)]).toEqual([255, 255, 255, 220]);
+    expect([...buffer.subarray(offset, offset + 4)]).toEqual([56, 212, 188, 255]);
   });
 
   it('keeps quote visual semantics when its content is numeric across Canvas and export layout', () => {
@@ -192,6 +193,72 @@ describe('unified render runtime', () => {
     const exportBox = sceneItemBox(item, 1920, 1080);
     const buffer = renderSceneFrameToRgba(frame, 1920, 1080);
     const offset = (Math.floor(exportBox.y + 1) * 1920 + Math.floor(exportBox.x + 1)) * 4;
-    expect([...buffer.subarray(offset, offset + 4)]).toEqual([255, 255, 255, 220]);
+    expect([...buffer.subarray(offset, offset + 4)]).toEqual([56, 212, 188, 255]);
+  });
+
+  it('clips Canvas text to its text region instead of relying only on the item box', () => {
+    const project = createFixtureProject();
+    project.effects = [{
+      ...project.effects[1]!,
+      familyId: 'quote-callout',
+      variantId: 'quote',
+      content: { text: '一段很长的文本，用于验证 Canvas 文本绘制会建立独立的 region 裁剪边界。' },
+    }];
+    const rect = vi.fn();
+    const context = {
+      canvas: { width: 1920, height: 1080 },
+      fillStyle: '',
+      globalAlpha: 1,
+      font: '',
+      textAlign: 'left',
+      filter: 'none',
+      fillRect: vi.fn(),
+      fillText: vi.fn(),
+      strokeRect: vi.fn(),
+      save: vi.fn(),
+      restore: vi.fn(),
+      translate: vi.fn(),
+      rotate: vi.fn(),
+      scale: vi.fn(),
+      beginPath: vi.fn(),
+      rect,
+      clip: vi.fn(),
+    } as unknown as CanvasRenderingContext2D;
+
+    createCanvasRenderer(project).renderFrame(4, context);
+
+    expect(rect).toHaveBeenCalledWith(0, 0, expect.any(Number), expect.any(Number));
+    expect(rect).toHaveBeenCalledWith(20, 0, expect.any(Number), expect.any(Number));
+  });
+
+  it('aligns list, quote, and chart visual family backgrounds in export', () => {
+    const frame = evaluateSceneAtTime(createFixtureProject(), 6);
+    const items = frame.items.filter((item) => item.variantId !== 'subtitle');
+    const [list, quote, chart] = items;
+    if (!list || !quote || !chart) throw new Error('Visual family fixtures missing');
+    list.visualKind = 'list';
+    list.visualTags = [];
+    list.layout = { ...list.layout, nx: 0.03, ny: 0.05, nw: 0.2, nh: 0.25 };
+    quote.visualKind = 'quote';
+    quote.visualTags = [];
+    quote.layout = { ...quote.layout, nx: 0.3, ny: 0.05, nw: 0.2, nh: 0.25 };
+    chart.visualKind = 'chart';
+    chart.visualTags = [];
+    chart.layout = { ...chart.layout, nx: 0.57, ny: 0.05, nw: 0.2, nh: 0.25 };
+
+    const width = 1000;
+    const height = 600;
+    const buffer = renderSceneFrameToRgba(frame, width, height);
+    const listBox = sceneItemBox(list, width, height);
+    const quoteBox = sceneItemBox(quote, width, height);
+    const chartBox = sceneItemBox(chart, width, height);
+    const pixel = (x: number, y: number) => {
+      const offset = (Math.floor(y) * width + Math.floor(x)) * 4;
+      return [...buffer.subarray(offset, offset + 4)];
+    };
+
+    expect(pixel(listBox.x + 1, listBox.y + 1)).toEqual([56, 212, 188, 255]);
+    expect(pixel(quoteBox.x + 1, quoteBox.y + 1)).toEqual([56, 212, 188, 255]);
+    expect(pixel(chartBox.x + 1, chartBox.y + 1)).toEqual([17, 24, 39, 255]);
   });
 });
