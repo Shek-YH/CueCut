@@ -15,6 +15,8 @@ export interface FitTextResult {
   overflow: boolean;
 }
 
+export const TEXT_OVERFLOW_DIAGNOSTIC = '⚠';
+
 export interface TextRegion {
   text: string;
   x: number;
@@ -28,6 +30,8 @@ export interface TextRegion {
 }
 
 export interface SceneItemBox {
+  x: number;
+  y: number;
   width: number;
   height: number;
 }
@@ -149,17 +153,25 @@ export function textRegionsForSceneItem(item: SceneItem, width: number, height: 
 }
 
 export function sceneItemBox(item: SceneItem, canvasWidth: number, canvasHeight: number): SceneItemBox {
-  const width = Math.max(1, item.layout.nw * canvasWidth);
-  const baseHeight = Math.max(1, item.layout.nh * canvasHeight);
-  if (item.visualKind !== 'list' || item.content.kind !== 'list') return { width, height: baseHeight };
+  const width = Math.min(canvasWidth, Math.max(1, item.layout.nw * canvasWidth));
+  const baseHeight = Math.min(canvasHeight, Math.max(1, item.layout.nh * canvasHeight));
+  let height = baseHeight;
+  if (item.visualKind === 'list' && item.content.kind === 'list') {
+    const probe = fitText({
+      text: contentText(item.content),
+      maxWidth: Math.max(1, width - 30),
+      maxHeight: Number.MAX_SAFE_INTEGER,
+      fontSize: 24,
+      maxLines: Math.max(1, item.content.items.length * 4),
+    });
+    const desiredHeight = 20 + probe.lines.length * probe.lineHeight;
+    height = Math.max(baseHeight, Math.min(canvasHeight * 0.5, desiredHeight));
+  }
 
-  const probe = fitText({
-    text: contentText(item.content),
-    maxWidth: Math.max(1, width - 30),
-    maxHeight: Number.MAX_SAFE_INTEGER,
-    fontSize: 24,
-    maxLines: Math.max(1, item.content.items.length * 4),
-  });
-  const desiredHeight = 20 + probe.lines.length * probe.lineHeight;
-  return { width, height: Math.max(baseHeight, Math.min(canvasHeight * 0.5, desiredHeight)) };
+  return {
+    x: Math.min(Math.max(0, item.layout.nx * canvasWidth), Math.max(0, canvasWidth - width)),
+    y: Math.min(Math.max(0, item.layout.ny * canvasHeight), Math.max(0, canvasHeight - height)),
+    width,
+    height,
+  };
 }

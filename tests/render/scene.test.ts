@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createFixtureProject } from '../../src/project/fixtures';
 import { evaluateSceneAtTime } from '../../src/render/scene';
+import { sceneItemBox } from '../../src/render/textFit';
 
 describe('deterministic SceneFrame evaluation', () => {
   it('exposes content, layout, appearance, and enter/active/exit phases', () => {
@@ -53,5 +54,26 @@ describe('deterministic SceneFrame evaluation', () => {
       kind: 'list',
       items: ['第一步：准备素材并检查画面比例', '第二步：把英文说明拆成可读的多行', '第三步：保留完整内容后导出'],
     });
+  });
+
+  it('clamps a dynamically taller low-position list card inside the canvas', () => {
+    const project = createFixtureProject();
+    project.effects[1] = { ...project.effects[1]!, familyId: 'list', variantId: 'animated-list', layout: { ...project.effects[1]!.layout, ny: 0.92, nh: 0.06 } };
+    project.effects[1]!.content = {
+      items: [
+        '第一步：准备素材并检查画面比例以及安全区边界',
+        '第二步：把很长的英文说明拆成可读的多行内容',
+        '第三步：保留完整信息后再导出最终视频',
+      ],
+    };
+
+    const item = evaluateSceneAtTime(project, 6).items.find((entry) => entry.effectId === 'fx-quote');
+    if (!item) throw new Error('List fixture item missing');
+    const box = sceneItemBox(item, project.project.canvasWidth, project.project.canvasHeight) as { x: number; y: number; width: number; height: number };
+
+    expect(box.height).toBeGreaterThan(project.effects[1]!.layout.nh * project.project.canvasHeight);
+    expect(box.y).toBeGreaterThanOrEqual(0);
+    expect(box.y + box.height).toBeLessThanOrEqual(project.project.canvasHeight);
+    expect(box.y).toBeLessThan(project.effects[1]!.layout.ny * project.project.canvasHeight);
   });
 });

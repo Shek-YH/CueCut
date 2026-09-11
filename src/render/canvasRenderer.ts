@@ -1,6 +1,6 @@
 import type { ProjectComposition } from '../project/schema';
 import { evaluateSceneAtTime, type SceneItem } from './scene';
-import { fitText, sceneItemBox, textRegionsForSceneItem, type TextRegion } from './textFit';
+import { fitText, sceneItemBox, TEXT_OVERFLOW_DIAGNOSTIC, textRegionsForSceneItem, type TextRegion } from './textFit';
 import type { Renderer } from './types';
 
 function drawTextRegion(target: CanvasRenderingContext2D, region: TextRegion, color: string): void {
@@ -11,6 +11,12 @@ function drawTextRegion(target: CanvasRenderingContext2D, region: TextRegion, co
   const x = region.align === 'center' ? region.x + region.width / 2 : region.x;
   const firstBaseline = region.y + Math.max(fitted.fontSize, (region.height - fitted.lines.length * fitted.lineHeight) / 2 + fitted.fontSize);
   fitted.lines.forEach((line, index) => target.fillText(line, x, firstBaseline + index * fitted.lineHeight));
+  if (fitted.overflow) {
+    target.fillStyle = '#FFB454';
+    target.font = '700 14px sans-serif';
+    target.textAlign = 'right';
+    target.fillText(TEXT_OVERFLOW_DIAGNOSTIC, region.x + region.width, region.y + 16);
+  }
 }
 
 function clipToItemBox(target: CanvasRenderingContext2D, width: number, height: number): void {
@@ -24,12 +30,13 @@ export function createCanvasRenderer(project: ProjectComposition, options: { bac
   const evaluate = (timeSec: number) => evaluateSceneAtTime(project, timeSec);
 
   const renderItem = (target: CanvasRenderingContext2D, item: SceneItem) => {
-    const { width, height } = sceneItemBox(item, target.canvas.width, target.canvas.height);
+    const box = sceneItemBox(item, target.canvas.width, target.canvas.height);
+    const { width, height } = box;
     const textRegions = textRegionsForSceneItem(item, width, height);
     target.save();
     target.globalAlpha = item.opacity;
     target.filter = item.blur > 0 ? `blur(${item.blur}px)` : 'none';
-    target.translate(item.layout.nx * target.canvas.width, item.layout.ny * target.canvas.height);
+    target.translate(box.x, box.y);
     target.translate(item.translate.x, item.translate.y);
     target.rotate(item.rotation * Math.PI / 180);
     target.scale(item.scale, item.scale);

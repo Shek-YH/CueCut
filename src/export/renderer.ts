@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { evaluateSceneAtTime, type SceneFrame } from '../render/scene';
-import { fitText, sceneItemBox, textRegionsForSceneItem, type TextRegion } from '../render/textFit';
+import { fitText, sceneItemBox, TEXT_OVERFLOW_DIAGNOSTIC, textRegionsForSceneItem, type TextRegion } from '../render/textFit';
 import type { ProjectComposition } from '../project/schema';
 
 function colorFromHex(value: string): [number, number, number] {
@@ -49,6 +49,10 @@ function drawGlyphs(buffer: Buffer, canvasWidth: number, canvasHeight: number, r
       }
     });
   });
+  if (fitted.overflow) {
+    const diagnosticRegion: TextRegion = { text: TEXT_OVERFLOW_DIAGNOSTIC, x: region.x + Math.max(0, region.width - 18), y: region.y, width: 18, height: 18, fontSize: 14, maxLines: 1, align: 'center', weight: 700 };
+    drawGlyphs(buffer, canvasWidth, canvasHeight, diagnosticRegion, x, y, scale);
+  }
 }
 
 export function renderSceneFrameToRgba(frame: SceneFrame, width: number, height: number): Buffer {
@@ -56,17 +60,25 @@ export function renderSceneFrameToRgba(frame: SceneFrame, width: number, height:
   [...frame.items].sort((left, right) => left.zIndex - right.zIndex).filter((item) => item.visible && item.opacity > 0).forEach((item) => {
     const [red, green, blue] = colorFromHex(item.appearance.accent);
     const scale = Math.max(0.01, item.scale);
-    const x = item.layout.nx * width + item.translate.x;
-    const y = item.layout.ny * height + item.translate.y;
     const box = sceneItemBox(item, width, height);
+    const x = box.x + item.translate.x;
+    const y = box.y + item.translate.y;
     const itemWidth = box.width * scale;
     const itemHeight = box.height * scale;
     drawRect(buffer, width, height, x, y, itemWidth, itemHeight, [red, green, blue, Math.round(Math.min(1, item.opacity * 0.72) * 255)]);
-    if (item.visualTags.includes('Chart')) {
+    if (item.visualKind === 'chart') {
       [0.28, 0.52, 0.4, 0.76, 0.62].forEach((bar, index) => drawRect(buffer, width, height, x + 10 + index * (itemWidth / 6), y + itemHeight * (1 - bar), Math.max(4, itemWidth / 12), itemHeight * bar, [255, 255, 255, 220]));
     }
-    if (item.visualTags.includes('Badge') || item.visualTags.includes('Icon')) drawRect(buffer, width, height, x + itemWidth * 0.08, y + itemHeight * 0.08, Math.min(itemWidth * 0.28, itemHeight * 0.42), Math.min(itemHeight * 0.28, itemWidth * 0.42), [255, 255, 255, 220]);
-    if (item.visualTags.includes('Pointer') || item.visualTags.includes('Highlight')) drawRect(buffer, width, height, x + itemWidth * 0.12, y + itemHeight * 0.78, itemWidth * 0.76, Math.max(3, itemHeight * 0.05), [255, 255, 255, 220]);
+    if (item.visualKind === 'metric') {
+      drawRect(buffer, width, height, x + itemWidth * 0.08, y + itemHeight * 0.08, itemWidth * 0.84, Math.max(2, itemHeight * 0.03), [255, 255, 255, 220]);
+      drawRect(buffer, width, height, x + itemWidth * 0.08, y + itemHeight * 0.89, itemWidth * 0.84, Math.max(2, itemHeight * 0.03), [255, 255, 255, 220]);
+    } else if (item.visualKind === 'badge') {
+      drawRect(buffer, width, height, x + itemWidth * 0.08, y + itemHeight * 0.2, Math.min(itemWidth * 0.22, itemHeight * 0.5), Math.min(itemHeight * 0.3, itemWidth * 0.22), [255, 255, 255, 220]);
+    } else if (item.visualKind === 'highlight') {
+      drawRect(buffer, width, height, x + itemWidth * 0.1, y + itemHeight * 0.8, itemWidth * 0.8, Math.max(3, itemHeight * 0.05), [255, 255, 255, 220]);
+    } else if (item.visualKind === 'list' || item.visualKind === 'quote') {
+      drawRect(buffer, width, height, x, y, Math.max(4, itemWidth * 0.03), itemHeight, [255, 255, 255, 220]);
+    }
     textRegionsForSceneItem(item, box.width, box.height).forEach((region) => drawGlyphs(buffer, width, height, region, x, y, scale));
   });
   return buffer;

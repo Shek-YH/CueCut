@@ -29,4 +29,12 @@ describe('fitText', () => {
     expect(result.lines.join('')).toContain('导出视频');
     expect(result.overflow).toBe(false);
   });
+
+  it('marks an impossible maxLines/maxHeight request while retaining every character', () => {
+    const text = '这是一段无法在一行和极小高度内放下的完整文案';
+    const result = fitText({ text, maxWidth: 36, maxHeight: 10, fontSize: 20, maxLines: 1 });
+
+    expect(result.overflow).toBe(true);
+    expect(result.lines.join('').replace(/\s+/gu, '')).toBe(text);
+  });
 });

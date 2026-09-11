@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
+import { renderSceneFrameToRgba } from '../../src/export/renderer';
 import { createCanvasRenderer } from '../../src/render/canvasRenderer';
 import { createFixtureProject } from '../../src/project/fixtures';
+import { evaluateSceneAtTime } from '../../src/render/scene';
+import { sceneItemBox } from '../../src/render/textFit';
 
 describe('unified render runtime', () => {
   it('evaluates active effects at a frame without using React DOM', () => {
@@ -67,5 +70,52 @@ describe('unified render runtime', () => {
     const renderedLines = fillText.mock.calls.map(([value]) => String(value));
     expect(renderedLines.some((line) => line.length > 12)).toBe(true);
     expect(renderedLines).not.toContain(project.effects[1]!.content.text);
+  });
+
+  it('shows an overflow diagnostic instead of silently hiding an impossible card copy', () => {
+    const project = createFixtureProject();
+    project.effects[1]!.layout = { ...project.effects[1]!.layout, nx: 0.1, ny: 0.9, nw: 0.04, nh: 0.01 };
+    project.effects[1]!.content = { text: '这是一段在当前卡片尺寸和行数限制下无法完整放下的长文案' };
+    const fillText = vi.fn();
+    const context = {
+      canvas: { width: 1920, height: 1080 },
+      fillStyle: '',
+      globalAlpha: 1,
+      font: '',
+      textAlign: 'left',
+      filter: 'none',
+      fillRect: vi.fn(),
+      fillText,
+      strokeRect: vi.fn(),
+      save: vi.fn(),
+      restore: vi.fn(),
+      translate: vi.fn(),
+      rotate: vi.fn(),
+      scale: vi.fn(),
+    } as unknown as CanvasRenderingContext2D;
+
+    createCanvasRenderer(project).renderFrame(6, context);
+
+    expect(fillText.mock.calls.some(([value]) => String(value).includes('⚠'))).toBe(true);
+  });
+
+  it('uses visualKind for export drawing even when visualTags are absent', () => {
+    const project = createFixtureProject();
+    const frame = evaluateSceneAtTime(project, 6);
+    const item = frame.items.find((entry) => entry.effectId === 'fx-quote');
+    if (!item) throw new Error('Chart fixture item missing');
+    item.visualKind = 'chart';
+    item.visualTags = [];
+
+    const width = 1920;
+    const height = 1080;
+    const box = sceneItemBox(item, width, height);
+    const scale = item.scale;
+    const sampleX = Math.floor(box.x + 10);
+    const sampleY = Math.floor(box.y + box.height * (1 - 0.28) * scale);
+    const buffer = renderSceneFrameToRgba(frame, width, height);
+    const offset = (sampleY * width + sampleX) * 4;
+
+    expect([...buffer.subarray(offset, offset + 4)]).toEqual([255, 255, 255, 220]);
   });
 });

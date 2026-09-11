@@ -3,7 +3,7 @@ import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent }
 import type { ProjectComposition } from '../../project/schema';
 import type { ProjectStore } from '../../project/store';
 import { evaluateSceneAtTime } from '../../render/scene';
-import { fitText, sceneItemBox, textRegionsForSceneItem, type TextRegion } from '../../render/textFit';
+import { fitText, sceneItemBox, TEXT_OVERFLOW_DIAGNOSTIC, textRegionsForSceneItem, type TextRegion } from '../../render/textFit';
 import { findEffectDefinition } from '../../effects/registry';
 import { previewTimeForEffect } from '../selection/previewTime';
 
@@ -28,8 +28,8 @@ function FittedText({ region, canvasWidth, className }: { region: TextRegion; ca
       data-text-overflow={fitted.overflow ? 'true' : 'false'}
       style={{
         display: 'block',
+        position: 'relative',
         minWidth: 0,
-        overflow: 'hidden',
         overflowWrap: 'anywhere',
         width: `${region.width * scale}cqw`,
         height: `${region.height * scale}cqw`,
@@ -39,7 +39,10 @@ function FittedText({ region, canvasWidth, className }: { region: TextRegion; ca
         textAlign: region.align,
       }}
     >
-      {fitted.lines.map((line, index) => <span className="fit-line" key={`${index}-${line}`}>{line}</span>)}
+      <span className="fit-lines" style={{ display: 'block', width: '100%', height: '100%', overflow: 'hidden' }}>
+        {fitted.lines.map((line, index) => <span className="fit-line" key={`${index}-${line}`}>{line}</span>)}
+      </span>
+      {fitted.overflow ? <span aria-label="文案超出卡片，已保留完整内容" className="fit-overflow-diagnostic">{TEXT_OVERFLOW_DIAGNOSTIC}</span> : null}
     </span>
   );
 }
@@ -235,7 +238,7 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
             const isNumber = sceneItem?.content.kind === 'number';
             const position = preview[effect.effectId] ?? effect.layout;
             const positionedItem = sceneItem ? { ...sceneItem, layout: { ...sceneItem.layout, ...position } } : null;
-            const box = positionedItem ? sceneItemBox(positionedItem, project.project.canvasWidth, project.project.canvasHeight) : { width: position.nw * project.project.canvasWidth, height: position.nh * project.project.canvasHeight };
+            const box = positionedItem ? sceneItemBox(positionedItem, project.project.canvasWidth, project.project.canvasHeight) : { x: position.nx * project.project.canvasWidth, y: position.ny * project.project.canvasHeight, width: position.nw * project.project.canvasWidth, height: position.nh * project.project.canvasHeight };
             const textRegions = positionedItem ? textRegionsForSceneItem(positionedItem, box.width, box.height) : [];
             const definition = findEffectDefinition(effect.familyId, effect.variantId);
             return (
@@ -250,9 +253,9 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
                 onPointerUp={finishDrag}
                 onPointerCancel={cancelDrag}
                 style={{
-                  left: position.nx * 100 + '%',
-                  top: position.ny * 100 + '%',
-                  width: position.nw * 100 + '%',
+                  left: box.x / project.project.canvasWidth * 100 + '%',
+                  top: box.y / project.project.canvasHeight * 100 + '%',
+                  width: box.width / project.project.canvasWidth * 100 + '%',
                   height: box.height / project.project.canvasHeight * 100 + '%',
                   zIndex: effect.zIndex,
                   opacity: sceneItem?.opacity ?? 0,
