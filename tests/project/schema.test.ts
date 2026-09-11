@@ -89,6 +89,7 @@ describe('cuecut.composition/1 schema', () => {
         visualValue: 0.88,
         layer: 1,
         locked: true,
+        zone: 'lower-right',
         persistence: 'section',
         templateQuery: { semanticRole: 'ordered-process', tags: ['steps'], persistence: 'section' },
         cadence: { stepMs: 1000, cueOffsetsMs: [0, 1000] },
@@ -99,7 +100,7 @@ describe('cuecut.composition/1 schema', () => {
 
     expect(result.segments.at(-1)).toMatchObject({
       chapterId: 'chapter-1', sectionId: 'section-1', sourceSubtitleIds: ['subtitle-1'], selectionReason: '核心流程', visualValue: 0.88,
-      layer: 1, locked: true, persistence: 'section', templateQuery: { semanticRole: 'ordered-process', persistence: 'section' }, cadence: { stepMs: 1000, cueOffsetsMs: [0, 1000] },
+      layer: 1, locked: true, zone: 'lower-right', persistence: 'section', templateQuery: { semanticRole: 'ordered-process', persistence: 'section' }, cadence: { stepMs: 1000, cueOffsetsMs: [0, 1000] },
     });
   });
 });

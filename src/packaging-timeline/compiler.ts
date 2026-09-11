@@ -26,6 +26,7 @@ export interface ResolvedOverlayInput {
   cadence?: { stepMs?: number; staggerMs?: number; emphasisAtMs?: number; cueOffsetsMs?: number[] };
   dimAtSec?: number;
   locked?: boolean;
+  userOverride?: { locked: boolean; zone?: string };
 }
 
 export interface RuntimeTimelineItem {
@@ -52,6 +53,7 @@ export interface RuntimeTimelineItem {
   cadence?: { stepMs?: number; staggerMs?: number; emphasisAtMs?: number; cueOffsetsMs?: number[] };
   dimAtSec?: number;
   locked?: boolean;
+  userOverride?: { locked: boolean; zone?: string };
 }
 
 export function compileResolvedTimeline(input: { engineVersion: string; registryVersion: string; overlays: ResolvedOverlayInput[] }): { engineVersion: string; registryVersion: string; items: RuntimeTimelineItem[] } {
@@ -83,6 +85,7 @@ export function compileResolvedTimeline(input: { engineVersion: string; registry
         cadence: overlay.cadence,
         dimAtSec: overlay.dimAtSec,
         locked: overlay.locked,
+        userOverride: overlay.userOverride,
       }))
       .sort((left, right) => left.startSec - right.startSec || left.id.localeCompare(right.id)),
   };

@@ -29,6 +29,7 @@ export interface ResolvedPackagingOverlay extends CollisionOverlay {
   cadence?: { stepMs?: number; staggerMs?: number; emphasisAtMs?: number; cueOffsetsMs?: number[] };
   dimAtSec?: number;
   locked?: boolean;
+  userOverride?: { locked: boolean; zone?: PackagingZone };
 }
 
 type ResolvablePackagingTimelineItem = Omit<PackagingPlan['timeline'][number], 'templateQuery'> & { templateQuery?: RegistryTemplateQuery };
@@ -90,12 +91,13 @@ export function resolvePackagingPlan(plan: ResolvablePackagingPlan, spatialConte
     // Layout blocking is resolved below with actual time ranges. A global rect
     // blacklist would make two non-overlapping cards fight for different zones
     // even though they never coexist on screen.
-    const layout = solvePackagingLayout({ preferredZones: item.placementIntent.preferredZones as PackagingZone[], width: 0.36, height: 0.12, edgeInsets: plan.constraints.edgeInsets, blockedRects: [] });
+    const lockedOverride = item.userOverride?.locked ? item.userOverride : undefined;
+    const layout = solvePackagingLayout({ preferredZones: (lockedOverride?.zone ? [lockedOverride.zone] : item.placementIntent.preferredZones) as PackagingZone[], width: 0.36, height: 0.12, edgeInsets: plan.constraints.edgeInsets, blockedRects: [] });
     return {
       id: item.id,
       effectId: registry.selected.effect.id,
       rect: layout.rect,
-      candidates: layout.candidates,
+      candidates: lockedOverride?.zone ? [] : layout.candidates,
       importance: item.importance,
       startSec: item.startSec,
       endSec: item.endSec,
@@ -118,6 +120,7 @@ export function resolvePackagingPlan(plan: ResolvablePackagingPlan, spatialConte
       cadence: item.cadence,
       dimAtSec: item.dimAtSec,
       locked: item.userOverride?.locked,
+      userOverride: item.userOverride,
       seed: index + 1,
       registryFallback: registry.selected !== registry.candidates[0],
       layoutFallback: layout.fallbackUsed,

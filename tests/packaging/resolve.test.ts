@@ -161,6 +161,28 @@ describe('packaging plan resolver', () => {
     expect(result.diagnostics.warnings).toEqual(['maxConcurrentOverlays exceeded by protected overlay important']);
   });
 
+  it('uses and preserves a locked user override zone instead of the AI preferred zone', () => {
+    const result = resolvePackagingPlan({
+      schemaVersion: '1.0', projectId: 'p', canvas: { width: 1080, height: 1920, aspectRatio: '9:16', fps: 30 },
+      globalStyle: { visualStyle: 'clean-tech', energy: 0.5, density: 'auto', paletteIntent: 'brand', motionIntensity: 0.5 },
+      timeline: [{ id: 'locked-zone', startSec: 1, endSec: 3, intent: 'highlight', category: 'headline', content: { text: 'locked' }, importance: 0.9, userOverride: { locked: true, zone: 'lower-right' }, visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'normal' }, motionIntent: { entrance: 'fade_in', emphasis: 'none', exit: 'fade_out' }, placementIntent: { preferredZones: ['upper-left'], subjectRelation: 'avoid', anchor: 'scene-safe' }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false } }],
+      constraints: { maxConcurrentOverlays: 2, allowBehindSubject: false, subjectAvoidPadding: 0, edgeInsets: { top: 0.04, bottom: 0.08, left: 0.05, right: 0.05 } }, exportHints: { formats: ['mp4'], transparent: false },
+    });
+
+    expect(result.overlays[0]).toMatchObject({ rect: { x: 0.59, y: 0.8, width: 0.36, height: 0.12 }, locked: true, userOverride: { locked: true, zone: 'lower-right' } });
+    expect(result.runtimeTimeline.items[0]).toMatchObject({ locked: true, userOverride: { locked: true, zone: 'lower-right' } });
+  });
+
+  it('keeps a locked zone in place during overlay collision and reports the warning', () => {
+    const item = (id: string, locked: boolean) => ({ id, startSec: 1, endSec: 3, intent: id, category: 'headline' as const, content: { text: id }, importance: 0.9, userOverride: { locked, zone: 'upper-left' as const }, visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'normal' as const }, motionIntent: { entrance: 'fade_in' as const, emphasis: 'none' as const, exit: 'fade_out' as const }, placementIntent: { preferredZones: ['upper-left' as const], subjectRelation: 'avoid' as const, anchor: 'scene-safe' as const }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false } });
+    const result = resolvePackagingPlan({
+      schemaVersion: '1.0', projectId: 'p', canvas: { width: 1080, height: 1920, aspectRatio: '9:16', fps: 30 }, globalStyle: { visualStyle: 'clean-tech', energy: 0.5, density: 'auto', paletteIntent: 'brand', motionIntensity: 0.5 }, timeline: [item('first', false), item('locked', true)], constraints: { maxConcurrentOverlays: 2, allowBehindSubject: false, subjectAvoidPadding: 0, edgeInsets: { top: 0.04, bottom: 0.08, left: 0.05, right: 0.05 } }, exportHints: { formats: ['mp4'], transparent: false },
+    });
+
+    expect(result.overlays.find((overlay) => overlay.id === 'locked')).toMatchObject({ rect: { x: 0.05, y: 0.04, width: 0.36, height: 0.12 }, locked: true });
+    expect(result.diagnostics.warnings).toContain('locked overlay locked retained despite overlay collision');
+  });
+
   it('round-trips real resolver effects and metadata through apply into composition', () => {
     const result = resolvePackagingPlan({
       schemaVersion: '1.0', projectId: 'fixture', canvas: { width: 1920, height: 1080, aspectRatio: '16:9', fps: 30 },

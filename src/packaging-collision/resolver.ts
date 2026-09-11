@@ -8,6 +8,7 @@ export interface CollisionOverlay {
   startSec?: number;
   endSec?: number;
   subjectRelation?: string;
+  locked?: boolean;
 }
 
 export interface CollisionRepair {
@@ -51,6 +52,11 @@ export function resolveOverlayCollisions<T extends CollisionOverlay>(input: { ov
       dropped.push(overlay.id);
       repairs.push({ overlayId: overlay.id, action: 'drop' });
       warnings.push(`fixed collision prevented overlay ${overlay.id} from placement`);
+      continue;
+    }
+    if (overlay.locked) {
+      resolved.push(overlay);
+      warnings.push(`locked overlay ${overlay.id} retained despite overlay collision`);
       continue;
     }
     if (overlay.importance < 0.8) {
