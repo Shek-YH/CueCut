@@ -212,6 +212,65 @@ describe('Canvas video surface', () => {
     expect(onVideoTime).not.toHaveBeenCalled();
   });
 
+  it('does not commit a layout change when a canvas drag is cancelled', () => {
+    const project = createFixtureProject();
+    const store = createProjectStore(project);
+    render(
+      <CanvasStage
+        currentTime={0}
+        onSelect={() => undefined}
+        onVideoMetadata={() => undefined}
+        onVideoTime={() => undefined}
+        playing={false}
+        project={project}
+        selectedEffectId="fx-quote"
+        store={store}
+        videoSrc={null}
+      />,
+    );
+
+    const card = screen.getByTestId('effect-card-fx-quote');
+    const canvas = card.closest('.canvas');
+    if (!canvas) throw new Error('Canvas fixture missing');
+    Object.defineProperty(canvas, 'getBoundingClientRect', { configurable: true, value: () => ({ width: 100, height: 100 }) });
+    Object.defineProperty(card, 'setPointerCapture', { configurable: true, value: vi.fn() });
+    const before = store.getSnapshot().effects.find((effect) => effect.effectId === 'fx-quote')?.layout;
+    fireEvent.pointerDown(card, { clientX: 10, clientY: 10, pointerId: 1 });
+    fireEvent.pointerMove(card, { clientX: 20, clientY: 10, pointerId: 1 });
+    fireEvent.pointerCancel(card, { clientX: 20, clientY: 10, pointerId: 1 });
+
+    expect(store.getSnapshot().effects.find((effect) => effect.effectId === 'fx-quote')?.layout).toEqual(before);
+  });
+
+  it('continues guarding a late old paused timeupdate after the seek RAF completes', () => {
+    let frameCallback: FrameRequestCallback | undefined;
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+      frameCallback = callback;
+      return 1;
+    });
+    const onVideoTime = vi.fn();
+    const props = {
+      onSelect: () => undefined,
+      onVideoMetadata: () => undefined,
+      onVideoTime,
+      playing: false,
+      project: createFixtureProject(),
+      selectedEffectId: 'fx-quote',
+      store: createProjectStore(createFixtureProject()),
+      videoSrc: 'blob:fixture',
+    };
+    const { rerender } = render(<CanvasStage {...props} currentTime={0} />);
+    const video = screen.getByTestId('preview-video');
+    Object.defineProperty(video, 'currentTime', { configurable: true, writable: true, value: 0 });
+
+    rerender(<CanvasStage {...props} currentTime={2.35} />);
+    frameCallback?.(0);
+    video.currentTime = 2.30;
+    fireEvent.timeUpdate(video);
+
+    expect(onVideoTime).not.toHaveBeenCalled();
+  });
+
   it('seeks the native video to the current frame when metadata arrives after a clock seek', () => {
     render(
       <CanvasStage

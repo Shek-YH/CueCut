@@ -6,6 +6,8 @@ import { evaluateSceneAtTime } from '../../render/scene';
 import { findEffectDefinition } from '../../effects/registry';
 import { previewTimeForEffect } from '../selection/previewTime';
 
+const PAUSED_SEEK_GUARD_MS = 100;
+
 interface CanvasStageProps {
   project: ProjectComposition;
   currentTime: number;
@@ -26,10 +28,17 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
   const suppressClickRef = useRef(false);
   const pausedSeekVersionRef = useRef(0);
   const pausedSeekFrameRef = useRef<number | null>(null);
-  const pendingPausedSeekRef = useRef<number | null>(null);
+  const pausedSeekTokenRef = useRef(0);
+  const pendingPausedSeekRef = useRef<{ targetTime: number; token: number; expiresAt: number } | null>(null);
   const lastCurrentTimeRef = useRef(currentTime);
   const [drag, setDrag] = useState<{ effectId: string; mode: 'move' | 'resize'; clientX: number; clientY: number; nx: number; ny: number; nw: number; nh: number; width: number; height: number } | null>(null);
   const [preview, setPreview] = useState<Record<string, { nx: number; ny: number; nw: number; nh: number }>>({});
+
+  const setPendingPausedSeek = (targetTime: number) => {
+    const token = ++pausedSeekTokenRef.current;
+    pendingPausedSeekRef.current = { targetTime, token, expiresAt: performance.now() + PAUSED_SEEK_GUARD_MS };
+    return token;
+  };
 
   useEffect(() => {
     const video = videoRef.current;
@@ -61,14 +70,17 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
       video.currentTime = currentTime;
       if (!playing) {
         const targetTime = currentTime;
-        if (currentTimeChanged) pendingPausedSeekRef.current = targetTime;
+        const targetToken = currentTimeChanged
+          ? setPendingPausedSeek(targetTime)
+          : pendingPausedSeekRef.current?.targetTime === targetTime ? pendingPausedSeekRef.current.token : null;
         frameId = window.requestAnimationFrame(() => {
           if (pausedSeekVersionRef.current !== seekVersion) return;
           if (pausedSeekFrameRef.current === frameId) pausedSeekFrameRef.current = null;
           const currentVideo = videoRef.current;
           if (!currentVideo || currentVideo !== video) return;
           if (Math.abs(currentVideo.currentTime - targetTime) >= Number.EPSILON) currentVideo.currentTime = targetTime;
-          pendingPausedSeekRef.current = null;
+          const pendingSeek = pendingPausedSeekRef.current;
+          if (pendingSeek?.token === targetToken) pendingSeek.expiresAt = performance.now() + PAUSED_SEEK_GUARD_MS;
         });
         pausedSeekFrameRef.current = frameId;
       }
@@ -109,7 +121,6 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
   const moveDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
     if (!drag) return;
     didDragRef.current = event.clientX !== drag.clientX || event.clientY !== drag.clientY;
-    didDragRef.current = event.clientX !== drag.clientX || event.clientY !== drag.clientY;
     const effect = project.effects.find((item) => item.effectId === drag.effectId);
     if (!effect) return;
     const dx = (event.clientX - drag.clientX) / drag.width;
@@ -131,6 +142,15 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
     if (!drag) return;
     const next = preview[drag.effectId];
     if (next) store.updateEffect(drag.effectId, (effect) => ({ ...effect, layout: { ...effect.layout, ...next } }));
+    setDrag(null);
+    setPreview({});
+  };
+
+  const cancelDrag = () => {
+    pointerDownRef.current = false;
+    didDragRef.current = false;
+    pointerSelectionRef.current = false;
+    suppressClickRef.current = false;
     setDrag(null);
     setPreview({});
   };
@@ -157,13 +177,22 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
     const effect = project.effects.find((item) => item.effectId === effectId);
     if (effect) {
       const targetTime = previewTimeForEffect({ ...effect.time, fps: project.project.fps });
-      if (!playing) pendingPausedSeekRef.current = targetTime;
+      if (!playing) setPendingPausedSeek(targetTime);
       onVideoTime(targetTime);
     }
   };
+
   const handleVideoTime = (timeSec: number) => {
     const pendingTime = pendingPausedSeekRef.current;
-    if (!playing && pendingTime !== null && Math.abs(timeSec - pendingTime) >= 0.001) return;
+    if (!playing && pendingTime !== null) {
+      if (Math.abs(timeSec - pendingTime.targetTime) < 0.001) {
+        pendingPausedSeekRef.current = null;
+      } else if (performance.now() < pendingTime.expiresAt) {
+        return;
+      } else {
+        pendingPausedSeekRef.current = null;
+      }
+    }
     onVideoTime(timeSec);
   };
 
@@ -197,11 +226,11 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
                 data-motion-phase={sceneItem?.phase ?? 'hidden'}
                 data-testid={'effect-card-' + effect.effectId}
                 key={effect.effectId}
-                onClick={() => selectEffect(effect.effectId)}
+                onClick={(event) => selectEffect(effect.effectId, event)}
                 onPointerDown={(event) => beginDrag(event, effect.effectId)}
                 onPointerMove={moveDrag}
                 onPointerUp={finishDrag}
-                onPointerCancel={finishDrag}
+                onPointerCancel={cancelDrag}
                 style={{
                   left: position.nx * 100 + '%',
                   top: position.ny * 100 + '%',
