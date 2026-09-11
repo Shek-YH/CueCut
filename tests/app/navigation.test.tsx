@@ -42,6 +42,15 @@ describe('CueCut prototype navigation', () => {
     expect(screen.getByTestId('timeline')).toBeVisible();
   });
 
+  it('seeks to a visible frame when selecting a layer effect', () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByTestId('layer-fx-quote'));
+
+    expect(screen.getByText((_, element) => element?.classList.contains('time') === true && element.textContent?.includes('2.37') === true)).toBeVisible();
+    expect(screen.getByTestId('layer-fx-quote')).toHaveClass('sel');
+    expect(screen.getByTestId('effect-card-fx-quote')).toHaveAttribute('data-motion-phase', 'enter');
+  });
   it('browses formal pack variants from the effect registry', async () => {
     render(<App />);
 

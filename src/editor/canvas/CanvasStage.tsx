@@ -88,6 +88,15 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
     setPreview({});
   };
 
+  const handleLoadedMetadata = (event: React.SyntheticEvent<HTMLVideoElement>) => {
+    onVideoMetadata({ durationSec: event.currentTarget.duration, canvasWidth: event.currentTarget.videoWidth, canvasHeight: event.currentTarget.videoHeight });
+    try {
+      event.currentTarget.currentTime = currentTime;
+    } catch {
+      // Ignore seeks before the native media element is ready.
+    }
+  };
+
   const scene = evaluateSceneAtTime(project, currentTime);
 
   return (
@@ -101,7 +110,7 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
       </div>
       <div className="canvaswrap">
         <div className="canvas" data-aspect-ratio={project.project.aspectRatio} style={{ aspectRatio: project.project.aspectRatio.replace(':', ' / ') }}>
-          {videoSrc ? <video ref={videoRef} className="vbg-video" data-testid="preview-video" preload="metadata" src={videoSrc} playsInline onLoadedMetadata={(event) => onVideoMetadata({ durationSec: event.currentTarget.duration, canvasWidth: event.currentTarget.videoWidth, canvasHeight: event.currentTarget.videoHeight })} onTimeUpdate={(event) => onVideoTime(event.currentTarget.currentTime)} /> : <div className="vbg" />}
+          {videoSrc ? <video ref={videoRef} className="vbg-video" data-testid="preview-video" preload="metadata" src={videoSrc} playsInline onLoadedMetadata={handleLoadedMetadata} onTimeUpdate={(event) => onVideoTime(event.currentTarget.currentTime)} /> : <div className="vbg" />}
           <span className="vlabel">VIDEO FRAME · {currentTime.toFixed(2)}s</span>
           <div className="person" />
           <div className="safe" />

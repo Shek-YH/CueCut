@@ -73,4 +73,33 @@ describe('Canvas video surface', () => {
 
     expect(video.currentTime).toBe(8);
   });
+
+  it('seeks the native video to the current frame when metadata arrives after a clock seek', () => {
+    render(
+      <CanvasStage
+        currentTime={2.37}
+        onSelect={() => undefined}
+        onVideoMetadata={() => undefined}
+        onVideoTime={() => undefined}
+        playing={false}
+        project={createFixtureProject()}
+        selectedEffectId="fx-quote"
+        store={createProjectStore(createFixtureProject())}
+        videoSrc="blob:fixture"
+      />,
+    );
+
+    const video = screen.getByTestId('preview-video');
+    Object.defineProperties(video, {
+      currentTime: { configurable: true, writable: true, value: 0 },
+      readyState: { configurable: true, value: 0 },
+      duration: { configurable: true, value: 30 },
+      videoWidth: { configurable: true, value: 1920 },
+      videoHeight: { configurable: true, value: 1080 },
+    });
+
+    fireEvent.loadedMetadata(video);
+
+    expect(video.currentTime).toBe(2.37);
+  });
 });

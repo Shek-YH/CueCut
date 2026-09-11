@@ -25,6 +25,7 @@ import { createRealtimeCaptureDownload } from '../export/realtime/finalizer';
 import { isRealtimeChromaCaptureEnabled } from '../export/realtime/featureFlag';
 import type { CaptureState, RealtimeCaptureResult } from '../export/realtime/types';
 import { RealtimeCapturePanel } from '../editor/realtime/RealtimeCapturePanel';
+import { previewTimeForEffect } from '../editor/selection/previewTime';
 
 type ViewId = 'edit' | 'lab' | 'sfx' | 'learn';
 
@@ -87,6 +88,12 @@ function EditView({
   onVideoMetadata: (metadata: { durationSec: number; canvasWidth: number; canvasHeight: number }) => void;
   onOpenLab: () => void;
 }) {
+  const handleLayerSelect = (effectId: string) => {
+    onSelect(effectId);
+    const effect = project.effects.find((item) => item.effectId === effectId);
+    if (effect) onSeek(previewTimeForEffect({ ...effect.time, fps: project.project.fps }));
+  };
+
   return (
     <div className="view edit active" data-testid="edit-view">
       <aside className="panel side edit-left">
@@ -95,7 +102,7 @@ function EditView({
           <span className="tiny">LAYERS + SRT</span>
         </div>
         <div className="editgrid">
-        <LayersPanel project={project} selectedEffectId={selectedEffectId} onSelect={onSelect} />
+        <LayersPanel project={project} selectedEffectId={selectedEffectId} onSelect={handleLayerSelect} />
           <SrtQuickPanel currentTime={currentTime} onSeek={onSeek} items={subtitleItems} onItemsChange={onSubtitleItemsChange} />
         </div>
       </aside>
