@@ -1,6 +1,7 @@
 import type { ProjectComposition } from '../project/schema';
 import { evaluateSceneAtTime, type SceneDiagnostic, type SceneItem } from './scene';
 import { fitText, sceneItemBox, textRegionsForSceneItem, type TextRegion } from './textFit';
+import { visualSurfaceForKind } from './visualSurface';
 import type { Renderer } from './types';
 
 function clipToRect(target: CanvasRenderingContext2D, region: Pick<TextRegion, 'x' | 'y' | 'width' | 'height'>): void {
@@ -46,50 +47,60 @@ export function createCanvasRenderer(project: ProjectComposition, options: { bac
     target.scale(item.scale, item.scale);
     clipToItemBox(target, width, height);
     const textColor = item.appearance.theme === 'dark' ? '#FFFFFF' : '#10141C';
-    target.fillStyle = item.appearance.accent;
+    const surface = visualSurfaceForKind(item.visualKind, item.appearance.accent);
+    const itemAlpha = Math.min(1, Math.max(0, item.opacity));
+    target.globalAlpha = itemAlpha * surface.backgroundAlpha;
+    target.fillStyle = surface.background;
     if (item.visualKind === 'chart') {
-      target.globalAlpha *= 0.92;
-      target.fillStyle = '#111827';
       target.fillRect(0, 0, width, height);
-      target.fillStyle = item.appearance.accent;
+      target.globalAlpha = itemAlpha * surface.accentAlpha;
+      target.fillStyle = surface.accent;
       [0.28, 0.52, 0.4, 0.76, 0.62].forEach((bar, index) => target.fillRect(10 + index * (width / 6), height * (1 - bar), Math.max(4, width / 12), height * bar));
+      target.globalAlpha = itemAlpha * surface.contentAlpha;
       drawTextRegion(target, textRegions[0]!, textColor, item.effectId, diagnostics);
     } else if (item.visualKind === 'metric') {
       target.fillRect(0, 0, width, height);
+      target.globalAlpha = itemAlpha * surface.accentAlpha;
       target.strokeStyle = item.appearance.accent;
       target.strokeRect(8, 8, Math.max(12, Math.min(width, height) - 16), Math.max(12, Math.min(width, height) - 16));
+      target.globalAlpha = itemAlpha * surface.contentAlpha;
       textRegions.forEach((region) => drawTextRegion(target, region, textColor, item.effectId, diagnostics));
     } else if (item.visualKind === 'list') {
-      target.fillStyle = '#171B26';
       target.fillRect(0, 0, width, height);
-      target.fillStyle = item.appearance.accent;
+      target.globalAlpha = itemAlpha * surface.accentAlpha;
+      target.fillStyle = surface.accent;
       target.fillRect(0, 0, Math.max(5, width * 0.025), height);
+      target.globalAlpha = itemAlpha * surface.contentAlpha;
       drawTextRegion(target, textRegions[0]!, textColor, item.effectId, diagnostics);
     } else if (item.visualKind === 'quote') {
-      target.fillStyle = '#282341';
       target.fillRect(0, 0, width, height);
-      target.fillStyle = item.appearance.accent;
+      target.globalAlpha = itemAlpha * surface.accentAlpha;
+      target.fillStyle = surface.accent;
       target.fillRect(0, 0, Math.max(6, width * 0.03), height);
+      target.globalAlpha = itemAlpha * surface.contentAlpha;
       drawTextRegion(target, textRegions[0]!, textColor, item.effectId, diagnostics);
     } else if (item.visualKind === 'highlight') {
-      target.fillStyle = '#101B24CC';
       target.fillRect(0, 0, width, height);
+      target.globalAlpha = itemAlpha * surface.accentAlpha;
       target.strokeStyle = item.appearance.accent;
       target.strokeRect(2, 2, Math.max(4, width - 4), Math.max(4, height - 4));
+      target.fillStyle = surface.accent;
       target.fillRect(width * 0.1, height * 0.8, width * 0.8, Math.max(3, height * 0.05));
+      target.globalAlpha = itemAlpha * surface.contentAlpha;
       drawTextRegion(target, textRegions[0]!, textColor, item.effectId, diagnostics);
     } else if (item.visualKind === 'badge') {
-      target.fillStyle = '#3B2434EE';
       target.fillRect(0, 0, width, height);
-      target.fillStyle = item.appearance.accent;
+      target.globalAlpha = itemAlpha * surface.accentAlpha;
+      target.fillStyle = surface.accent;
       target.fillRect(width * 0.08, height * 0.2, Math.min(width * 0.22, height * 0.5), Math.min(height * 0.3, width * 0.22));
+      target.globalAlpha = itemAlpha * surface.contentAlpha;
       drawTextRegion(target, textRegions[0]!, textColor, item.effectId, diagnostics);
     } else {
-      target.globalAlpha *= 0.85;
       target.fillRect(0, 0, width, height);
-      target.globalAlpha = item.opacity;
+      target.globalAlpha = itemAlpha * surface.accentAlpha;
       target.strokeStyle = item.appearance.accent;
       target.strokeRect(0, 0, width, height);
+      target.globalAlpha = itemAlpha * surface.contentAlpha;
       drawTextRegion(target, textRegions[0]!, textColor, item.effectId, diagnostics);
     }
     target.restore();

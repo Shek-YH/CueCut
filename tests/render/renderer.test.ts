@@ -117,7 +117,7 @@ describe('unified render runtime', () => {
     const buffer = renderSceneFrameToRgba(frame, width, height);
     const offset = (sampleY * width + sampleX) * 4;
 
-    expect([...buffer.subarray(offset, offset + 4)]).toEqual([56, 212, 188, 255]);
+    expect([...buffer.subarray(offset, offset + 4)]).toEqual([56, 212, 188, 235]);
   });
 
   it('keeps quote visual semantics when its content is numeric across Canvas and export layout', () => {
@@ -259,6 +259,40 @@ describe('unified render runtime', () => {
 
     expect(pixel(listBox.x + 1, listBox.y + 1)).toEqual([56, 212, 188, 255]);
     expect(pixel(quoteBox.x + 1, quoteBox.y + 1)).toEqual([56, 212, 188, 255]);
-    expect(pixel(chartBox.x + 1, chartBox.y + 1)).toEqual([17, 24, 39, 255]);
+    expect(pixel(chartBox.x + 1, chartBox.y + 1)).toEqual([17, 24, 39, 235]);
+  });
+
+  it('keeps Canvas and export on the same shared alpha rule for chart surfaces', () => {
+    const project = createFixtureProject();
+    project.effects = [{ ...project.effects[0]!, familyId: 'chart', variantId: 'chart', content: { text: 'chart' } }];
+    const fillCalls: Array<{ alpha: number; fillStyle: string }> = [];
+    const context = {
+      canvas: { width: 1920, height: 1080 },
+      fillStyle: '',
+      globalAlpha: 1,
+      font: '',
+      textAlign: 'left',
+      filter: 'none',
+      fillRect: vi.fn(() => fillCalls.push({ alpha: context.globalAlpha, fillStyle: context.fillStyle })),
+      fillText: vi.fn(),
+      strokeRect: vi.fn(),
+      save: vi.fn(),
+      restore: vi.fn(),
+      translate: vi.fn(),
+      rotate: vi.fn(),
+      scale: vi.fn(),
+    } as unknown as CanvasRenderingContext2D;
+
+    createCanvasRenderer(project).renderFrame(6, context);
+    const chartSurface = fillCalls.find((call) => call.fillStyle === '#111827');
+    expect(chartSurface?.alpha).toBeCloseTo(0.92, 5);
+
+    const frame = evaluateSceneAtTime(project, 6);
+    const item = frame.items[0];
+    if (!item) throw new Error('Chart fixture item missing');
+    const box = sceneItemBox(item, 1920, 1080);
+    const buffer = renderSceneFrameToRgba(frame, 1920, 1080);
+    const offset = (Math.floor(box.y + 1) * 1920 + Math.floor(box.x + 1)) * 4;
+    expect([...buffer.subarray(offset, offset + 4)]).toEqual([17, 24, 39, 235]);
   });
 });

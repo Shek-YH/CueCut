@@ -73,6 +73,7 @@ function visualTagsForEffect(effect: EffectInstance): string[] {
 function visualKindForEffect(effect: EffectInstance): SceneVisualKind {
   const definition = findEffectDefinition(effect.familyId, effect.variantId);
   const tags = [...visualTagsForEffect(effect), ...(definition?.semanticTags ?? [])].map((tag) => tag.toLowerCase());
+  if (tags.includes('chart') || effect.familyId === 'chart') return 'chart';
   if (tags.includes('metric') || tags.includes('number') || effect.familyId === 'numeric') return 'metric';
   if (tags.includes('chart')) return 'chart';
   if (tags.includes('list') || tags.includes('steps')) return 'list';
