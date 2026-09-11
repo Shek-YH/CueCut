@@ -116,6 +116,21 @@ describe('packaging plan resolver', () => {
     expect(allowedAvoid.overlays[0]?.rect).not.toEqual({ x: 0.05, y: 0.04, width: 0.36, height: 0.12 });
   });
 
+  it('drops avoid and foreground cards when every candidate collides with the subject, even if behind is allowed', () => {
+    const base = {
+      schemaVersion: '1.0' as const, projectId: 'p', canvas: { width: 1080, height: 1920, aspectRatio: '9:16', fps: 30 },
+      globalStyle: { visualStyle: 'clean-tech', energy: 0.5, density: 'auto' as const, paletteIntent: 'brand', motionIntensity: 0.5 },
+      constraints: { maxConcurrentOverlays: 2, allowBehindSubject: true, subjectAvoidPadding: 0, edgeInsets: { top: 0.04, bottom: 0.08, left: 0.05, right: 0.05 } }, exportHints: { formats: ['mp4' as const], transparent: false },
+    };
+    const item = (id: string, subjectRelation: 'avoid' | 'foreground') => ({ id, startSec: 1, endSec: 4, intent: id, category: 'progress' as const, content: { items: [id] }, importance: 0.9, visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'normal' as const }, motionIntent: { entrance: 'fade_in' as const, emphasis: 'none' as const, exit: 'fade_out' as const }, placementIntent: { preferredZones: ['upper-left' as const], subjectRelation, anchor: 'scene-safe' as const }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false } });
+
+    const result = resolvePackagingPlan({ ...base, timeline: [item('avoid', 'avoid'), item('foreground', 'foreground')] }, { subjectRects: [{ x: 0, y: 0, width: 1, height: 1 }] });
+
+    expect(result.overlays).toEqual([]);
+    expect(result.diagnostics.dropped).toEqual(['avoid', 'foreground']);
+    expect(result.diagnostics.warnings).toEqual(['fixed collision prevented overlay avoid from placement', 'fixed collision prevented overlay foreground from placement']);
+  });
+
   it('keeps the most important concurrent overlays and reports deterministic drops', () => {
     const base = {
       schemaVersion: '1.0' as const, projectId: 'p', canvas: { width: 1080, height: 1920, aspectRatio: '9:16', fps: 30 },

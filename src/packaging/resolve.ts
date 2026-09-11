@@ -137,7 +137,7 @@ export function resolvePackagingPlan(plan: ResolvablePackagingPlan, spatialConte
       collisionRepairs: collision.repairs.length,
       dropped,
       repairs,
-      warnings: concurrency.warnings,
+      warnings: [...collision.warnings, ...concurrency.warnings],
     },
   };
 }

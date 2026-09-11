@@ -19,6 +19,7 @@ export interface CollisionResolution<T extends CollisionOverlay = CollisionOverl
   overlays: T[];
   repairs: CollisionRepair[];
   dropped: string[];
+  warnings: string[];
 }
 
 function overlaps(left: NormalizedRect, right: NormalizedRect): boolean {
@@ -34,14 +35,22 @@ export function resolveOverlayCollisions<T extends CollisionOverlay>(input: { ov
   const resolved: T[] = [];
   const repairs: CollisionRepair[] = [];
   const dropped: string[] = [];
+  const warnings: string[] = [];
   for (const overlay of input.overlays) {
     const fixed = [...input.subtitleRects, ...(input.allowSubjectOverlap?.(overlay) ? [] : input.subjectRects)];
-    const blocked = [...fixed, ...resolved.filter((item) => overlapsInTime(overlay, item)).map((item) => item.rect)];
     const candidates = [overlay.rect, ...overlay.candidates];
+    const hasFixedSafeCandidate = candidates.some((candidate) => fixed.every((other) => !overlaps(candidate, other)));
+    const blocked = [...fixed, ...resolved.filter((item) => overlapsInTime(overlay, item)).map((item) => item.rect)];
     const next = candidates.find((candidate) => blocked.every((other) => !overlaps(candidate, other)));
     if (next) {
       if (next !== overlay.rect) repairs.push({ overlayId: overlay.id, action: 'move' });
       resolved.push({ ...overlay, rect: next });
+      continue;
+    }
+    if (!hasFixedSafeCandidate) {
+      dropped.push(overlay.id);
+      repairs.push({ overlayId: overlay.id, action: 'drop' });
+      warnings.push(`fixed collision prevented overlay ${overlay.id} from placement`);
       continue;
     }
     if (overlay.importance < 0.8) {
@@ -51,5 +60,5 @@ export function resolveOverlayCollisions<T extends CollisionOverlay>(input: { ov
     }
     resolved.push(overlay);
   }
-  return { overlays: resolved, repairs, dropped };
+  return { overlays: resolved, repairs, dropped, warnings };
 }
