@@ -105,6 +105,7 @@ const effectSchema = z.object({
   userFlags: z.object({
     locked: z.boolean(),
     manual: z.boolean(),
+    lockedZone: z.enum(placementZones).optional(),
   }).default({ locked: false, manual: false }),
   variantStateCache: z.record(z.string(), z.record(z.string(), z.unknown())).default({}),
 });
