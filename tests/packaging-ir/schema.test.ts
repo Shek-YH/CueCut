@@ -55,7 +55,7 @@ describe('Packaging IR schema', () => {
     if (result.success) expect(result.data).toMatchObject({ schemaVersion: '1.0', timeline: [{ category: 'headline', content: { text: '旧格式' } }] });
   });
 
-  it('accepts and preserves a real AI template query with persistence and safe unknown fields', () => {
+  it('rejects unknown template query fields instead of persisting them', () => {
     const result = packagingPlanSchema.safeParse({
       ...validPlan,
       timeline: [{ ...validPlan.timeline[0], templateQuery: {
@@ -64,7 +64,19 @@ describe('Packaging IR schema', () => {
       } }],
     });
 
+    expect(result.success).toBe(false);
+  });
+
+  it('accepts and preserves persistence in the strict template query protocol', () => {
+    const result = packagingPlanSchema.safeParse({
+      ...validPlan,
+      timeline: [{ ...validPlan.timeline[0], templateQuery: {
+        semanticRole: 'ordered-process', visualIntent: 'progressive-explanation', tags: ['steps'], requiredContentSlots: ['title', 'items', 'cueTimes'], itemCount: 4,
+        durationRangeSec: [8, 60], preferredZones: ['upper-left'], persistence: 'section',
+      } }],
+    });
+
     expect(result.success).toBe(true);
-    if (result.success) expect(result.data.timeline[0]?.templateQuery).toMatchObject({ persistence: 'section', safeContext: 'tutorial' });
+    if (result.success) expect(result.data.timeline[0]?.templateQuery).toMatchObject({ persistence: 'section' });
   });
 });

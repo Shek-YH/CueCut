@@ -67,7 +67,7 @@ export const templateQuerySchema = z.object({
   durationRangeSec: z.tuple([z.number().finite().min(0), z.number().finite().min(0)]).optional(),
   preferredZones: z.array(z.enum(placementZones)).max(4).optional(),
   persistence: z.enum(persistenceModes).optional(),
-}).catchall(z.unknown()).superRefine((value, context) => {
+}).strict().superRefine((value, context) => {
   if (value.durationRangeSec && value.durationRangeSec[1] < value.durationRangeSec[0]) context.addIssue({ code: 'custom', path: ['durationRangeSec', 1], message: 'duration max must be >= min' });
 });
 
