@@ -218,6 +218,7 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
   const subtitleSettings = project.subtitleSettings ?? defaultSubtitleSettings;
   const subtitleTop = { top: '8%', center: '42%', bottom: '78%' }[subtitleSettings.position];
   const subtitleStrokeWidth = `${subtitleSettings.strokeWidth / project.project.canvasWidth * 100}cqw`;
+  const subtitleLetterSpacing = `${subtitleSettings.letterSpacing / project.project.canvasWidth * 100}cqw`;
 
   return (
     <main className="stage" data-testid="canvas-stage">
@@ -296,6 +297,8 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
                 opacity: subtitle.opacity,
                 zIndex: subtitle.zIndex,
                 color: subtitleSettings.color,
+                lineHeight: subtitleSettings.lineHeight,
+                letterSpacing: subtitleLetterSpacing,
                 WebkitTextStroke: `${subtitleStrokeWidth} ${subtitleSettings.strokeColor}`,
               }}
             >

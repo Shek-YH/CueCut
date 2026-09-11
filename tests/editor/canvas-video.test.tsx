@@ -29,6 +29,9 @@ describe('Canvas video surface', () => {
     const subtitle = screen.getByTestId('canvas-subtitle-s-1');
     expect(subtitle).toHaveStyle({ color: '#FF0000', top: '8%', width: '90%' });
     expect(subtitle).toHaveStyle({ lineHeight: '1.4', letterSpacing: '0.10416666666666667cqw' });
+    const fittedSubtitle = subtitle.querySelector('[data-text-overflow]');
+    expect(fittedSubtitle).not.toBeNull();
+    expect(fittedSubtitle).toHaveStyle({ lineHeight: `${48 * 1.4 / 1920 * 100}cqw`, letterSpacing: '0.10416666666666667cqw' });
 
     project.subtitleSettings = { ...project.subtitleSettings, visible: false };
     rerender(
