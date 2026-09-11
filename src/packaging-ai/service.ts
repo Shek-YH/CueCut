@@ -210,13 +210,13 @@ function templateQueryFor(value: unknown, role: Role | undefined, visualIntent: 
   };
 }
 
-function normalizeTranscriptRepair(value: unknown, context: Context): R {
+function normalizeTranscriptRepair(value: unknown, context: Context, ids: IdAllocator): R {
   const values = Array.isArray(record(value).segments) ? record(value).segments as unknown[] : [];
-  return { segments: values.flatMap((entry, index) => {
+  return { segments: values.flatMap((entry) => {
     const raw = record(entry);
     const startSec = clamp(numberValue(raw.startSec) ?? 0, 0, context.durationSec - 0.01);
     const endSec = clamp(numberValue(raw.endSec) ?? Math.min(context.durationSec, startSec + 0.01), startSec + 0.01, context.durationSec);
-    return [{ id: stringValue(raw.id) || 'transcript-' + (index + 1), startSec, endSec, originalText: stringValue(raw.originalText) ?? stringValue(raw.text) ?? '', correctedText: stringValue(raw.correctedText) ?? stringValue(raw.originalText) ?? stringValue(raw.text) ?? '', correctionType: ['none', 'homophone', 'asr-recognition', 'duplicate-word', 'punctuation', 'segmentation', 'english-normalization', 'number-normalization', 'proper-noun', 'context-repair', 'uncertain'].includes(String(raw.correctionType)) ? String(raw.correctionType) : 'uncertain', confidence: clamp(numberValue(raw.confidence) ?? 0.5, 0, 1), needsReview: raw.needsReview === true }];
+    return [{ id: stringValue(raw.id) || ids.next('transcript'), startSec, endSec, originalText: stringValue(raw.originalText) ?? stringValue(raw.text) ?? '', correctedText: stringValue(raw.correctedText) ?? stringValue(raw.originalText) ?? stringValue(raw.text) ?? '', correctionType: ['none', 'homophone', 'asr-recognition', 'duplicate-word', 'punctuation', 'segmentation', 'english-normalization', 'number-normalization', 'proper-noun', 'context-repair', 'uncertain'].includes(String(raw.correctionType)) ? String(raw.correctionType) : 'uncertain', confidence: clamp(numberValue(raw.confidence) ?? 0.5, 0, 1), needsReview: raw.needsReview === true }];
   }) };
 }
 
@@ -379,7 +379,7 @@ function repairPackagingPlan(value: unknown, request: unknown): { value: unknown
     projectId: stringValue(raw.projectId) || stringValue(context.project.projectId) || 'packaging-project',
     canvas: { width: Math.max(1, Math.round(numberValue(canvas.width) ?? numberValue(context.project.canvasWidth) ?? context.width)), height: Math.max(1, Math.round(numberValue(canvas.height) ?? numberValue(context.project.canvasHeight) ?? context.height)), aspectRatio: stringValue(canvas.aspectRatio) || stringValue(context.project.aspectRatio) || (context.height > context.width ? '9:16' : '16:9'), fps: clamp(numberValue(canvas.fps) ?? numberValue(context.project.fps) ?? numberValue(context.videoMeta.fps) ?? 30, 1, 240) },
     globalStyle: { visualStyle: stringValue(style.visualStyle) || stringValue(preferences.style) || 'clean-tech', energy: clamp(numberValue(style.energy) ?? numberValue(preferences.energy) ?? 0.5, 0, 1), density: densityFor(style.density ?? preferences.density), paletteIntent: stringValue(style.paletteIntent) || 'derive-from-brand', motionIntensity: clamp(numberValue(style.motionIntensity) ?? numberValue(preferences.motionIntensity) ?? 0.5, 0, 1) },
-    ...(raw.transcriptRepair !== undefined ? { transcriptRepair: normalizeTranscriptRepair(raw.transcriptRepair, context) } : {}),
+    ...(raw.transcriptRepair !== undefined ? { transcriptRepair: normalizeTranscriptRepair(raw.transcriptRepair, context, ids) } : {}),
     ...(chapters ? { chapters } : {}),
     ...(finalSections ? { sections: finalSections } : {}),
     ...(finalUnits ? { visualUnits: finalUnits } : {}),

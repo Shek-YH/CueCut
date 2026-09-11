@@ -183,4 +183,20 @@ describe('single-pass packaging director', () => {
     const result = await director.generate({ project: { projectId: 'explicit-project', durationSec: 10, fps: 30, canvasWidth: 1080, canvasHeight: 1920, aspectRatio: '9:16' }, preferences: { style: 'clean-tech', density: 'auto' } });
     expect(result.plan.timeline[0]).toMatchObject({ selectionReason: '反转', visualValue: 0.95, layer: 2, persistence: 'section', templateQuery: { tags: ['large-type'] }, placementIntent: { preferredZones: ['mid-right'], subjectRelation: 'foreground', anchor: 'canvas' }, motionIntent: { entrance: 'slam', emphasis: 'glow', exit: 'scale_out' } });
   });
+
+  it('allocates transcript repair ids without colliding with ids elsewhere in the plan', async () => {
+    const director = createPackagingDirector(async () => ({
+      schemaVersion: '1.0',
+      transcriptRepair: { segments: [{ startSec: 0, endSec: 2, originalText: '原始', correctedText: '修正', correctionType: 'asr-recognition', confidence: 0.9, needsReview: false }] },
+      visualUnits: [{
+        id: 'transcript-1', sectionId: 'section-1', kind: 'quote', startSec: 2, endSec: 4, layer: 1, persistence: 'transient', sourceSubtitleIds: [], summary: '重点', selectionReason: '核心', visualIntent: 'quote', content: { text: '重点' }, cueTimesSec: [],
+        placement: { preferredZones: ['center'], subjectRelation: 'avoid', anchor: 'scene-safe' }, templateQuery: { semanticRole: 'quote' },
+      }],
+    }));
+
+    const result = await director.generate({ project: { projectId: 'transcript-id-project', durationSec: 10, fps: 30, canvasWidth: 1080, canvasHeight: 1920, aspectRatio: '9:16' } });
+
+    expect(result.plan.transcriptRepair?.segments[0]?.id).toBe('transcript-2');
+    expect(result.plan.timeline[0]?.id).toBe('transcript-1');
+  });
 });
