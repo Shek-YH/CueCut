@@ -70,6 +70,16 @@ function inferredSemanticRoles(effect: PackagingEffectManifest): string[] {
   return ['neutral'];
 }
 
+function templateRequirementsSatisfied(effect: PackagingEffectManifest, request: RegistryResolveRequest): boolean {
+  const query = request.templateQuery;
+  const requiredContentSlots = [...new Set([...request.requiredContentSlots, ...(query?.requiredContentSlots ?? [])])];
+  if (requiredContentSlots.some((slot) => !Object.hasOwn(effect.contentSchema, slot))) return false;
+  if (query?.itemCount !== undefined && (!effect.itemCountRange || query.itemCount < effect.itemCountRange[0] || query.itemCount > effect.itemCountRange[1])) return false;
+  if (query?.persistence && (!effect.persistenceModes || !effect.persistenceModes.includes(query.persistence))) return false;
+  if (query?.durationRangeSec && (query.durationRangeSec[1] < effect.duration.min || query.durationRangeSec[0] > effect.duration.max)) return false;
+  return true;
+}
+
 function scoreEffect(effect: PackagingEffectManifest, request: RegistryResolveRequest): RegistryCandidate {
   const reasons: string[] = [];
   let score = 0;
@@ -124,6 +134,7 @@ function scoreEffect(effect: PackagingEffectManifest, request: RegistryResolveRe
 
 export function resolvePackagingEffect(request: RegistryResolveRequest, catalog = packagingEffectCatalog): { selected?: RegistryCandidate; candidates: RegistryCandidate[] } {
   const candidates = catalog
+    .filter((effect) => templateRequirementsSatisfied(effect, request))
     .map((effect) => scoreEffect(effect, request))
     .sort((left, right) => right.score - left.score || left.effect.id.localeCompare(right.effect.id));
   const excluded = new Set(request.excludeEffectIds ?? []);

@@ -71,6 +71,7 @@ const packagingSegmentMetadataSchema = z.object({
   selectionReason: z.string().min(1).max(500).optional(),
   visualValue: z.union([z.boolean(), z.number().finite().min(0).max(1)]).optional(),
   layer: z.number().int().min(0).max(3).optional(),
+  locked: z.boolean().optional(),
   persistence: z.enum(persistenceModes).optional(),
   templateQuery: packagingTemplateQuerySchema.optional(),
   cadence: packagingCadenceSchema.optional(),

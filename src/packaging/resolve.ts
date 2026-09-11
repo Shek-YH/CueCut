@@ -101,6 +101,7 @@ export function resolvePackagingPlan(plan: ResolvablePackagingPlan, spatialConte
       endSec: item.endSec,
       content: item.content,
       motion: item.motionIntent,
+      subjectRelation: item.placementIntent.subjectRelation,
       chapterId: item.chapterId,
       sectionId: item.sectionId,
       sourceSubtitleIds: item.sourceSubtitleIds,
@@ -122,7 +123,7 @@ export function resolvePackagingPlan(plan: ResolvablePackagingPlan, spatialConte
       layoutFallback: layout.fallbackUsed,
     } satisfies ResolvedPackagingOverlay & { registryFallback: boolean; layoutFallback: boolean };
   });
-  const collision = resolveOverlayCollisions({ overlays: initial, subtitleRects: spatial.subtitleRects, subjectRects: plan.constraints.allowBehindSubject ? emptySpatialContext.subjectRects : spatial.subjectRects.map((rect) => expandRect(rect, plan.constraints.subjectAvoidPadding)) });
+  const collision = resolveOverlayCollisions({ overlays: initial, subtitleRects: spatial.subtitleRects, subjectRects: spatial.subjectRects.map((rect) => expandRect(rect, plan.constraints.subjectAvoidPadding)), allowSubjectOverlap: (overlay) => plan.constraints.allowBehindSubject && overlay.subjectRelation === 'behind' });
   const concurrency = limitConcurrentOverlays(collision.overlays, plan.constraints.maxConcurrentOverlays);
   const runtimeTimeline = compileResolvedTimeline({ engineVersion: '1.0', registryVersion: '1.0', overlays: concurrency.overlays });
   const repairs = [...collision.repairs, ...concurrency.repairs];

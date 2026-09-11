@@ -36,6 +36,12 @@ function manifestFor(entry: (typeof packMotionCatalog)[number]): PackagingEffect
     ...(supportsCueTimes ? ['progressive-explanation'] : []),
     ...(category === 'quote' ? ['emphasize-contrast'] : []),
   ];
+  const visualTags = new Set(entry.visualTags.map((tag) => tag.toLowerCase()));
+  const contentSchema: Record<string, string> = {};
+  if (visualTags.has('text') || visualTags.has('card')) Object.assign(contentSchema, { text: 'string', title: 'string', headline: 'string', supportingText: 'string' });
+  if (visualTags.has('list') || visualTags.has('steps')) Object.assign(contentSchema, { title: 'string', items: 'string[]' });
+  if (visualTags.has('chart') || visualTags.has('metric')) contentSchema.value = 'string';
+  if (supportsCueTimes) contentSchema.cueTimes = 'number[]';
   return packagingEffectManifestSchema.parse({
     id: entry.id.startsWith('cuecut-') ? entry.id : `cuecut-${entry.id}`,
     version: entry.packVersion,
@@ -52,7 +58,7 @@ function manifestFor(entry: (typeof packMotionCatalog)[number]): PackagingEffect
     subjectRelations: ['avoid', 'foreground', 'ignore'],
     duration: { min: entry.durationRangeSec[0], recommended: Math.max(entry.durationRangeSec[0], Math.min(entry.durationRangeSec[1], 2)), max: entry.durationRangeSec[1] },
     motionCapabilities: { entrance: ['fade_in', 'slide_left', 'scale_punch'], emphasis: ['none', 'glow', 'scale_pulse'], exit: ['fade_out', 'scale_out'] },
-    contentSchema: { headline: 'string', value: 'string', supportingText: 'string' },
+    contentSchema,
     safeZoneAware: true,
     subtitleAware: true,
     subjectAware: true,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { packagingEffectCatalog } from '../../src/packaging-registry/catalog';
+import { findPackagingEffect, packagingEffectCatalog } from '../../src/packaging-registry/catalog';
 import { findPackMotion } from '../../src/motions/packCatalog';
 import { resolvePackagingEffect, registryScoreWeights } from '../../src/packaging-registry/resolver';
 import type { PackagingEffectManifest } from '../../src/packaging-registry/manifest';
@@ -43,7 +43,7 @@ describe('packaging registry resolver', () => {
   });
 
   it('can select a different registered variant when the top candidate was already used', () => {
-    const request = { category: 'callout' as const, visualStyle: 'clean-tech', energy: 0.5, subjectRelation: 'avoid' as const, preferredZones: ['upper-left'] as const, aspectRatio: '16:9', durationSec: 3, requiredContentSlots: ['headline'] };
+    const request = { category: 'callout' as const, visualStyle: 'clean-tech', energy: 0.5, subjectRelation: 'avoid' as const, preferredZones: ['upper-left'] as const, aspectRatio: '16:9', durationSec: 1, requiredContentSlots: ['headline'] };
     const first = resolvePackagingEffect(request);
     const second = resolvePackagingEffect({ ...request, excludeEffectIds: first.selected ? [first.selected.effect.id] : [] });
 
@@ -63,7 +63,7 @@ describe('packaging registry resolver', () => {
 
     expect(result.selected?.effect.id).toBe('real-step-template');
     expect(result.selected?.reasons).toEqual(expect.arrayContaining(['semanticRole', 'visualIntent', 'tags', 'itemCount', 'durationRangeSec', 'persistence']));
-    expect(result.selected?.score).toBeGreaterThan(result.candidates.find((candidate) => candidate.effect.id === 'real-generic')!.score);
+    expect(result.candidates).toHaveLength(1);
   });
 
   it('ignores unknown AI template hints and only returns effects from the supplied catalog', () => {
@@ -88,5 +88,23 @@ describe('packaging registry resolver', () => {
   it('keeps catalog ids canonical and directly resolvable by the motion catalog', () => {
     expect(packagingEffectCatalog.every((effect) => !effect.id.startsWith('cuecut-cuecut-'))).toBe(true);
     expect(packagingEffectCatalog.every((effect) => findPackMotion(effect.id))).toBe(true);
+  });
+
+  it('exposes only real pack content slots for progressive catalog effects', () => {
+    expect(findPackagingEffect('cuecut-step-timeline')?.contentSchema).toMatchObject({ items: 'string[]', cueTimes: 'number[]', title: 'string' });
+    expect(findPackagingEffect('cuecut-step-timeline')?.contentSchema.value).toBeUndefined();
+    expect(findPackagingEffect('cuecut-ring-metric')?.contentSchema).toMatchObject({ value: 'string' });
+    expect(findPackagingEffect('cuecut-ring-metric')?.contentSchema.items).toBeUndefined();
+  });
+
+  it('filters candidates that cannot execute template query requirements before scoring', () => {
+    const catalog = [
+      testManifest('not-executable', { contentSchema: { headline: 'string' }, itemCountRange: [1, 1], persistenceModes: ['transient'], duration: { min: 1, recommended: 2, max: 4 } }),
+      testManifest('executable', { contentSchema: { title: 'string', items: 'string[]', cueTimes: 'number[]' }, itemCountRange: [2, 6], persistenceModes: ['section'], supportsCueTimes: true, duration: { min: 8, recommended: 10, max: 14 } }),
+    ];
+    const result = resolvePackagingEffect({ category: 'transition', visualStyle: 'base', energy: 0.5, subjectRelation: 'avoid', preferredZones: ['upper-left'], aspectRatio: '16:9', durationSec: 10, requiredContentSlots: [], templateQuery: { requiredContentSlots: ['title', 'items', 'cueTimes'], itemCount: 4, persistence: 'section', durationRangeSec: [8, 60] } }, catalog);
+
+    expect(result.candidates.map((candidate) => candidate.effect.id)).toEqual(['executable']);
+    expect(result.selected?.effect.id).toBe('executable');
   });
 });

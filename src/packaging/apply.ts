@@ -91,6 +91,7 @@ export function applyResolvedPackagingToProject(project: ProjectComposition, res
       selectionReason: overlay.selectionReason,
       visualValue: overlay.visualValue,
       layer: overlay.layer,
+      locked: overlay.locked,
       persistence: overlay.persistence,
       templateQuery: overlay.templateQuery,
       cadence: overlay.cadence,

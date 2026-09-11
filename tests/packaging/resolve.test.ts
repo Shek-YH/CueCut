@@ -74,7 +74,7 @@ describe('packaging plan resolver', () => {
 
   it('keeps parallel main and emphasis overlays when their time ranges overlap', () => {
     const base = { schemaVersion: '1.0' as const, projectId: 'p', canvas: { width: 1080, height: 1920, aspectRatio: '9:16', fps: 30 }, globalStyle: { visualStyle: 'clean-tech', energy: 0.5, density: 'auto' as const, paletteIntent: 'brand', motionIntensity: 0.5 }, constraints: { maxConcurrentOverlays: 3, allowBehindSubject: false, subjectAvoidPadding: 0.1, edgeInsets: { top: 0.04, bottom: 0.08, left: 0.05, right: 0.05 } }, exportHints: { formats: ['mp4' as const], transparent: false } };
-    const item = (id: string, layer: number, zone: 'upper-left' | 'center') => ({ id, startSec: 2, endSec: 6, intent: id, category: (layer === 0 ? 'progress' : 'quote') as 'progress' | 'quote', content: { text: id }, importance: 0.9, layer, persistence: layer === 0 ? 'section' as const : 'transient' as const, visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'normal' as const }, motionIntent: { entrance: 'fade_in' as const, emphasis: 'none' as const, exit: 'fade_out' as const }, placementIntent: { preferredZones: [zone], subjectRelation: 'avoid' as const, anchor: 'scene-safe' as const }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false } });
+    const item = (id: string, layer: number, zone: 'upper-left' | 'center') => ({ id, startSec: 2, endSec: 6, intent: id, category: (layer === 0 ? 'progress' : 'quote') as 'progress' | 'quote', content: { items: [id] }, importance: 0.9, layer, persistence: layer === 0 ? 'section' as const : 'transient' as const, visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'normal' as const }, motionIntent: { entrance: 'fade_in' as const, emphasis: 'none' as const, exit: 'fade_out' as const }, placementIntent: { preferredZones: [zone], subjectRelation: 'avoid' as const, anchor: 'scene-safe' as const }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false } });
     const result = resolvePackagingPlan({ ...base, timeline: [item('main', 0, 'upper-left'), item('emphasis', 1, 'center')] });
     expect(result.overlays.map((overlay) => overlay.id)).toEqual(['main', 'emphasis']);
     expect(result.runtimeTimeline.items).toHaveLength(2);
@@ -97,7 +97,7 @@ describe('packaging plan resolver', () => {
     expect(result.diagnostics.collisionRepairs).toBeGreaterThan(0);
   });
 
-  it('expands subject collision rects by padding unless behind-subject placement is allowed', () => {
+  it('expands subject collision rects by padding and only behind cards may bypass the subject', () => {
     const base = {
       schemaVersion: '1.0' as const, projectId: 'p', canvas: { width: 1080, height: 1920, aspectRatio: '9:16', fps: 30 },
       globalStyle: { visualStyle: 'clean-tech', energy: 0.5, density: 'auto' as const, paletteIntent: 'brand', motionIntensity: 0.5 },
@@ -107,10 +107,13 @@ describe('packaging plan resolver', () => {
     const subjectRects = [{ x: 0.42, y: 0.04, width: 0.1, height: 0.12 }];
 
     const blocked = resolvePackagingPlan(base, { subjectRects });
-    const allowed = resolvePackagingPlan({ ...base, constraints: { ...base.constraints, allowBehindSubject: true } }, { subjectRects });
+    const behindPlan = { ...base, timeline: [{ ...base.timeline[0], placementIntent: { ...base.timeline[0].placementIntent, subjectRelation: 'behind' as const } }], constraints: { ...base.constraints, allowBehindSubject: true } };
+    const allowedBehind = resolvePackagingPlan(behindPlan, { subjectRects: [{ x: 0.05, y: 0.04, width: 0.36, height: 0.12 }] });
+    const allowedAvoid = resolvePackagingPlan({ ...base, constraints: { ...base.constraints, allowBehindSubject: true } }, { subjectRects: [{ x: 0.05, y: 0.04, width: 0.36, height: 0.12 }] });
 
-    expect(blocked.overlays[0]?.rect).not.toEqual(allowed.overlays[0]?.rect);
-    expect(allowed.overlays[0]?.rect).toEqual({ x: 0.05, y: 0.04, width: 0.36, height: 0.12 });
+    expect(blocked.overlays[0]?.rect).not.toEqual({ x: 0.05, y: 0.04, width: 0.36, height: 0.12 });
+    expect(allowedBehind.overlays[0]?.rect).toEqual({ x: 0.05, y: 0.04, width: 0.36, height: 0.12 });
+    expect(allowedAvoid.overlays[0]?.rect).not.toEqual({ x: 0.05, y: 0.04, width: 0.36, height: 0.12 });
   });
 
   it('keeps the most important concurrent overlays and reports deterministic drops', () => {
@@ -119,7 +122,7 @@ describe('packaging plan resolver', () => {
       globalStyle: { visualStyle: 'clean-tech', energy: 0.5, density: 'auto' as const, paletteIntent: 'brand', motionIntensity: 0.5 },
       constraints: { maxConcurrentOverlays: 1, allowBehindSubject: false, subjectAvoidPadding: 0, edgeInsets: { top: 0.04, bottom: 0.08, left: 0.05, right: 0.05 } }, exportHints: { formats: ['mp4' as const], transparent: false },
     };
-    const item = (id: string, importance: number) => ({ id, startSec: 1, endSec: 4, intent: id, category: 'headline' as const, content: { text: id }, importance, visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'normal' as const }, motionIntent: { entrance: 'fade_in' as const, emphasis: 'none' as const, exit: 'fade_out' as const }, placementIntent: { preferredZones: ['upper-left' as const], subjectRelation: 'avoid' as const, anchor: 'scene-safe' as const }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false } });
+    const item = (id: string, importance: number) => ({ id, startSec: 1, endSec: 4, intent: id, category: 'progress' as const, content: { items: [id] }, importance, visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'normal' as const }, motionIntent: { entrance: 'fade_in' as const, emphasis: 'none' as const, exit: 'fade_out' as const }, placementIntent: { preferredZones: ['upper-left' as const], subjectRelation: 'avoid' as const, anchor: 'scene-safe' as const }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false } });
 
     const result = resolvePackagingPlan({ ...base, timeline: [item('low', 0.2), item('high', 0.9)] });
 
@@ -134,7 +137,7 @@ describe('packaging plan resolver', () => {
       globalStyle: { visualStyle: 'clean-tech', energy: 0.5, density: 'auto' as const, paletteIntent: 'brand', motionIntensity: 0.5 },
       constraints: { maxConcurrentOverlays: 1, allowBehindSubject: false, subjectAvoidPadding: 0, edgeInsets: { top: 0.04, bottom: 0.08, left: 0.05, right: 0.05 } }, exportHints: { formats: ['mp4' as const], transparent: false },
     };
-    const item = (id: string, locked: boolean) => ({ id, startSec: 1, endSec: 4, intent: id, category: 'headline' as const, content: { text: id }, importance: 0.9, userOverride: { locked }, visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'normal' as const }, motionIntent: { entrance: 'fade_in' as const, emphasis: 'none' as const, exit: 'fade_out' as const }, placementIntent: { preferredZones: ['upper-left' as const], subjectRelation: 'avoid' as const, anchor: 'scene-safe' as const }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false } });
+    const item = (id: string, locked: boolean) => ({ id, startSec: 1, endSec: 4, intent: id, category: 'progress' as const, content: { items: [id] }, importance: 0.9, userOverride: { locked }, visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'normal' as const }, motionIntent: { entrance: 'fade_in' as const, emphasis: 'none' as const, exit: 'fade_out' as const }, placementIntent: { preferredZones: ['upper-left' as const], subjectRelation: 'avoid' as const, anchor: 'scene-safe' as const }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false } });
 
     const result = resolvePackagingPlan({ ...base, timeline: [item('locked', true), item('important', false)] });
 
@@ -147,7 +150,7 @@ describe('packaging plan resolver', () => {
     const result = resolvePackagingPlan({
       schemaVersion: '1.0', projectId: 'fixture', canvas: { width: 1920, height: 1080, aspectRatio: '16:9', fps: 30 },
       globalStyle: { visualStyle: 'clean-tech', energy: 0.5, density: 'auto', paletteIntent: 'brand', motionIntensity: 0.5 },
-      timeline: [{ id: 'round-trip', chapterId: 'chapter-1', sectionId: 'section-1', sourceSubtitleIds: ['subtitle-1'], semanticRole: 'quote', selectionReason: '核心反转', visualValue: 0.88, layer: 1, persistence: 'section', cadence: { stepMs: 500, cueOffsetsMs: [0] }, startSec: 1, endSec: 4, intent: 'quote', category: 'quote', content: { text: '短句' }, importance: 0.9, templateQuery: { semanticRole: 'quote', tags: ['quote'], persistence: 'section' }, visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'strong' }, motionIntent: { entrance: 'fade_in', emphasis: 'none', exit: 'fade_out' }, placementIntent: { preferredZones: ['center'], subjectRelation: 'avoid', anchor: 'scene-safe' }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false } }],
+      timeline: [{ id: 'round-trip', chapterId: 'chapter-1', sectionId: 'section-1', sourceSubtitleIds: ['subtitle-1'], semanticRole: 'quote', selectionReason: '核心反转', visualValue: 0.88, layer: 1, persistence: 'section', userOverride: { locked: true }, cadence: { stepMs: 500, cueOffsetsMs: [0] }, startSec: 1, endSec: 4, intent: 'quote', category: 'quote', content: { text: '短句' }, importance: 0.9, templateQuery: { semanticRole: 'quote', tags: ['quote'], persistence: 'section' }, visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'strong' }, motionIntent: { entrance: 'fade_in', emphasis: 'none', exit: 'fade_out' }, placementIntent: { preferredZones: ['center'], subjectRelation: 'avoid', anchor: 'scene-safe' }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false } }],
       constraints: { maxConcurrentOverlays: 2, allowBehindSubject: false, subjectAvoidPadding: 0.1, edgeInsets: { top: 0.04, bottom: 0.08, left: 0.05, right: 0.05 } }, exportHints: { formats: ['mp4'], transparent: false },
     });
     const applied = applyResolvedPackagingToProject(createFixtureProject(), result);
@@ -155,6 +158,6 @@ describe('packaging plan resolver', () => {
 
     expect(result.overlays).toHaveLength(1);
     expect(result.overlays.every((overlay) => findPackMotion(overlay.effectId))).toBe(true);
-    expect(segment).toMatchObject({ chapterId: 'chapter-1', sectionId: 'section-1', sourceSubtitleIds: ['subtitle-1'], selectionReason: '核心反转', visualValue: 0.88, layer: 1, persistence: 'section', templateQuery: { semanticRole: 'quote', persistence: 'section' }, cadence: { stepMs: 500, cueOffsetsMs: [0] } });
+    expect(segment).toMatchObject({ chapterId: 'chapter-1', sectionId: 'section-1', sourceSubtitleIds: ['subtitle-1'], selectionReason: '核心反转', visualValue: 0.88, layer: 1, locked: true, persistence: 'section', templateQuery: { semanticRole: 'quote', persistence: 'section' }, cadence: { stepMs: 500, cueOffsetsMs: [0] } });
   });
 });
