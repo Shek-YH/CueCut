@@ -51,6 +51,29 @@ function normalized(value: string): string {
   return value.trim().toLowerCase();
 }
 
+const packagingContentSlotAliases: Record<string, string> = {
+  label: 'headline',
+  headline: 'headline',
+  titletext: 'headline',
+  quotetext: 'headline',
+  text: 'text',
+  value: 'value',
+  primaryvalue: 'value',
+  valuetext: 'value',
+  items: 'items',
+  steps: 'items',
+  entries: 'items',
+};
+
+export function normalizePackagingContentSlot(slot: string): string {
+  const trimmedSlot = slot.trim();
+  return packagingContentSlotAliases[trimmedSlot.toLowerCase()] ?? trimmedSlot;
+}
+
+function normalizedContentSlots(slots: string[]): string[] {
+  return [...new Set(slots.map(normalizePackagingContentSlot))];
+}
+
 function inferredSemanticRoles(effect: PackagingEffectManifest): string[] {
   const key = normalized([effect.category, effect.title, ...effect.tags].join(' '));
   if (/quote|keypoint|term|definition/.test(key)) return ['quote', 'definition', 'conclusion'];
@@ -63,7 +86,7 @@ function inferredSemanticRoles(effect: PackagingEffectManifest): string[] {
 
 function templateRequirementsSatisfied(effect: PackagingEffectManifest, request: RegistryResolveRequest): boolean {
   const query = request.templateQuery;
-  const requiredContentSlots = [...new Set([...request.requiredContentSlots, ...(query?.requiredContentSlots ?? [])])];
+  const requiredContentSlots = normalizedContentSlots([...request.requiredContentSlots, ...(query?.requiredContentSlots ?? [])]);
   if (requiredContentSlots.some((slot) => !Object.hasOwn(effect.contentSchema, slot))) return false;
   if (query?.itemCount !== undefined && (!effect.itemCountRange || query.itemCount < effect.itemCountRange[0] || query.itemCount > effect.itemCountRange[1])) return false;
   if (query?.persistence && (!effect.persistenceModes || !effect.persistenceModes.includes(query.persistence))) return false;
@@ -81,7 +104,8 @@ function scoreEffect(effect: PackagingEffectManifest, request: RegistryResolveRe
   if (effect.supportedZones.some((zone) => request.preferredZones.includes(zone))) { score += registryScoreWeights.zone; reasons.push('zone'); }
   if (effect.subjectRelations.includes(request.subjectRelation)) { score += registryScoreWeights.subjectRelation; reasons.push('subjectRelation'); }
   if (request.durationSec >= effect.duration.min && request.durationSec <= effect.duration.max) { score += registryScoreWeights.duration; reasons.push('duration'); }
-  if (request.requiredContentSlots.every((slot) => Object.hasOwn(effect.contentSchema, slot))) { score += registryScoreWeights.contentSchema; reasons.push('contentSchema'); }
+  const requiredContentSlots = normalizedContentSlots(request.requiredContentSlots);
+  if (requiredContentSlots.every((slot) => Object.hasOwn(effect.contentSchema, slot))) { score += registryScoreWeights.contentSchema; reasons.push('contentSchema'); }
 
   const query = request.templateQuery;
   if (query?.semanticRole && (effect.semanticRoles ?? inferredSemanticRoles(effect)).some((role) => normalized(role) === normalized(query.semanticRole!))) {
@@ -100,7 +124,7 @@ function scoreEffect(effect: PackagingEffectManifest, request: RegistryResolveRe
       reasons.push('tags');
     }
   }
-  if (query?.requiredContentSlots?.length && query.requiredContentSlots.every((slot) => Object.hasOwn(effect.contentSchema, slot))) {
+  if (query?.requiredContentSlots?.length && normalizedContentSlots(query.requiredContentSlots).every((slot) => Object.hasOwn(effect.contentSchema, slot))) {
     score += templateQueryScoreWeights.contentSlots;
     reasons.push('contentSlots');
   }

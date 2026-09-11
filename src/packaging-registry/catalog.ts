@@ -40,7 +40,7 @@ function manifestFor(entry: (typeof packMotionCatalog)[number]): PackagingEffect
   const contentSchema: Record<string, string> = {};
   if (visualTags.has('text') || visualTags.has('card')) Object.assign(contentSchema, { text: 'string', title: 'string', headline: 'string', supportingText: 'string' });
   if (visualTags.has('list') || visualTags.has('steps')) Object.assign(contentSchema, { title: 'string', items: 'string[]' });
-  if (visualTags.has('chart') || visualTags.has('metric')) contentSchema.value = 'string';
+  if (visualTags.has('chart') || visualTags.has('metric')) Object.assign(contentSchema, { value: 'string', headline: 'string' });
   if (supportsCueTimes) contentSchema.cueTimes = 'number[]';
   return packagingEffectManifestSchema.parse({
     id: entry.id.startsWith('cuecut-') ? entry.id : `cuecut-${entry.id}`,

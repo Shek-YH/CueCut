@@ -107,4 +107,50 @@ describe('packaging registry resolver', () => {
     expect(result.candidates.map((candidate) => candidate.effect.id)).toEqual(['executable']);
     expect(result.selected?.effect.id).toBe('executable');
   });
+
+  it('normalizes only known legacy content aliases before filtering executable effects', () => {
+    const aliases = [
+      ['label', 'headline'],
+      ['headline', 'headline'],
+      ['titleText', 'headline'],
+      ['quoteText', 'headline'],
+      ['text', 'text'],
+      ['value', 'value'],
+      ['primaryValue', 'value'],
+      ['valueText', 'value'],
+      ['items', 'items'],
+      ['steps', 'items'],
+      ['entries', 'items'],
+    ] as const;
+
+    for (const [alias, canonical] of aliases) {
+      const result = resolvePackagingEffect({
+        category: 'transition', visualStyle: 'base', energy: 0.5, subjectRelation: 'avoid', preferredZones: ['upper-left'], aspectRatio: '16:9', durationSec: 2,
+        requiredContentSlots: [alias],
+      }, [testManifest('canonical-effect', { contentSchema: { [canonical]: 'string' } })]);
+
+      expect(result.selected?.effect.id, alias).toBe('canonical-effect');
+    }
+  });
+
+  it('keeps unknown explicit content slots as hard registry requirements', () => {
+    const result = resolvePackagingEffect({
+      category: 'stat', visualStyle: 'base', energy: 0.5, subjectRelation: 'avoid', preferredZones: ['upper-left'], aspectRatio: '16:9', durationSec: 2,
+      requiredContentSlots: ['value'],
+      templateQuery: { requiredContentSlots: ['value', 'inventedSlot'] },
+    }, [testManifest('value-effect', { contentSchema: { value: 'string', headline: 'string' } })]);
+
+    expect(result.selected).toBeUndefined();
+    expect(result.candidates).toEqual([]);
+  });
+
+  it('resolves an old metric plan with value and label content against a real catalog metric', () => {
+    const result = resolvePackagingEffect({
+      category: 'stat', visualStyle: 'clean-tech', energy: 0.5, subjectRelation: 'avoid', preferredZones: ['upper-left'], aspectRatio: '16:9', durationSec: 2,
+      requiredContentSlots: ['value', 'label'],
+    });
+
+    expect(result.selected).toBeDefined();
+    expect(result.selected?.effect.contentSchema).toMatchObject({ value: 'string', headline: 'string' });
+  });
 });
