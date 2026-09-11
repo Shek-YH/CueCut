@@ -96,6 +96,41 @@ describe('Canvas video surface', () => {
     expect(video.currentTime).toBe(2.35);
   });
 
+  it('cancels stale paused seek frames, ignores stale callbacks by version, and cleans up on unmount', () => {
+    const callbacks = new Map<number, FrameRequestCallback>();
+    let nextFrameId = 0;
+    const requestAnimationFrame = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+      const frameId = ++nextFrameId;
+      callbacks.set(frameId, callback);
+      return frameId;
+    });
+    const cancelAnimationFrame = vi.spyOn(window, 'cancelAnimationFrame').mockImplementation((frameId) => {
+      callbacks.delete(frameId);
+    });
+    const props = {
+      onSelect: () => undefined,
+      onVideoMetadata: () => undefined,
+      onVideoTime: () => undefined,
+      playing: false,
+      project: createFixtureProject(),
+      selectedEffectId: 'fx-quote',
+      store: createProjectStore(createFixtureProject()),
+      videoSrc: 'blob:fixture',
+    };
+    const { rerender, unmount } = render(<CanvasStage {...props} currentTime={2.30} />);
+    const video = screen.getByTestId('preview-video');
+    Object.defineProperty(video, 'currentTime', { configurable: true, writable: true, value: 2.30 });
+
+    rerender(<CanvasStage {...props} currentTime={2.35} />);
+    video.currentTime = 2.35;
+    callbacks.get(1)?.(0);
+
+    expect(requestAnimationFrame).toHaveBeenCalledTimes(2);
+    expect(video.currentTime).toBe(2.35);
+    unmount();
+    expect(cancelAnimationFrame).toHaveBeenCalledWith(2);
+  });
+
   it('reasserts a paused seek on the next animation frame after an old timeupdate overwrites it', () => {
     let frameCallback: FrameRequestCallback | undefined;
     const requestAnimationFrame = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
@@ -123,6 +158,58 @@ describe('Canvas video surface', () => {
 
     expect(requestAnimationFrame).toHaveBeenCalled();
     expect(video.currentTime).toBe(2.35);
+  });
+
+  it('ignores an old paused timeupdate after an effect card selects its preview time', () => {
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => 1);
+    const onVideoTime = vi.fn();
+    render(
+      <CanvasStage
+        currentTime={0}
+        onSelect={() => undefined}
+        onVideoMetadata={() => undefined}
+        onVideoTime={onVideoTime}
+        playing={false}
+        project={createFixtureProject()}
+        selectedEffectId="fx-ring"
+        store={createProjectStore(createFixtureProject())}
+        videoSrc="blob:fixture"
+      />,
+    );
+
+    const video = screen.getByTestId('preview-video');
+    const card = screen.getByTestId('effect-card-fx-quote');
+    Object.defineProperty(video, 'currentTime', { configurable: true, writable: true, value: 0 });
+    fireEvent.click(card);
+    video.currentTime = 0;
+    fireEvent.timeUpdate(video);
+
+    expect(onVideoTime).toHaveBeenCalledTimes(1);
+    expect(onVideoTime).toHaveBeenLastCalledWith(2.2 + 5 / 30);
+  });
+
+  it('ignores an old paused timeupdate after currentTime changes to a seek target', () => {
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => 1);
+    const onVideoTime = vi.fn();
+    const props = {
+      onSelect: () => undefined,
+      onVideoMetadata: () => undefined,
+      onVideoTime,
+      playing: false,
+      project: createFixtureProject(),
+      selectedEffectId: 'fx-quote',
+      store: createProjectStore(createFixtureProject()),
+      videoSrc: 'blob:fixture',
+    };
+    const { rerender } = render(<CanvasStage {...props} currentTime={0} />);
+    const video = screen.getByTestId('preview-video');
+    Object.defineProperty(video, 'currentTime', { configurable: true, writable: true, value: 0 });
+
+    rerender(<CanvasStage {...props} currentTime={2.35} />);
+    video.currentTime = 2.30;
+    fireEvent.timeUpdate(video);
+
+    expect(onVideoTime).not.toHaveBeenCalled();
   });
 
   it('seeks the native video to the current frame when metadata arrives after a clock seek', () => {
@@ -185,8 +272,72 @@ describe('Canvas video surface', () => {
     fireEvent.pointerDown(card, { clientX: 10, clientY: 10, pointerId: 1 });
     fireEvent.pointerMove(card, { clientX: 20, clientY: 10, pointerId: 1 });
     fireEvent.pointerUp(card, { clientX: 20, clientY: 10, pointerId: 1 });
-    fireEvent.click(card);
+    fireEvent.click(card, { detail: 1 });
 
     expect(onVideoTime).not.toHaveBeenCalled();
+  });
+
+  it('allows a keyboard click to select and seek after pointerup resets drag state', () => {
+    const onSelect = vi.fn();
+    const onVideoTime = vi.fn();
+    render(
+      <CanvasStage
+        currentTime={0}
+        onSelect={onSelect}
+        onVideoMetadata={() => undefined}
+        onVideoTime={onVideoTime}
+        playing={false}
+        project={createFixtureProject()}
+        selectedEffectId="fx-ring"
+        store={createProjectStore(createFixtureProject())}
+        videoSrc={null}
+      />,
+    );
+
+    const card = screen.getByTestId('effect-card-fx-quote');
+    const canvas = card.closest('.canvas');
+    if (!canvas) throw new Error('Canvas fixture missing');
+    Object.defineProperty(canvas, 'getBoundingClientRect', { configurable: true, value: () => ({ width: 100, height: 100 }) });
+    Object.defineProperty(card, 'setPointerCapture', { configurable: true, value: vi.fn() });
+    fireEvent.pointerDown(card, { clientX: 10, clientY: 10, pointerId: 1 });
+    fireEvent.pointerMove(card, { clientX: 20, clientY: 10, pointerId: 1 });
+    fireEvent.pointerUp(card, { clientX: 20, clientY: 10, pointerId: 1 });
+    vi.clearAllMocks();
+    fireEvent.click(card, { detail: 0 });
+
+    expect(onSelect).toHaveBeenCalledWith('fx-quote');
+    expect(onVideoTime).toHaveBeenCalledWith(2.2 + 5 / 30);
+  });
+
+  it('allows a keyboard click to select and seek after pointercancel resets drag state', () => {
+    const onSelect = vi.fn();
+    const onVideoTime = vi.fn();
+    render(
+      <CanvasStage
+        currentTime={0}
+        onSelect={onSelect}
+        onVideoMetadata={() => undefined}
+        onVideoTime={onVideoTime}
+        playing={false}
+        project={createFixtureProject()}
+        selectedEffectId="fx-ring"
+        store={createProjectStore(createFixtureProject())}
+        videoSrc={null}
+      />,
+    );
+
+    const card = screen.getByTestId('effect-card-fx-quote');
+    const canvas = card.closest('.canvas');
+    if (!canvas) throw new Error('Canvas fixture missing');
+    Object.defineProperty(canvas, 'getBoundingClientRect', { configurable: true, value: () => ({ width: 100, height: 100 }) });
+    Object.defineProperty(card, 'setPointerCapture', { configurable: true, value: vi.fn() });
+    fireEvent.pointerDown(card, { clientX: 10, clientY: 10, pointerId: 1 });
+    fireEvent.pointerMove(card, { clientX: 20, clientY: 10, pointerId: 1 });
+    fireEvent.pointerCancel(card, { clientX: 20, clientY: 10, pointerId: 1 });
+    vi.clearAllMocks();
+    fireEvent.click(card, { detail: 0 });
+
+    expect(onSelect).toHaveBeenCalledWith('fx-quote');
+    expect(onVideoTime).toHaveBeenCalledWith(2.2 + 5 / 30);
   });
 });

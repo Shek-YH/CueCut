@@ -5,5 +5,5 @@ interface PreviewTimeForEffectInput {
 }
 
 export function previewTimeForEffect({ startSec, endSec, fps }: PreviewTimeForEffectInput): number {
-  return Math.min(startSec + 5 / fps, endSec - 1 / fps);
+  return Math.max(startSec, Math.min(startSec + 5 / fps, endSec - 1 / fps));
 }

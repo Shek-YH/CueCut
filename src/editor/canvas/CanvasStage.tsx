@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { PointerEvent as ReactPointerEvent } from 'react';
+import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from 'react';
 import type { ProjectComposition } from '../../project/schema';
 import type { ProjectStore } from '../../project/store';
 import { evaluateSceneAtTime } from '../../render/scene';
@@ -22,6 +22,12 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
   const videoRef = useRef<HTMLVideoElement>(null);
   const didDragRef = useRef(false);
   const pointerDownRef = useRef(false);
+  const pointerSelectionRef = useRef(false);
+  const suppressClickRef = useRef(false);
+  const pausedSeekVersionRef = useRef(0);
+  const pausedSeekFrameRef = useRef<number | null>(null);
+  const pendingPausedSeekRef = useRef<number | null>(null);
+  const lastCurrentTimeRef = useRef(currentTime);
   const [drag, setDrag] = useState<{ effectId: string; mode: 'move' | 'resize'; clientX: number; clientY: number; nx: number; ny: number; nw: number; nh: number; width: number; height: number } | null>(null);
   const [preview, setPreview] = useState<Record<string, { nx: number; ny: number; nw: number; nh: number }>>({});
 
@@ -42,26 +48,45 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
 
   useEffect(() => {
     const video = videoRef.current;
+    const currentTimeChanged = lastCurrentTimeRef.current !== currentTime;
+    lastCurrentTimeRef.current = currentTime;
+    const seekVersion = ++pausedSeekVersionRef.current;
+    if (pausedSeekFrameRef.current !== null) {
+      window.cancelAnimationFrame(pausedSeekFrameRef.current);
+      pausedSeekFrameRef.current = null;
+    }
     if (!video || !videoSrc || (playing && Math.abs(video.currentTime - currentTime) < 0.08)) return;
+    let frameId: number | null = null;
     try {
       video.currentTime = currentTime;
       if (!playing) {
         const targetTime = currentTime;
-        window.requestAnimationFrame(() => {
+        if (currentTimeChanged) pendingPausedSeekRef.current = targetTime;
+        frameId = window.requestAnimationFrame(() => {
+          if (pausedSeekVersionRef.current !== seekVersion) return;
+          if (pausedSeekFrameRef.current === frameId) pausedSeekFrameRef.current = null;
           const currentVideo = videoRef.current;
-          if (!currentVideo || currentVideo !== video || Math.abs(currentVideo.currentTime - targetTime) < Number.EPSILON) return;
-          currentVideo.currentTime = targetTime;
+          if (!currentVideo || currentVideo !== video) return;
+          if (Math.abs(currentVideo.currentTime - targetTime) >= Number.EPSILON) currentVideo.currentTime = targetTime;
+          pendingPausedSeekRef.current = null;
         });
+        pausedSeekFrameRef.current = frameId;
       }
     } catch {
       // Ignore seeks before metadata is ready; the next clock update retries.
     }
+    return () => {
+      if (frameId === null) return;
+      window.cancelAnimationFrame(frameId);
+      if (pausedSeekFrameRef.current === frameId) pausedSeekFrameRef.current = null;
+    };
   }, [currentTime, playing, videoSrc]);
 
   const beginDrag = (event: ReactPointerEvent<HTMLButtonElement>, effectId: string, mode: 'move' | 'resize' = 'move') => {
     event.stopPropagation();
     didDragRef.current = false;
     pointerDownRef.current = true;
+    pointerSelectionRef.current = true;
     const effect = project.effects.find((item) => item.effectId === effectId);
     const canvas = event.currentTarget.closest('.canvas');
     if (!effect || !(canvas instanceof HTMLElement)) return;
@@ -84,6 +109,7 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
   const moveDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
     if (!drag) return;
     didDragRef.current = event.clientX !== drag.clientX || event.clientY !== drag.clientY;
+    didDragRef.current = event.clientX !== drag.clientX || event.clientY !== drag.clientY;
     const effect = project.effects.find((item) => item.effectId === drag.effectId);
     if (!effect) return;
     const dx = (event.clientX - drag.clientX) / drag.width;
@@ -95,6 +121,13 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
   };
 
   const finishDrag = () => {
+    const wasDragged = didDragRef.current;
+    pointerDownRef.current = false;
+    didDragRef.current = false;
+    if (wasDragged) {
+      pointerSelectionRef.current = false;
+      suppressClickRef.current = true;
+    }
     if (!drag) return;
     const next = preview[drag.effectId];
     if (next) store.updateEffect(drag.effectId, (effect) => ({ ...effect, layout: { ...effect.layout, ...next } }));
@@ -111,17 +144,29 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
     }
   };
 
-  const selectEffect = (effectId: string) => {
-    const wasPointerDown = pointerDownRef.current;
-    pointerDownRef.current = false;
-    if (didDragRef.current) {
-      didDragRef.current = false;
+  const selectEffect = (effectId: string, event: ReactMouseEvent<HTMLButtonElement>) => {
+    if (suppressClickRef.current && event.detail > 0) {
+      suppressClickRef.current = false;
       return;
     }
-    if (!wasPointerDown) onSelect(effectId);
+    suppressClickRef.current = false;
+    const wasPointerSelection = pointerSelectionRef.current;
+    pointerSelectionRef.current = false;
+    pointerDownRef.current = false;
+    if (!wasPointerSelection) onSelect(effectId);
     const effect = project.effects.find((item) => item.effectId === effectId);
-    if (effect) onVideoTime(previewTimeForEffect({ ...effect.time, fps: project.project.fps }));
+    if (effect) {
+      const targetTime = previewTimeForEffect({ ...effect.time, fps: project.project.fps });
+      if (!playing) pendingPausedSeekRef.current = targetTime;
+      onVideoTime(targetTime);
+    }
   };
+  const handleVideoTime = (timeSec: number) => {
+    const pendingTime = pendingPausedSeekRef.current;
+    if (!playing && pendingTime !== null && Math.abs(timeSec - pendingTime) >= 0.001) return;
+    onVideoTime(timeSec);
+  };
+
   const scene = evaluateSceneAtTime(project, currentTime);
 
   return (
@@ -135,7 +180,7 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
       </div>
       <div className="canvaswrap">
         <div className="canvas" data-aspect-ratio={project.project.aspectRatio} style={{ aspectRatio: project.project.aspectRatio.replace(':', ' / ') }}>
-          {videoSrc ? <video ref={videoRef} className="vbg-video" data-testid="preview-video" preload="metadata" src={videoSrc} playsInline onLoadedMetadata={handleLoadedMetadata} onTimeUpdate={(event) => onVideoTime(event.currentTarget.currentTime)} /> : <div className="vbg" />}
+          {videoSrc ? <video ref={videoRef} className="vbg-video" data-testid="preview-video" preload="metadata" src={videoSrc} playsInline onLoadedMetadata={handleLoadedMetadata} onTimeUpdate={(event) => handleVideoTime(event.currentTarget.currentTime)} /> : <div className="vbg" />}
           <span className="vlabel">VIDEO FRAME · {currentTime.toFixed(2)}s</span>
           <div className="person" />
           <div className="safe" />

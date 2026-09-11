@@ -9,4 +9,8 @@ describe('previewTimeForEffect', () => {
   it('keeps the preview at least one frame before the effect end', () => {
     expect(previewTimeForEffect({ startSec: 2.2, endSec: 2.35, fps: 30 })).toBeCloseTo(2.35 - 1 / 30);
   });
+
+  it('never returns a preview time before the effect start for a sub-frame effect', () => {
+    expect(previewTimeForEffect({ startSec: 2.2, endSec: 2.21, fps: 30 })).toBe(2.2);
+  });
 });
