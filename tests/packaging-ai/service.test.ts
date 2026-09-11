@@ -122,6 +122,59 @@ describe('single-pass packaging director', () => {
     expect(result.plan.timeline).toEqual([]);
   });
 
+  it('removes skipped visual unit ids from the final section element references', async () => {
+    const director = createPackagingDirector(async () => ({
+      schemaVersion: '1.0',
+      sections: [{
+        id: 'section-1', chapterId: 'chapter-1', title: '观点', summary: '观点', startSec: 1, endSec: 4,
+        sourceSubtitleIds: [], semanticRole: 'quote', evidenceType: 'quote', keepForVisualPackaging: true,
+        visualValue: 1, selectionReason: '观点', elementIds: ['kept', 'skipped'],
+      }],
+      visualUnits: [
+        { id: 'kept', sectionId: 'section-1', kind: 'quote', startSec: 1, endSec: 2, layer: 1, persistence: 'transient', sourceSubtitleIds: [], summary: '保留', selectionReason: '核心', visualIntent: 'quote', content: { text: '保留' }, cueTimesSec: [], placement: { preferredZones: ['center'], subjectRelation: 'avoid', anchor: 'scene-safe' }, templateQuery: { semanticRole: 'quote' }, visualValue: 1 },
+        { id: 'skipped', sectionId: 'section-1', kind: 'quote', startSec: 2, endSec: 3, layer: 1, persistence: 'transient', sourceSubtitleIds: [], summary: '跳过', selectionReason: '重复', visualIntent: 'quote', content: { text: '跳过' }, cueTimesSec: [], placement: { preferredZones: ['center'], subjectRelation: 'avoid', anchor: 'scene-safe' }, templateQuery: { semanticRole: 'quote' }, visualValue: 0.1 },
+      ],
+    }));
+
+    const result = await director.generate({ project: { projectId: 'references-project', durationSec: 10, fps: 30, canvasWidth: 1080, canvasHeight: 1920, aspectRatio: '9:16' } });
+
+    expect(result.plan.visualUnits?.map((unit) => unit.id)).toEqual(['kept']);
+    expect(result.plan.sections?.[0]?.elementIds).toEqual(['kept']);
+  });
+
+  it('clamps cue offsets to a timeline item actual duration', async () => {
+    const director = createPackagingDirector(async () => ({
+      schemaVersion: '1.0',
+      timeline: [{
+        id: 'short-card', startSec: 1, endSec: 1.5, category: 'progress', content: { items: ['第一步', '第二步'] }, importance: 0.8,
+        cadence: { cueOffsetsMs: [0, 5000] }, visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'normal' },
+        motionIntent: { entrance: 'fade_in', emphasis: 'none', exit: 'fade_out' }, placementIntent: { preferredZones: ['upper-left'], subjectRelation: 'avoid', anchor: 'scene-safe' },
+        constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false },
+      }],
+    }));
+
+    const result = await director.generate({ project: { projectId: 'cadence-project', durationSec: 10, fps: 30, canvasWidth: 1080, canvasHeight: 1920, aspectRatio: '9:16' } });
+
+    expect(result.plan.timeline[0]?.cadence?.cueOffsetsMs).toEqual([0, 500]);
+  });
+
+  it('generates unique ids for multiple sections and elements without ids', async () => {
+    const director = createPackagingDirector(async () => ({
+      schemaVersion: '1.0',
+      sections: [
+        { startSec: 1, endSec: 3, elements: [{ startSec: 1, endSec: 1.5, category: 'quote', content: { text: '一' } }, { startSec: 1.5, endSec: 2, category: 'quote', content: { text: '二' } }] },
+        { startSec: 3, endSec: 5, elements: [{ startSec: 3, endSec: 3.5, category: 'quote', content: { text: '三' } }, { startSec: 3.5, endSec: 4, category: 'quote', content: { text: '四' } }] },
+      ],
+    }));
+
+    const result = await director.generate({ project: { projectId: 'ids-project', durationSec: 10, fps: 30, canvasWidth: 1080, canvasHeight: 1920, aspectRatio: '9:16' } });
+    const ids = result.plan.timeline.map((item) => item.id);
+
+    expect(result.plan.sections?.map((section) => section.id)).toEqual(['section-1', 'section-2']);
+    expect(ids).toHaveLength(4);
+    expect(new Set(ids).size).toBe(4);
+  });
+
   it('does not reset explicit motion, placement, cadence, or template parameters', async () => {
     const director = createPackagingDirector(async () => ({
       schemaVersion: '1.0',

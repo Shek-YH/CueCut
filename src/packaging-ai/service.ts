@@ -12,6 +12,33 @@ type VisualValue = boolean | number;
 
 export const LOW_VISUAL_VALUE_THRESHOLD = 0.25;
 
+type IdAllocator = { next: (prefix: string) => string };
+
+function createIdAllocator(value: unknown): IdAllocator {
+  const used = new Set<string>();
+  const collect = (current: unknown): void => {
+    if (Array.isArray(current)) {
+      current.forEach(collect);
+      return;
+    }
+    if (!current || typeof current !== 'object') return;
+    for (const [key, entry] of Object.entries(current)) {
+      if (key === 'id' && typeof entry === 'string' && entry.length > 0) used.add(entry);
+      collect(entry);
+    }
+  };
+  collect(value);
+  return {
+    next(prefix) {
+      let index = 1;
+      let id = `${prefix}-${index}`;
+      while (used.has(id)) id = `${prefix}-${++index}`;
+      used.add(id);
+      return id;
+    },
+  };
+}
+
 const record = (value: unknown): R => value && typeof value === 'object' && !Array.isArray(value) ? value as R : {};
 const numberValue = (value: unknown): number | null => typeof value === 'number' && Number.isFinite(value) ? value : null;
 const stringValue = (value: unknown): string | undefined => typeof value === 'string' && value.length > 0 ? value : undefined;
@@ -157,15 +184,16 @@ function subtitleIdsForRange(value: unknown, transcript: unknown[], startSec: nu
   });
 }
 
-function cadenceFor(value: unknown, cueTimesSec: number[], startSec: number): R | undefined {
+function cadenceFor(value: unknown, cueTimesSec: number[], startSec: number, endSec: number): R | undefined {
   const raw = record(value);
   const cadence: R = {};
+  const maxCueOffsetMs = Math.max(0, (endSec - startSec) * 1000);
   for (const key of ['stepMs', 'staggerMs', 'emphasisAtMs']) {
     const number = numberValue(raw[key]);
     if (number !== null) cadence[key] = clamp(number, 0, 120000);
   }
   const offsets = numberArray(raw.cueOffsetsMs);
-  if (offsets.length > 0) cadence.cueOffsetsMs = offsets.map((offset) => clamp(offset, 0, 120000)).slice(0, 32);
+  if (offsets.length > 0) cadence.cueOffsetsMs = offsets.map((offset) => clamp(offset, 0, maxCueOffsetMs)).slice(0, 32);
   else if (cueTimesSec.length > 0) cadence.cueOffsetsMs = cueTimesSec.map((cue) => clamp(Math.round((cue - startSec) * 1000), 0, 120000)).slice(0, 32);
   return Object.keys(cadence).length > 0 ? cadence : undefined;
 }
@@ -192,7 +220,7 @@ function normalizeTranscriptRepair(value: unknown, context: Context): R {
   }) };
 }
 
-function normalizeTimelineItem(value: unknown, index: number, context: Context, inherited: R = {}): R {
+function normalizeTimelineItem(value: unknown, index: number, context: Context, inherited: R = {}, ids?: IdAllocator): R {
   const raw = record(value);
   const role = semanticRoleFor(raw.semanticRole ?? inherited.semanticRole);
   const evidence = evidenceTypeFor(raw.evidenceType ?? inherited.evidenceType);
@@ -203,9 +231,9 @@ function normalizeTimelineItem(value: unknown, index: number, context: Context, 
   const placement = placementFor(raw.placementIntent ?? raw.placement ?? inherited.placementIntent, role, category);
   const cueTimesSec = numberArray(raw.cueTimesSec).map((cue) => clamp(cue, startSec, endSec));
   const templateQuery = templateQueryFor(raw.templateQuery ?? inherited.templateQuery, role, raw.visualIntent ?? inherited.visualIntent, category, content, placement.preferredZones as Zone[]);
-  const cadence = cadenceFor(raw.cadence ?? inherited.cadence, cueTimesSec, startSec);
+  const cadence = cadenceFor(raw.cadence ?? inherited.cadence, cueTimesSec, startSec, endSec);
   const item: R = {
-    id: stringValue(raw.id) || 'overlay-' + (index + 1),
+    id: stringValue(raw.id) || ids?.next('overlay') || 'overlay-' + (index + 1),
     ...(stringValue(raw.chapterId ?? inherited.chapterId) ? { chapterId: stringValue(raw.chapterId ?? inherited.chapterId) } : {}),
     ...(stringValue(raw.sectionId ?? inherited.sectionId) ? { sectionId: stringValue(raw.sectionId ?? inherited.sectionId) } : {}),
     sourceSubtitleIds: subtitleIdsForRange(raw.sourceSubtitleIds ?? inherited.sourceSubtitleIds, context.transcript, startSec, endSec),
@@ -234,28 +262,28 @@ function normalizeTimelineItem(value: unknown, index: number, context: Context, 
   return item;
 }
 
-function normalizeChapter(value: unknown, index: number, context: Context): R {
+function normalizeChapter(value: unknown, index: number, context: Context, ids: IdAllocator): R {
   const raw = record(value);
   const startSec = clamp(numberValue(raw.startSec) ?? numberValue(raw.start) ?? 0, 0, context.durationSec - 0.01);
   const endSec = clamp(numberValue(raw.endSec) ?? numberValue(raw.end) ?? Math.min(context.durationSec, startSec + 0.01), startSec + 0.01, context.durationSec);
-  return { id: stringValue(raw.id) || 'chapter-' + (index + 1), title: stringValue(raw.title) || 'Chapter ' + (index + 1), summary: stringValue(raw.summary) || stringValue(raw.title) || 'Chapter ' + (index + 1), startSec, endSec, sourceSubtitleIds: subtitleIdsForRange(raw.sourceSubtitleIds, context.transcript, startSec, endSec), semanticRole: semanticRoleFor(raw.semanticRole) ?? 'neutral' };
+  return { id: stringValue(raw.id) || ids.next('chapter'), title: stringValue(raw.title) || 'Chapter ' + (index + 1), summary: stringValue(raw.summary) || stringValue(raw.title) || 'Chapter ' + (index + 1), startSec, endSec, sourceSubtitleIds: subtitleIdsForRange(raw.sourceSubtitleIds, context.transcript, startSec, endSec), semanticRole: semanticRoleFor(raw.semanticRole) ?? 'neutral' };
 }
 
-function normalizeSection(value: unknown, index: number, context: Context): R {
+function normalizeSection(value: unknown, index: number, context: Context, ids: IdAllocator): R {
   const raw = record(value);
   const startSec = clamp(numberValue(raw.startSec) ?? numberValue(raw.start) ?? 0, 0, context.durationSec - 0.01);
   const endSec = clamp(numberValue(raw.endSec) ?? numberValue(raw.end) ?? Math.min(context.durationSec, startSec + 0.01), startSec + 0.01, context.durationSec);
   const role = semanticRoleFor(raw.semanticRole) ?? 'neutral';
   const evidence = evidenceTypeFor(raw.evidenceType) ?? 'none';
   const source = Array.isArray(raw.elements) ? raw.elements : Array.isArray(raw.items) ? raw.items : [];
-  const sectionId = stringValue(raw.id) || 'section-' + (index + 1);
-  const chapterId = stringValue(raw.chapterId) || 'chapter-' + (index + 1);
-  const elements = source.map((entry, elementIndex) => normalizeTimelineItem(entry, elementIndex, context, { chapterId, sectionId, startSec, endSec, semanticRole: role, evidenceType: evidence, selectionReason: raw.selectionReason, visualValue: raw.visualValue, keepForVisualPackaging: raw.keepForVisualPackaging }));
+  const sectionId = stringValue(raw.id) || ids.next('section');
+  const chapterId = stringValue(raw.chapterId) || ids.next('chapter');
+  const elements = source.map((entry, elementIndex) => normalizeTimelineItem(entry, elementIndex, context, { chapterId, sectionId, startSec, endSec, semanticRole: role, evidenceType: evidence, selectionReason: raw.selectionReason, visualValue: raw.visualValue, keepForVisualPackaging: raw.keepForVisualPackaging }, ids));
   const elementIds = Array.isArray(raw.elementIds) ? raw.elementIds.filter((entry): entry is string => typeof entry === 'string') : elements.map((entry) => String(entry.id));
   return { id: sectionId, chapterId, title: stringValue(raw.title) || stringValue(raw.summary) || 'Section ' + (index + 1), summary: stringValue(raw.summary) || stringValue(raw.title) || 'Section ' + (index + 1), startSec, endSec, sourceSubtitleIds: subtitleIdsForRange(raw.sourceSubtitleIds, context.transcript, startSec, endSec), semanticRole: role, evidenceType: evidence, keepForVisualPackaging: raw.keepForVisualPackaging !== false, visualValue: raw.visualValue === false ? false : clamp(numberValue(raw.visualValue) ?? 1, 0, 1), selectionReason: stringValue(raw.selectionReason) || 'AI selected this section for visual packaging', elementIds, ...(elements.length > 0 ? { elements } : {}) };
 }
 
-function normalizeVisualUnit(value: unknown, index: number, context: Context): R {
+function normalizeVisualUnit(value: unknown, context: Context, ids: IdAllocator): R {
   const raw = record(value);
   const startSec = clamp(numberValue(raw.startSec) ?? numberValue(raw.start) ?? 0, 0, context.durationSec - 0.01);
   const endSec = clamp(numberValue(raw.endSec) ?? numberValue(raw.end) ?? Math.min(context.durationSec, startSec + 0.01), startSec + 0.01, context.durationSec);
@@ -265,7 +293,7 @@ function normalizeVisualUnit(value: unknown, index: number, context: Context): R
   const placement = placementFor(raw.placement ?? raw.placementIntent, role, category);
   const cueTimesSec = numberArray(raw.cueTimesSec).map((cue) => clamp(cue, startSec, endSec));
   const visualValue = visualValueFor(raw.visualValue);
-  return { id: stringValue(raw.id) || 'unit-' + (index + 1), sectionId: stringValue(raw.sectionId) || 'section-1', kind: stringValue(raw.kind) || category, startSec, endSec, layer: intClamp(numberValue(raw.layer) ?? 1, 0, 3), persistence: persistenceFor(raw.persistence) ?? 'transient', sourceSubtitleIds: subtitleIdsForRange(raw.sourceSubtitleIds, context.transcript, startSec, endSec), summary: stringValue(raw.summary) || readableContent(content) || 'Visual packaging unit', selectionReason: stringValue(raw.selectionReason) || 'AI selected this visual unit', visualIntent: typeof raw.visualIntent === 'string' || (raw.visualIntent && typeof raw.visualIntent === 'object' && !Array.isArray(raw.visualIntent)) ? raw.visualIntent : 'emphasize-key-claim', content, cueTimesSec, placement, templateQuery: templateQueryFor(raw.templateQuery, role, raw.visualIntent, category, content, placement.preferredZones as Zone[]), ...(visualValue !== undefined ? { visualValue } : {}), ...(raw.keepForVisualPackaging !== undefined ? { keepForVisualPackaging: raw.keepForVisualPackaging === true } : {}) };
+  return { id: stringValue(raw.id) || ids.next('unit'), sectionId: stringValue(raw.sectionId) || 'section-1', kind: stringValue(raw.kind) || category, startSec, endSec, layer: intClamp(numberValue(raw.layer) ?? 1, 0, 3), persistence: persistenceFor(raw.persistence) ?? 'transient', sourceSubtitleIds: subtitleIdsForRange(raw.sourceSubtitleIds, context.transcript, startSec, endSec), summary: stringValue(raw.summary) || readableContent(content) || 'Visual packaging unit', selectionReason: stringValue(raw.selectionReason) || 'AI selected this visual unit', visualIntent: typeof raw.visualIntent === 'string' || (raw.visualIntent && typeof raw.visualIntent === 'object' && !Array.isArray(raw.visualIntent)) ? raw.visualIntent : 'emphasize-key-claim', content, cueTimesSec, placement, templateQuery: templateQueryFor(raw.templateQuery, role, raw.visualIntent, category, content, placement.preferredZones as Zone[]), ...(visualValue !== undefined ? { visualValue } : {}), ...(raw.keepForVisualPackaging !== undefined ? { keepForVisualPackaging: raw.keepForVisualPackaging === true } : {}) };
 }
 
 function keepVisual(item: R): boolean {
@@ -304,25 +332,41 @@ function timelineItemFromUnit(unit: R, index: number, context: Context, section?
 
 function repairPackagingPlan(value: unknown, request: unknown): { value: unknown; repaired: boolean } {
   const raw = record(value);
+  const ids = createIdAllocator(value);
   const hasPackagingEnvelope = Array.isArray(raw.chapters) || Array.isArray(raw.sections) || Array.isArray(raw.visualUnits);
   const parsed = packagingPlanSchema.safeParse(value);
   if (parsed.success && !hasPackagingEnvelope) return { value: parsed.data, repaired: raw.schemaVersion === 1 };
   if (Object.keys(raw).length === 0) return { value, repaired: false };
   const context = buildContext(raw, request);
-  const chapters = Array.isArray(raw.chapters) ? raw.chapters.map((entry, index) => normalizeChapter(entry, index, context)) : undefined;
-  const sections = Array.isArray(raw.sections) ? raw.sections.map((entry, index) => normalizeSection(entry, index, context)) : undefined;
-  const normalizedUnits = Array.isArray(raw.visualUnits) ? raw.visualUnits.map((entry, index) => normalizeVisualUnit(entry, index, context)) : undefined;
+  const chapters = Array.isArray(raw.chapters) ? raw.chapters.map((entry, index) => normalizeChapter(entry, index, context, ids)) : undefined;
+  const sections = Array.isArray(raw.sections) ? raw.sections.map((entry, index) => normalizeSection(entry, index, context, ids)) : undefined;
+  const normalizedUnits = Array.isArray(raw.visualUnits) ? raw.visualUnits.map((entry) => normalizeVisualUnit(entry, context, ids)) : undefined;
   const units = normalizedUnits?.filter((unit) => keepVisualUnit(unit, Array.isArray(sections) ? sections.find((section) => section.id === unit.sectionId) : undefined));
   const sectionElements = (sections ?? []).flatMap((section) => Array.isArray(section.elements) ? section.elements as R[] : []);
-  const rawTimeline = Array.isArray(raw.timeline) ? raw.timeline.map((entry, index) => normalizeTimelineItem(entry, index, context)) : [];
+  const rawTimeline = Array.isArray(raw.timeline) ? raw.timeline.map((entry, index) => normalizeTimelineItem(entry, index, context, {}, ids)) : [];
   const candidates = [...rawTimeline, ...sectionElements, ...(units ?? []).map((unit, index) => timelineItemFromUnit(unit, index, context, sections?.find((section) => section.id === unit.sectionId)))];
-  const timeline = candidates.filter((item, index, all) => {
+  const seenIds = new Set<string>();
+  const timeline = candidates.filter((item) => {
+    const itemId = stringValue(item.id);
     const unit = normalizedUnits?.find((candidate) => candidate.id === item.id);
     const section = sections?.find((candidate) => candidate.id === item.sectionId);
     const sectionIsVisual = section?.keepForVisualPackaging !== false;
     const unitIsVisual = unit ? keepVisualUnit(unit, section) : true;
-    return keepVisual({ ...item, visualValue: item.visualValue ?? unit?.visualValue ?? section?.visualValue }) && sectionIsVisual && unitIsVisual && all.findIndex((candidate) => candidate.id === item.id) === index;
+    if (!itemId || !keepVisual({ ...item, visualValue: item.visualValue ?? unit?.visualValue ?? section?.visualValue }) || !sectionIsVisual || !unitIsVisual || seenIds.has(itemId)) return false;
+    seenIds.add(itemId);
+    return true;
   });
+  const timelineIds = new Set(timeline.map((item) => item.id));
+  const finalUnits = units?.filter((unit) => {
+    const unitId = stringValue(unit.id);
+    return unitId !== undefined && timelineIds.has(unitId);
+  });
+  const finalSections = sections?.map((section) => ({
+    ...section,
+    elementIds: Array.isArray(section.elementIds)
+      ? section.elementIds.filter((id): id is string => typeof id === 'string' && timelineIds.has(id))
+      : [],
+  }));
   const canvas = record(raw.canvas);
   const style = record(raw.globalStyle);
   const constraints = record(raw.constraints);
@@ -337,8 +381,8 @@ function repairPackagingPlan(value: unknown, request: unknown): { value: unknown
     globalStyle: { visualStyle: stringValue(style.visualStyle) || stringValue(preferences.style) || 'clean-tech', energy: clamp(numberValue(style.energy) ?? numberValue(preferences.energy) ?? 0.5, 0, 1), density: densityFor(style.density ?? preferences.density), paletteIntent: stringValue(style.paletteIntent) || 'derive-from-brand', motionIntensity: clamp(numberValue(style.motionIntensity) ?? numberValue(preferences.motionIntensity) ?? 0.5, 0, 1) },
     ...(raw.transcriptRepair !== undefined ? { transcriptRepair: normalizeTranscriptRepair(raw.transcriptRepair, context) } : {}),
     ...(chapters ? { chapters } : {}),
-    ...(sections ? { sections } : {}),
-    ...(units ? { visualUnits: units } : {}),
+    ...(finalSections ? { sections: finalSections } : {}),
+    ...(finalUnits ? { visualUnits: finalUnits } : {}),
     timeline,
     constraints: { maxConcurrentOverlays: Math.max(1, Math.min(32, intClamp(numberValue(constraints.maxConcurrentOverlays) ?? numberValue(preferences.maxConcurrentOverlays) ?? 2, 1, 32))), allowBehindSubject: constraints.allowBehindSubject === true || preferences.allowBehindSubject === true, subjectAvoidPadding: clamp(numberValue(constraints.subjectAvoidPadding) ?? numberValue(preferences.subjectAvoidPadding) ?? 0.1, 0, 0.5), edgeInsets: { top: clamp(numberValue(insets.top) ?? 0.04, 0, 0.5), bottom: clamp(numberValue(insets.bottom) ?? 0.08, 0, 0.5), left: clamp(numberValue(insets.left) ?? 0.05, 0, 0.5), right: clamp(numberValue(insets.right) ?? 0.05, 0, 0.5) } },
     exportHints: { formats: formats.length > 0 ? formats : ['mp4'], transparent: rawExport.transparent === true },
