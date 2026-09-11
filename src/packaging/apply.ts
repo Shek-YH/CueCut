@@ -109,7 +109,7 @@ export function applyResolvedPackagingToProject(project: ProjectComposition, res
       motion: { enter: { motionId: runtimeMotion(overlay.motion.entrance, 'enter'), durationSec: Math.min(0.6, (overlay.endSec - overlay.startSec) / 3), intensity: 0.6 }, exit: { motionId: runtimeMotion(overlay.motion.exit, 'exit'), durationSec: Math.min(0.6, (overlay.endSec - overlay.startSec) / 3), intensity: 0.4 } },
       sfx: null,
       zIndex: overlay.layer === undefined ? 10 + index : 10 + overlay.layer * 10,
-      userFlags: { locked: false, manual: false },
+      userFlags: { locked: overlay.locked === true, manual: false },
       variantStateCache: {},
     } satisfies ProjectComposition['effects'][number];
   });
