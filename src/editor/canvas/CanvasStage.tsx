@@ -3,6 +3,7 @@ import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent }
 import type { ProjectComposition } from '../../project/schema';
 import type { ProjectStore } from '../../project/store';
 import { evaluateSceneAtTime } from '../../render/scene';
+import { fitText, sceneItemBox, textRegionsForSceneItem, type TextRegion } from '../../render/textFit';
 import { findEffectDefinition } from '../../effects/registry';
 import { previewTimeForEffect } from '../selection/previewTime';
 
@@ -16,6 +17,31 @@ interface CanvasStageProps {
   onVideoTime: (timeSec: number) => void;
   onVideoMetadata: (metadata: { durationSec: number; canvasWidth: number; canvasHeight: number }) => void;
   onSelect: (effectId: string) => void;
+}
+
+function FittedText({ region, canvasWidth, className }: { region: TextRegion; canvasWidth: number; className?: string }) {
+  const fitted = fitText({ text: region.text, maxWidth: region.width, maxHeight: region.height, fontSize: region.fontSize, maxLines: region.maxLines });
+  const scale = 100 / canvasWidth;
+  return (
+    <span
+      className={className}
+      data-text-overflow={fitted.overflow ? 'true' : 'false'}
+      style={{
+        display: 'block',
+        minWidth: 0,
+        overflow: 'hidden',
+        overflowWrap: 'anywhere',
+        width: `${region.width * scale}cqw`,
+        height: `${region.height * scale}cqw`,
+        fontSize: `${fitted.fontSize * scale}cqw`,
+        lineHeight: `${fitted.lineHeight * scale}cqw`,
+        fontWeight: region.weight,
+        textAlign: region.align,
+      }}
+    >
+      {fitted.lines.map((line, index) => <span className="fit-line" key={`${index}-${line}`}>{line}</span>)}
+    </span>
+  );
 }
 
 export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, store, playing, onVideoTime, onVideoMetadata, onSelect }: CanvasStageProps) {
@@ -208,10 +234,13 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
             const selected = effect.effectId === selectedEffectId;
             const isNumber = sceneItem?.content.kind === 'number';
             const position = preview[effect.effectId] ?? effect.layout;
+            const positionedItem = sceneItem ? { ...sceneItem, layout: { ...sceneItem.layout, ...position } } : null;
+            const box = positionedItem ? sceneItemBox(positionedItem, project.project.canvasWidth, project.project.canvasHeight) : { width: position.nw * project.project.canvasWidth, height: position.nh * project.project.canvasHeight };
+            const textRegions = positionedItem ? textRegionsForSceneItem(positionedItem, box.width, box.height) : [];
             const definition = findEffectDefinition(effect.familyId, effect.variantId);
             return (
               <button
-                className={'fx ' + effect.familyId + (isActive ? '' : ' off') + (selected ? ' sel' : '')}
+                className={'fx visual-' + (sceneItem?.visualKind ?? 'text') + ' ' + effect.familyId + (isActive ? '' : ' off') + (selected ? ' sel' : '')}
                 data-motion-phase={sceneItem?.phase ?? 'hidden'}
                 data-testid={'effect-card-' + effect.effectId}
                 key={effect.effectId}
@@ -224,7 +253,7 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
                   left: position.nx * 100 + '%',
                   top: position.ny * 100 + '%',
                   width: position.nw * 100 + '%',
-                  height: position.nh * 100 + '%',
+                  height: box.height / project.project.canvasHeight * 100 + '%',
                   zIndex: effect.zIndex,
                   opacity: sceneItem?.opacity ?? 0,
                   filter: sceneItem?.blur ? `blur(${sceneItem.blur}px)` : undefined,
@@ -235,11 +264,11 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
                 <span className="fxtag">{definition?.displayName ?? effect.familyId}</span>
                 {isNumber ? (
                   <>
-                    <span className="circle">{String(sceneItem?.content.kind === 'number' ? sceneItem.content.value : effect.content.value ?? '0')}</span>
-                    <span className="card-copy">{sceneItem?.content.kind === 'number' ? sceneItem.content.label : ''}</span>
+                    <span className="circle"><FittedText canvasWidth={project.project.canvasWidth} className="fit-value" region={textRegions[0] ?? { text: String(sceneItem?.content.kind === 'number' ? sceneItem.content.value : effect.content.value ?? '0'), x: 0, y: 0, width: box.width, height: box.height, fontSize: 42, maxLines: 2, align: 'center', weight: 700 }} /></span>
+                    <span className="card-copy"><FittedText canvasWidth={project.project.canvasWidth} className="fit-label" region={textRegions[1] ?? { text: '', x: 0, y: 0, width: box.width, height: box.height, fontSize: 18, maxLines: 2, align: 'center', weight: 600 }} /></span>
                   </>
                 ) : (
-                  <strong>{sceneItem?.content.kind === 'text' ? sceneItem.content.text : sceneItem?.content.kind === 'list' ? sceneItem.content.items.join(' · ') : sceneItem?.content.label}</strong>
+                  <strong className="card-content">{textRegions[0] ? <FittedText canvasWidth={project.project.canvasWidth} region={textRegions[0]} /> : null}</strong>
                 )}
                 <span className="resize-handle top-left" data-testid={'resize-handle-' + effect.effectId + '-top-left'} onPointerDown={(event) => beginResize(event, effect.effectId)} />
                 <span className="resize-handle top-right" data-testid={'resize-handle-' + effect.effectId + '-top-right'} onPointerDown={(event) => beginResize(event, effect.effectId)} />

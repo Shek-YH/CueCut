@@ -39,4 +39,19 @@ describe('deterministic SceneFrame evaluation', () => {
 
     expect(item?.visualTags).toEqual(expect.arrayContaining(['Chart', 'Metric']));
   });
+
+  it('keeps list entries available to layout so long steps are not collapsed or discarded', () => {
+    const project = createFixtureProject();
+    project.effects[1]!.content = {
+      items: ['第一步：准备素材并检查画面比例', '第二步：把英文说明拆成可读的多行', '第三步：保留完整内容后导出'],
+    };
+
+    const item = evaluateSceneAtTime(project, 6).items.find((entry) => entry.effectId === 'fx-quote');
+
+    expect(item?.visualKind).toBe('text');
+    expect(item?.content).toEqual({
+      kind: 'list',
+      items: ['第一步：准备素材并检查画面比例', '第二步：把英文说明拆成可读的多行', '第三步：保留完整内容后导出'],
+    });
+  });
 });

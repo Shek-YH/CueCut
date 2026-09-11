@@ -3,6 +3,7 @@ import { evaluateMotion } from '../motions/runtime';
 import type { EffectInstance, ProjectComposition } from '../project/schema';
 
 export type ScenePhase = 'hidden' | 'enter' | 'active' | 'exit';
+export type SceneVisualKind = 'metric' | 'chart' | 'list' | 'quote' | 'highlight' | 'badge' | 'text';
 
 export type SceneContent =
   | { kind: 'text'; text: string }
@@ -17,6 +18,7 @@ export interface SceneItem {
   visible: boolean;
   content: SceneContent;
   visualTags: string[];
+  visualKind: SceneVisualKind;
   layout: Pick<EffectInstance['layout'], 'nx' | 'ny' | 'nw' | 'nh' | 'scale'>;
   opacity: number;
   translate: { x: number; y: number };
@@ -61,6 +63,17 @@ function visualTagsForEffect(effect: EffectInstance): string[] {
   return findEffectDefinition(effect.familyId, effect.variantId)?.visualTags ?? [];
 }
 
+function visualKindForEffect(effect: EffectInstance): SceneVisualKind {
+  const tags = visualTagsForEffect(effect).map((tag) => tag.toLowerCase());
+  if (tags.includes('metric') || tags.includes('number') || effect.familyId === 'numeric') return 'metric';
+  if (tags.includes('chart')) return 'chart';
+  if (tags.includes('list') || tags.includes('steps')) return 'list';
+  if (tags.includes('quote') || tags.includes('definition')) return 'quote';
+  if (tags.includes('highlight') || tags.includes('pointer')) return 'highlight';
+  if (tags.includes('badge') || tags.includes('icon') || tags.includes('alert')) return 'badge';
+  return 'text';
+}
+
 function phaseForEffect(effect: EffectInstance, timeSec: number): { phase: ScenePhase; progress: number } {
   const { startSec, endSec } = effect.time;
   if (timeSec < startSec || timeSec >= endSec) return { phase: 'hidden', progress: 1 };
@@ -83,6 +96,7 @@ export function evaluateSceneAtTime(project: ProjectComposition, timeSec: number
         visible: false,
         content: contentForEffect(effect, safeTime),
         visualTags: visualTagsForEffect(effect),
+        visualKind: visualKindForEffect(effect),
         layout: { nx: effect.layout.nx, ny: effect.layout.ny, nw: effect.layout.nw, nh: effect.layout.nh, scale: effect.layout.scale },
         opacity: 0,
         translate: { x: 0, y: 0 },
@@ -105,6 +119,7 @@ export function evaluateSceneAtTime(project: ProjectComposition, timeSec: number
         visible: true,
       content: contentForEffect(effect, safeTime),
       visualTags: visualTagsForEffect(effect),
+      visualKind: visualKindForEffect(effect),
       layout: { nx: effect.layout.nx, ny: effect.layout.ny, nw: effect.layout.nw, nh: effect.layout.nh, scale: effect.layout.scale },
       opacity: motionFrame.opacity,
       translate: { x: motionFrame.translateX, y: motionFrame.translateY },
@@ -124,6 +139,7 @@ export function evaluateSceneAtTime(project: ProjectComposition, timeSec: number
       visible,
       content: { kind: 'text', text: subtitle.text },
       visualTags: ['Text'],
+      visualKind: 'text',
       layout: { nx: 0.05, ny: 0.78, nw: 0.9, nh: 0.17, scale: 1 },
       opacity: visible ? 1 : 0,
       translate: { x: 0, y: 0 },

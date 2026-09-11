@@ -1,0 +1,32 @@
+import { describe, expect, it } from 'vitest';
+import { fitText } from '../../src/render/textFit';
+
+describe('fitText', () => {
+  it('wraps Chinese and long English text deterministically without overflowing the width', () => {
+    const result = fitText({
+      text: '这是一个需要自动换行的中文标题 and-a-very-long-english-token',
+      maxWidth: 180,
+      maxHeight: 120,
+      fontSize: 30,
+      maxLines: 6,
+    });
+
+    expect(result.lines.length).toBeGreaterThan(1);
+    expect(result.lines.join('').replace(/\s+/gu, '')).toContain('and-a-very-long-english-token');
+    expect(result.lines.every((line) => line.length > 0)).toBe(true);
+    expect(result.overflow).toBe(false);
+    expect(result.fontSize).toBeLessThanOrEqual(30);
+  });
+
+  it('reduces the font size and respects maxLines while retaining all text when it fits', () => {
+    const text = '第一步准备素材 第二步整理结构 第三步导出视频';
+    const result = fitText({ text, maxWidth: 160, maxHeight: 72, fontSize: 28, maxLines: 2 });
+
+    expect(result.lines.length).toBeLessThanOrEqual(2);
+    expect(result.fontSize).toBeLessThan(28);
+    expect(result.lineHeight * result.lines.length).toBeLessThanOrEqual(72);
+    expect(result.lines.join('')).toContain('第一步');
+    expect(result.lines.join('')).toContain('导出视频');
+    expect(result.overflow).toBe(false);
+  });
+});
