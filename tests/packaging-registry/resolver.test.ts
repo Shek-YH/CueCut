@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { packagingEffectCatalog } from '../../src/packaging-registry/catalog';
+import { findPackMotion } from '../../src/motions/packCatalog';
 import { resolvePackagingEffect, registryScoreWeights } from '../../src/packaging-registry/resolver';
 import type { PackagingEffectManifest } from '../../src/packaging-registry/manifest';
 
@@ -82,5 +83,10 @@ describe('packaging registry resolver', () => {
     const result = resolvePackagingEffect({ category: 'stat', visualStyle: 'KPI', energy: 0.5, subjectRelation: 'avoid', preferredZones: ['center'], aspectRatio: '9:16', durationSec: 2, requiredContentSlots: ['value'] });
     expect(result.selected).toBeDefined();
     expect(packagingEffectCatalog).toContainEqual(result.selected!.effect);
+  });
+
+  it('keeps catalog ids canonical and directly resolvable by the motion catalog', () => {
+    expect(packagingEffectCatalog.every((effect) => !effect.id.startsWith('cuecut-cuecut-'))).toBe(true);
+    expect(packagingEffectCatalog.every((effect) => findPackMotion(effect.id))).toBe(true);
   });
 });

@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { findPackMotion } from '../../src/motions/packCatalog';
+import { createFixtureProject } from '../../src/project/fixtures';
+import { applyResolvedPackagingToProject } from '../../src/packaging/apply';
 import { resolvePackagingPlan } from '../../src/packaging/resolve';
 
 describe('packaging plan resolver', () => {
@@ -75,5 +78,20 @@ describe('packaging plan resolver', () => {
     const result = resolvePackagingPlan({ ...base, timeline: [item('main', 0, 'upper-left'), item('emphasis', 1, 'center')] });
     expect(result.overlays.map((overlay) => overlay.id)).toEqual(['main', 'emphasis']);
     expect(result.runtimeTimeline.items).toHaveLength(2);
+  });
+
+  it('round-trips real resolver effects and metadata through apply into composition', () => {
+    const result = resolvePackagingPlan({
+      schemaVersion: '1.0', projectId: 'fixture', canvas: { width: 1920, height: 1080, aspectRatio: '16:9', fps: 30 },
+      globalStyle: { visualStyle: 'clean-tech', energy: 0.5, density: 'auto', paletteIntent: 'brand', motionIntensity: 0.5 },
+      timeline: [{ id: 'round-trip', chapterId: 'chapter-1', sectionId: 'section-1', sourceSubtitleIds: ['subtitle-1'], semanticRole: 'quote', selectionReason: '核心反转', visualValue: 0.88, layer: 1, persistence: 'section', cadence: { stepMs: 500, cueOffsetsMs: [0] }, startSec: 1, endSec: 4, intent: 'quote', category: 'quote', content: { text: '短句' }, importance: 0.9, templateQuery: { semanticRole: 'quote', tags: ['quote'], persistence: 'section' }, visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'strong' }, motionIntent: { entrance: 'fade_in', emphasis: 'none', exit: 'fade_out' }, placementIntent: { preferredZones: ['center'], subjectRelation: 'avoid', anchor: 'scene-safe' }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false } }],
+      constraints: { maxConcurrentOverlays: 2, allowBehindSubject: false, subjectAvoidPadding: 0.1, edgeInsets: { top: 0.04, bottom: 0.08, left: 0.05, right: 0.05 } }, exportHints: { formats: ['mp4'], transparent: false },
+    });
+    const applied = applyResolvedPackagingToProject(createFixtureProject(), result);
+    const segment = applied.segments.find((candidate) => candidate.segmentId === 'packaging-round-trip');
+
+    expect(result.overlays).toHaveLength(1);
+    expect(result.overlays.every((overlay) => findPackMotion(overlay.effectId))).toBe(true);
+    expect(segment).toMatchObject({ chapterId: 'chapter-1', sectionId: 'section-1', sourceSubtitleIds: ['subtitle-1'], selectionReason: '核心反转', visualValue: 0.88, layer: 1, persistence: 'section', templateQuery: { semanticRole: 'quote', persistence: 'section' }, cadence: { stepMs: 500, cueOffsetsMs: [0] } });
   });
 });

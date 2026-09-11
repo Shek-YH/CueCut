@@ -37,7 +37,7 @@ function manifestFor(entry: (typeof packMotionCatalog)[number]): PackagingEffect
     ...(category === 'quote' ? ['emphasize-contrast'] : []),
   ];
   return packagingEffectManifestSchema.parse({
-    id: `cuecut-${entry.id}`,
+    id: entry.id.startsWith('cuecut-') ? entry.id : `cuecut-${entry.id}`,
     version: entry.packVersion,
     category,
     title: entry.displayName,

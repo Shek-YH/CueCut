@@ -71,4 +71,34 @@ describe('cuecut.composition/1 schema', () => {
     expect(result.success).toBe(false);
     if (!result.success) expect(result.error.issues.some((issue) => issue.path.includes('motionId'))).toBe(true);
   });
+
+  it('persists optional packaging metadata on composition segments', () => {
+    const project = createFixtureProject();
+    const projectWithPackagingMetadata = {
+      ...project,
+      segments: [...project.segments, {
+        segmentId: 'packaging-overlay-1',
+        sourceSubtitleIds: ['subtitle-1'],
+        startSec: 8,
+        endSec: 12,
+        intent: 'packaging',
+        importance: 0.9,
+        chapterId: 'chapter-1',
+        sectionId: 'section-1',
+        selectionReason: '核心流程',
+        visualValue: 0.88,
+        layer: 1,
+        persistence: 'section',
+        templateQuery: { semanticRole: 'ordered-process', tags: ['steps'], persistence: 'section' },
+        cadence: { stepMs: 1000, cueOffsetsMs: [0, 1000] },
+      }],
+    };
+
+    const result = projectCompositionSchema.parse(projectWithPackagingMetadata);
+
+    expect(result.segments.at(-1)).toMatchObject({
+      chapterId: 'chapter-1', sectionId: 'section-1', sourceSubtitleIds: ['subtitle-1'], selectionReason: '核心流程', visualValue: 0.88,
+      layer: 1, persistence: 'section', templateQuery: { semanticRole: 'ordered-process', persistence: 'section' }, cadence: { stepMs: 1000, cueOffsetsMs: [0, 1000] },
+    });
+  });
 });

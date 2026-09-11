@@ -86,6 +86,14 @@ export function applyResolvedPackagingToProject(project: ProjectComposition, res
       endSec: overlay.endSec,
       intent: 'packaging',
       importance: overlay.importance,
+      chapterId: overlay.chapterId,
+      sectionId: overlay.sectionId,
+      selectionReason: overlay.selectionReason,
+      visualValue: overlay.visualValue,
+      layer: overlay.layer,
+      persistence: overlay.persistence,
+      templateQuery: overlay.templateQuery,
+      cadence: overlay.cadence,
     });
     return {
       effectId: segmentId,

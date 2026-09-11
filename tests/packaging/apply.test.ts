@@ -103,6 +103,23 @@ describe('apply resolved packaging to project', () => {
     expect(next.effects.map((effect) => effect.zIndex)).toEqual([10, 20]);
   });
 
+  it('persists packaging metadata on the segment without mixing it into effect content', () => {
+    const project = createFixtureProject();
+    project.effects = [];
+    const next = applyResolvedPackagingToProject(project, { overlays: [{
+      id: 'metadata', effectId: 'cuecut-key-point', startSec: 1, endSec: 4,
+      rect: { x: 0.1, y: 0.2, width: 0.36, height: 0.12 }, content: { text: '短句' },
+      chapterId: 'chapter-1', sectionId: 'section-1', sourceSubtitleIds: ['subtitle-1'], selectionReason: '核心反转', visualValue: 0.88, layer: 1,
+      persistence: 'section', templateQuery: { semanticRole: 'quote', tags: ['quote'], persistence: 'section' }, cadence: { stepMs: 500, cueOffsetsMs: [0] },
+      motion: { entrance: 'fade_in', emphasis: 'none', exit: 'fade_out' }, seed: 1, candidates: [], importance: 0.9,
+    }] });
+
+    const segment = next.segments.find((candidate) => candidate.segmentId === 'packaging-metadata');
+    expect(segment).toMatchObject({ chapterId: 'chapter-1', sectionId: 'section-1', sourceSubtitleIds: ['subtitle-1'], selectionReason: '核心反转', visualValue: 0.88, layer: 1, persistence: 'section', templateQuery: { semanticRole: 'quote', persistence: 'section' }, cadence: { stepMs: 500, cueOffsetsMs: [0] } });
+    expect(next.effects[0]?.content).toMatchObject({ text: '短句' });
+    expect(next.effects[0]?.content).not.toHaveProperty('selectionReason');
+  });
+
   it('keeps accumulated list items visible in SceneFrame while a process card persists', async () => {
     const { evaluateSceneAtTime } = await import('../../src/render/scene');
     const project = createFixtureProject();

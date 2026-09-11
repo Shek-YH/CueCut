@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { findMotion } from '../motions/registry';
+import { persistenceModes, placementZones, semanticRoles } from '../packaging-ir/schema';
 
 const hexColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be a six-digit hex color');
 
@@ -43,6 +44,37 @@ const subtitleSchema = z.object({
 }).superRefine((value, context) => {
   if (value.endSec <= value.startSec) context.addIssue({ code: 'custom', path: ['endSec'], message: 'subtitle endSec must be greater than startSec' });
 });
+
+const packagingTemplateQuerySchema = z.object({
+  semanticRole: z.enum(semanticRoles).optional(),
+  visualIntent: z.string().min(1).max(120).optional(),
+  tags: z.array(z.string().min(1).max(64)).max(24).optional(),
+  requiredContentSlots: z.array(z.string().min(1).max(64)).max(24).optional(),
+  itemCount: z.number().int().positive().max(32).optional(),
+  durationRangeSec: z.tuple([z.number().finite().min(0), z.number().finite().min(0)]).optional(),
+  preferredZones: z.array(z.enum(placementZones)).max(4).optional(),
+  persistence: z.enum(persistenceModes).optional(),
+}).strict().superRefine((value, context) => {
+  if (value.durationRangeSec && value.durationRangeSec[1] < value.durationRangeSec[0]) context.addIssue({ code: 'custom', path: ['durationRangeSec', 1], message: 'duration max must be >= min' });
+});
+
+const packagingCadenceSchema = z.object({
+  stepMs: z.number().finite().min(0).max(120000).optional(),
+  staggerMs: z.number().finite().min(0).max(120000).optional(),
+  emphasisAtMs: z.number().finite().min(0).max(120000).optional(),
+  cueOffsetsMs: z.array(z.number().finite().min(0).max(120000)).max(32).optional(),
+}).strict();
+
+const packagingSegmentMetadataSchema = z.object({
+  chapterId: z.string().min(1).max(160).optional(),
+  sectionId: z.string().min(1).max(160).optional(),
+  selectionReason: z.string().min(1).max(500).optional(),
+  visualValue: z.union([z.boolean(), z.number().finite().min(0).max(1)]).optional(),
+  layer: z.number().int().min(0).max(3).optional(),
+  persistence: z.enum(persistenceModes).optional(),
+  templateQuery: packagingTemplateQuerySchema.optional(),
+  cadence: packagingCadenceSchema.optional(),
+}).strict();
 
 const effectSchema = z.object({
   effectId: z.string().min(1),
@@ -109,7 +141,7 @@ export const projectCompositionSchema = z.object({
       endSec: z.number().finite().positive(),
       intent: z.string().min(1),
       importance: z.number().finite().min(0).max(1),
-    }),
+    }).merge(packagingSegmentMetadataSchema),
   ),
   effects: z.array(effectSchema),
   soundEvents: z.array(
