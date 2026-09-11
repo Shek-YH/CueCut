@@ -1,10 +1,12 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CanvasStage } from '../../src/editor/canvas/CanvasStage';
 import { createFixtureProject } from '../../src/project/fixtures';
 import { createProjectStore } from '../../src/project/store';
 
 describe('Canvas video surface', () => {
+  afterEach(() => vi.restoreAllMocks());
+
   it('reports native video time updates to the PlaybackClock boundary', () => {
     const onVideoTime = vi.fn();
     render(
@@ -91,6 +93,35 @@ describe('Canvas video surface', () => {
 
     rerender(<CanvasStage {...props} currentTime={2.35} />);
 
+    expect(video.currentTime).toBe(2.35);
+  });
+
+  it('reasserts a paused seek on the next animation frame after an old timeupdate overwrites it', () => {
+    let frameCallback: FrameRequestCallback | undefined;
+    const requestAnimationFrame = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+      frameCallback = callback;
+      return 1;
+    });
+    const props = {
+      onSelect: () => undefined,
+      onVideoMetadata: () => undefined,
+      onVideoTime: () => undefined,
+      playing: false,
+      project: createFixtureProject(),
+      selectedEffectId: 'fx-quote',
+      store: createProjectStore(createFixtureProject()),
+      videoSrc: 'blob:fixture',
+    };
+    const { rerender } = render(<CanvasStage {...props} currentTime={2.30} />);
+    const video = screen.getByTestId('preview-video');
+    Object.defineProperty(video, 'currentTime', { configurable: true, writable: true, value: 2.30 });
+
+    rerender(<CanvasStage {...props} currentTime={2.35} />);
+    video.currentTime = 2.30;
+    fireEvent.timeUpdate(video);
+    frameCallback?.(0);
+
+    expect(requestAnimationFrame).toHaveBeenCalled();
     expect(video.currentTime).toBe(2.35);
   });
 

@@ -45,6 +45,14 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
     if (!video || !videoSrc || (playing && Math.abs(video.currentTime - currentTime) < 0.08)) return;
     try {
       video.currentTime = currentTime;
+      if (!playing) {
+        const targetTime = currentTime;
+        window.requestAnimationFrame(() => {
+          const currentVideo = videoRef.current;
+          if (!currentVideo || currentVideo !== video || Math.abs(currentVideo.currentTime - targetTime) < Number.EPSILON) return;
+          currentVideo.currentTime = targetTime;
+        });
+      }
     } catch {
       // Ignore seeks before metadata is ready; the next clock update retries.
     }
