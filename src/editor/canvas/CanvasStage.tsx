@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from 'react';
-import type { ProjectComposition } from '../../project/schema';
+import { defaultSubtitleSettings, type ProjectComposition } from '../../project/schema';
 import type { ProjectStore } from '../../project/store';
 import { evaluateSceneAtTime } from '../../render/scene';
 import { fitText, sceneItemBox, textRegionsForSceneItem, type TextRegion } from '../../render/textFit';
@@ -215,6 +215,11 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
   };
 
   const scene = evaluateSceneAtTime(project, currentTime);
+  const subtitleSettings = project.subtitleSettings ?? defaultSubtitleSettings;
+  const subtitleTop = { top: '8%', center: '42%', bottom: '78%' }[subtitleSettings.position];
+  const subtitleFontSize = `${subtitleSettings.fontSize / project.project.canvasWidth * 100}cqw`;
+  const subtitleStrokeWidth = `${subtitleSettings.strokeWidth / project.project.canvasWidth * 100}cqw`;
+  const subtitleLetterSpacing = `${subtitleSettings.letterSpacing / project.project.canvasWidth * 100}cqw`;
 
   return (
     <main className="stage" data-testid="canvas-stage">
@@ -280,12 +285,24 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
               </button>
             );
           })}
-          {scene.items.filter((item) => item.variantId === 'subtitle' && item.visible).map((subtitle) => (
+          {subtitleSettings.visible && scene.items.filter((item) => item.variantId === 'subtitle' && item.visible).map((subtitle) => (
             <div
               className="canvas-subtitle"
               data-testid={'canvas-subtitle-' + subtitle.effectId}
               key={subtitle.effectId}
-              style={{ left: subtitle.layout.nx * 100 + '%', top: subtitle.layout.ny * 100 + '%', width: subtitle.layout.nw * 100 + '%', height: subtitle.layout.nh * 100 + '%', opacity: subtitle.opacity, zIndex: subtitle.zIndex }}
+              style={{
+                left: '5%',
+                top: subtitleTop,
+                width: '90%',
+                height: '17%',
+                opacity: subtitle.opacity,
+                zIndex: subtitle.zIndex,
+                color: subtitleSettings.color,
+                fontSize: subtitleFontSize,
+                lineHeight: subtitleSettings.lineHeight,
+                letterSpacing: subtitleLetterSpacing,
+                WebkitTextStroke: `${subtitleStrokeWidth} ${subtitleSettings.strokeColor}`,
+              }}
             >
               {subtitle.content.kind === 'text' ? subtitle.content.text : ''}
             </div>

@@ -7,6 +7,47 @@ import { createProjectStore } from '../../src/project/store';
 describe('Canvas video surface', () => {
   afterEach(() => vi.restoreAllMocks());
 
+  it('renders active subtitles only when subtitle visibility is enabled and applies style settings', () => {
+    const project = createFixtureProject();
+    project.subtitles = [{ id: 's-1', startSec: 0, endSec: 2, text: 'Long subtitle that should wrap' }];
+    project.subtitleSettings = { visible: true, fontSize: 48, color: '#FF0000', strokeColor: '#000000', strokeWidth: 3, lineHeight: 1.4, letterSpacing: 2, position: 'top' };
+
+    const { rerender } = render(
+      <CanvasStage
+        currentTime={1}
+        onSelect={() => undefined}
+        onVideoMetadata={() => undefined}
+        onVideoTime={() => undefined}
+        playing={false}
+        project={project}
+        selectedEffectId="fx-ring"
+        store={createProjectStore(project)}
+        videoSrc={null}
+      />,
+    );
+
+    const subtitle = screen.getByTestId('canvas-subtitle-s-1');
+    expect(subtitle).toHaveStyle({ color: '#FF0000', top: '8%', width: '90%' });
+    expect(subtitle).toHaveStyle({ lineHeight: '1.4', letterSpacing: '0.10416666666666667cqw' });
+
+    project.subtitleSettings = { ...project.subtitleSettings, visible: false };
+    rerender(
+      <CanvasStage
+        currentTime={1}
+        onSelect={() => undefined}
+        onVideoMetadata={() => undefined}
+        onVideoTime={() => undefined}
+        playing={false}
+        project={project}
+        selectedEffectId="fx-ring"
+        store={createProjectStore(project)}
+        videoSrc={null}
+      />,
+    );
+
+    expect(screen.queryByTestId('canvas-subtitle-s-1')).not.toBeInTheDocument();
+  });
+
   it('reports native video time updates to the PlaybackClock boundary', () => {
     const onVideoTime = vi.fn();
     render(

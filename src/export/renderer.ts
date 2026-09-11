@@ -2,7 +2,7 @@
 import { evaluateSceneAtTime, type SceneFrame } from '../render/scene';
 import { fitText, sceneItemBox, textRegionsForSceneItem, type TextRegion } from '../render/textFit';
 import { visualSurfaceForKind } from '../render/visualSurface';
-import type { ProjectComposition } from '../project/schema';
+import { defaultSubtitleSettings, type ProjectComposition, type SubtitleSettings } from '../project/schema';
 
 function colorFromHex(value: string): [number, number, number] {
   const match = value.match(/^#([0-9a-f]{6})$/i);
@@ -60,9 +60,45 @@ function drawGlyphs(buffer: Buffer, canvasWidth: number, canvasHeight: number, r
   });
 }
 
-export function renderSceneFrameToRgba(frame: SceneFrame, width: number, height: number): Buffer {
+function drawSubtitleGlyphs(buffer: Buffer, width: number, height: number, text: string, settings: SubtitleSettings, opacity: number): void {
+  const scale = width / 1920;
+  const regionX = width * 0.05;
+  const regionY = ({ top: 0.08, center: 0.42, bottom: 0.78 }[settings.position]) * height;
+  const regionWidth = width * 0.9;
+  const regionHeight = height * 0.17;
+  const fitted = fitText({ text, maxWidth: regionWidth, maxHeight: regionHeight, fontSize: settings.fontSize * scale, maxLines: 3 });
+  const lineHeight = fitted.fontSize * settings.lineHeight;
+  const contentHeight = fitted.lines.length * lineHeight;
+  const startY = regionY + Math.max(0, (regionHeight - contentHeight) / 2);
+  const fill = [...colorFromHex(settings.color), Math.round(Math.min(1, opacity) * 255)] as [number, number, number, number];
+  const stroke = [...colorFromHex(settings.strokeColor), Math.round(Math.min(1, opacity) * 255)] as [number, number, number, number];
+  const strokeWidth = settings.strokeWidth * scale;
+  const letterSpacing = settings.letterSpacing * scale;
+
+  fitted.lines.forEach((line, lineIndex) => {
+    const cell = Math.max(1, Math.floor(Math.min(fitted.fontSize / 7, regionWidth / Math.max(1, line.length * 6))));
+    const lineWidth = line.length * cell * 6 + Math.max(0, line.length - 1) * letterSpacing;
+    const startX = regionX + Math.max(0, (regionWidth - lineWidth) / 2);
+    const lineY = startY + lineIndex * lineHeight;
+    [...line].forEach((character, charIndex) => {
+      const seed = glyphSeed(character);
+      for (let glyphY = 0; glyphY < 7; glyphY += 1) {
+        for (let glyphX = 0; glyphX < 5; glyphX += 1) {
+          const bit = (seed >>> ((glyphY * 5 + glyphX) % 24)) & 1;
+          if (!bit && glyphY !== 0 && glyphY !== 6) continue;
+          const x = startX + charIndex * (cell * 6 + letterSpacing) + glyphX * cell;
+          const y = lineY + glyphY * cell;
+          if (strokeWidth > 0) drawRectClipped(buffer, width, height, x - strokeWidth, y - strokeWidth, cell + strokeWidth * 2, cell + strokeWidth * 2, regionX, regionY, regionWidth, regionHeight, stroke);
+          drawRectClipped(buffer, width, height, x, y, cell, cell, regionX, regionY, regionWidth, regionHeight, fill);
+        }
+      }
+    });
+  });
+}
+
+export function renderSceneFrameToRgba(frame: SceneFrame, width: number, height: number, subtitleSettings: SubtitleSettings = defaultSubtitleSettings): Buffer {
   const buffer = Buffer.alloc(width * height * 4);
-  [...frame.items].sort((left, right) => left.zIndex - right.zIndex).filter((item) => item.visible && item.opacity > 0).forEach((item) => {
+  [...frame.items].sort((left, right) => left.zIndex - right.zIndex).filter((item) => item.variantId !== 'subtitle' && item.visible && item.opacity > 0).forEach((item) => {
     const [red, green, blue] = colorFromHex(item.appearance.accent);
     const scale = Math.max(0.01, item.scale);
     const box = sceneItemBox(item, width, height);
@@ -95,11 +131,16 @@ export function renderSceneFrameToRgba(frame: SceneFrame, width: number, height:
     }
     textRegionsForSceneItem(item, box.width, box.height).forEach((region) => drawGlyphs(buffer, width, height, region, x, y, scale, contentAlpha));
   });
+  if (subtitleSettings.visible) {
+    [...frame.items].filter((item) => item.variantId === 'subtitle' && item.visible && item.opacity > 0).forEach((item) => {
+      if (item.content.kind === 'text') drawSubtitleGlyphs(buffer, width, height, item.content.text, subtitleSettings, item.opacity);
+    });
+  }
   return buffer;
 }
 
 export function renderProjectFrame(project: ProjectComposition, timeSec: number): Buffer {
-  return renderSceneFrameToRgba(evaluateSceneAtTime(project, timeSec), project.project.canvasWidth, project.project.canvasHeight);
+  return renderSceneFrameToRgba(evaluateSceneAtTime(project, timeSec), project.project.canvasWidth, project.project.canvasHeight, project.subtitleSettings ?? defaultSubtitleSettings);
 }
 
 export function frameCount(project: ProjectComposition): number {

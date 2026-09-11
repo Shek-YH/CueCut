@@ -77,6 +77,13 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .srttime { color: #8996aa; font: 800 7px ui-monospace, SFMono-Regular, Consolas, monospace; }
 .srt textarea { width: 100%; min-height: 42px; border: 0; outline: 0; background: transparent; color: #eaf0f8; resize: vertical; font-size: 8px; line-height: 1.45; padding: 0; }
 .srt-actions { display: flex; align-items: center; gap: 5px; }
+.subtitle-settings { margin-bottom: 8px; padding: 8px; border: 1px solid var(--line); border-radius: 7px; background: #0e131b; }
+.subtitle-settings-title { margin-bottom: 7px; color: #c7d0e2; font-size: 8px; font-weight: 850; }
+.subtitle-settings label { display: grid; gap: 3px; color: #929db0; font-size: 7px; }
+.subtitle-settings input, .subtitle-settings select, .srt-time-fields input { width: 100%; min-height: 25px; box-sizing: border-box; padding: 3px 5px; border: 1px solid var(--line); border-radius: 5px; background: #11161f; color: var(--text); font-size: 8px; }
+.subtitle-settings input[type='color'] { min-height: 25px; padding: 2px; }
+.srt-time-fields { margin: 5px 0; }
+.srt-time-fields label { display: grid; gap: 3px; color: #929db0; font-size: 7px; }
 .text-btn { padding: 2px 4px; border: 1px solid var(--line); border-radius: 4px; background: #151b25; color: #b7c1d4; font-size: 7px; }
 .stage { min-width: 0; min-height: 0; display: flex; flex-direction: column; grid-column: 2; grid-row: 1; background: #080a0f; }
 .stagebar { height: 35px; flex: 0 0 35px; display: flex; align-items: center; gap: 8px; padding: 0 9px; border-bottom: 1px solid var(--line); color: #7f8b9f; font-size: 8px; }
@@ -112,7 +119,7 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .fx strong, .fx .card-copy { min-width: 0; max-width: 100%; overflow: hidden; overflow-wrap: anywhere; white-space: normal; }
 .fx strong { font-size: 10px; }
 .fit-line { display: block; min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
-.canvas-subtitle { position: absolute; display: flex; align-items: center; justify-content: center; padding: 5px 8px; border: 1px solid #7868ff88; border-radius: 6px; background: #10141ccc; color: #fff; font-size: 10px; line-height: 1.2; text-align: center; pointer-events: none; }
+.canvas-subtitle { position: absolute; display: flex; align-items: center; justify-content: center; box-sizing: border-box; padding: 5px 8px; overflow: hidden; color: #fff; font-weight: 700; text-align: center; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; pointer-events: none; }
 .fxtag { position: absolute; left: 5px; top: -16px; padding: 3px 5px; border: 1px solid #564d9c; border-radius: 4px; background: #272345; color: #dedaff; font: 800 6px ui-monospace, SFMono-Regular, Consolas, monospace; white-space: nowrap; }
 .resize-handle { position: absolute; width: 10px; height: 10px; border: 1px solid #fff; border-radius: 2px; background: #7868ff; opacity: 0; }
 .resize-handle.top-left { top: -4px; left: -4px; cursor: nwse-resize; }

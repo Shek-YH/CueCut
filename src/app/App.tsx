@@ -72,6 +72,8 @@ function EditView({
   onSeek,
   subtitleItems,
   onSubtitleItemsChange,
+  subtitleSettings,
+  onSubtitleSettingsChange,
   onVideoMetadata,
   onOpenLab,
 }: {
@@ -85,6 +87,8 @@ function EditView({
   onSeek: (timeSec: number) => void;
   subtitleItems?: TranscriptSegment[];
   onSubtitleItemsChange: (items: TranscriptSegment[]) => void;
+  subtitleSettings?: ProjectComposition['subtitleSettings'];
+  onSubtitleSettingsChange: (update: Partial<NonNullable<ProjectComposition['subtitleSettings']>>) => void;
   onVideoMetadata: (metadata: { durationSec: number; canvasWidth: number; canvasHeight: number }) => void;
   onOpenLab: () => void;
 }) {
@@ -103,7 +107,7 @@ function EditView({
         </div>
         <div className="editgrid">
         <LayersPanel project={project} selectedEffectId={selectedEffectId} onSelect={handleLayerSelect} />
-          <SrtQuickPanel currentTime={currentTime} onSeek={onSeek} items={subtitleItems} onItemsChange={onSubtitleItemsChange} />
+          <SrtQuickPanel currentTime={currentTime} onSeek={onSeek} items={subtitleItems} onItemsChange={onSubtitleItemsChange} onSubtitleSettingsChange={onSubtitleSettingsChange} subtitleSettings={subtitleSettings} />
         </div>
       </aside>
       <CanvasStage
@@ -694,7 +698,7 @@ export function App() {
           ))}
         </nav>
         <div className="views">
-          {view === 'edit' && <EditView project={project} store={store} currentTime={clockSnapshot.currentTime} selectedEffectId={selectedEffectId} videoSrc={videoSrc} playing={clockSnapshot.playing} onSelect={onSelect} onSeek={onSeek} subtitleItems={project.subtitles} onSubtitleItemsChange={(items) => store.setSubtitles(items)} onVideoMetadata={() => undefined} onOpenLab={() => setView('lab')} />}
+          {view === 'edit' && <EditView project={project} store={store} currentTime={clockSnapshot.currentTime} selectedEffectId={selectedEffectId} videoSrc={videoSrc} playing={clockSnapshot.playing} onSelect={onSelect} onSeek={onSeek} subtitleItems={project.subtitles} onSubtitleItemsChange={(items) => store.setSubtitles(items)} subtitleSettings={project.subtitleSettings} onSubtitleSettingsChange={(update) => store.setSubtitleSettings(update)} onVideoMetadata={() => undefined} onOpenLab={() => setView('lab')} />}
           {view === 'lab' && <EffectLabView project={project} store={store} selectedEffectId={selectedEffectId} onClose={() => setView('edit')} />}
           {view === 'sfx' && <SfxLibrary store={store} selectedEffectId={selectedEffectId} />}
           {view === 'learn' && <LearnView />}

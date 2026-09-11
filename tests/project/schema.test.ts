@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { projectCompositionSchema } from '../../src/project/schema';
 import { createFixtureProject } from '../../src/project/fixtures';
+import { createProjectStore } from '../../src/project/store';
 
 describe('cuecut.composition/1 schema', () => {
   it('accepts a complete local composition with nullable sfx', () => {
@@ -15,6 +16,55 @@ describe('cuecut.composition/1 schema', () => {
       expect(result.data.effects[0]?.layout.nx).toBeGreaterThanOrEqual(0);
       expect(result.data.project.video).toEqual({ sourceFileName: null, zIndex: 0, locked: true });
     }
+  });
+
+  it('supplies bounded subtitle settings defaults when parsing a legacy composition', () => {
+    const legacy = createFixtureProject();
+    const result = projectCompositionSchema.parse(legacy);
+
+    expect(result.subtitleSettings).toMatchObject({
+      visible: true,
+      fontSize: 42,
+      lineHeight: 1.2,
+      letterSpacing: 0,
+    });
+    expect(result.subtitleSettings.position).toBe('bottom');
+  });
+
+  it('rejects out-of-bounds subtitle settings', () => {
+    const project = createFixtureProject();
+    project.subtitleSettings = {
+      visible: true,
+      fontSize: 500,
+      color: '#FFFFFF',
+      strokeColor: '#000000',
+      strokeWidth: 2,
+      lineHeight: 1.2,
+      letterSpacing: 0,
+      position: 'bottom',
+    };
+
+    expect(projectCompositionSchema.safeParse(project).success).toBe(false);
+  });
+
+  it('updates subtitle settings through one undoable validated store transaction', () => {
+    const store = createProjectStore(createFixtureProject());
+
+    store.setSubtitleSettings({ visible: false });
+
+    expect(store.getSnapshot().subtitleSettings.visible).toBe(false);
+    expect(store.undoDepth()).toBe(1);
+    expect(() => store.setSubtitleSettings({ fontSize: 500 })).toThrow();
+    expect(store.undoDepth()).toBe(1);
+  });
+
+  it('clamps edited subtitle timing to the project duration', () => {
+    const store = createProjectStore(createFixtureProject());
+    store.setSubtitles([{ id: 's-1', startSec: 1, endSec: 2, text: 'caption' }]);
+
+    store.updateSubtitle('s-1', (subtitle) => ({ ...subtitle, startSec: 29, endSec: 40 }));
+
+    expect(store.getSnapshot().subtitles[0]).toMatchObject({ startSec: 29, endSec: 30 });
   });
 
   it('keeps canonical subtitles inside the composition', () => {

@@ -1,22 +1,23 @@
-import { projectCompositionSchema, type EffectInstance, type ProjectComposition } from './schema';
+import { defaultSubtitleSettings, projectCompositionSchema, subtitleSettingsSchema, type EffectInstance, type ParsedProjectComposition, type ProjectComposition, type SubtitleSettings } from './schema';
 
 type Listener = () => void;
+type SubtitleSettingsUpdate = Partial<SubtitleSettings> | ((current: SubtitleSettings) => Partial<SubtitleSettings> | SubtitleSettings);
 
 function clone<T>(value: T): T {
   return structuredClone(value);
 }
 
 export class ProjectStore {
-  private snapshot: ProjectComposition;
-  private readonly undoStack: ProjectComposition[] = [];
-  private readonly redoStack: ProjectComposition[] = [];
+  private snapshot: ParsedProjectComposition;
+  private readonly undoStack: ParsedProjectComposition[] = [];
+  private readonly redoStack: ParsedProjectComposition[] = [];
   private readonly listeners = new Set<Listener>();
 
   constructor(initial: ProjectComposition) {
     this.snapshot = projectCompositionSchema.parse(initial);
   }
 
-  getSnapshot(): ProjectComposition {
+  getSnapshot(): ParsedProjectComposition {
     return this.snapshot;
   }
 
@@ -77,7 +78,19 @@ export class ProjectStore {
 
   setSubtitles(subtitles: ProjectComposition['subtitles']): void {
     const next = clone(this.snapshot);
-    next.subtitles = clone(subtitles);
+    next.subtitles = clone(subtitles).map((subtitle) => ({ ...subtitle, ...clampSubtitleRange(subtitle.startSec, subtitle.endSec, next.project.durationSec) }));
+    const parsed = projectCompositionSchema.parse(next);
+    this.undoStack.push(this.snapshot);
+    this.redoStack.length = 0;
+    this.snapshot = parsed;
+    this.notify();
+  }
+
+  setSubtitleSettings(update: SubtitleSettingsUpdate): void {
+    const next = clone(this.snapshot);
+    const current = next.subtitleSettings ?? defaultSubtitleSettings;
+    const change = typeof update === 'function' ? update(clone(current)) : update;
+    next.subtitleSettings = subtitleSettingsSchema.parse({ ...current, ...change });
     const parsed = projectCompositionSchema.parse(next);
     this.undoStack.push(this.snapshot);
     this.redoStack.length = 0;
@@ -89,7 +102,8 @@ export class ProjectStore {
     const next = clone(this.snapshot);
     const index = next.subtitles.findIndex((subtitle) => subtitle.id === subtitleId);
     if (index < 0) throw new Error(`Subtitle not found: ${subtitleId}`);
-    next.subtitles[index] = clone(updater(next.subtitles[index]!));
+    const updated = clone(updater(next.subtitles[index]!));
+    next.subtitles[index] = { ...updated, ...clampSubtitleRange(updated.startSec, updated.endSec, next.project.durationSec) };
     const parsed = projectCompositionSchema.parse(next);
     this.undoStack.push(this.snapshot);
     this.redoStack.length = 0;
@@ -237,6 +251,12 @@ export class ProjectStore {
   private notify(): void {
     this.listeners.forEach((listener) => listener());
   }
+}
+
+function clampSubtitleRange(startSec: number, endSec: number, durationSec: number): { startSec: number; endSec: number } {
+  const minimumRange = Math.min(0.01, durationSec / 2);
+  const start = Math.min(Math.max(0, startSec), Math.max(0, durationSec - minimumRange));
+  return { startSec: start, endSec: Math.min(durationSec, Math.max(start + minimumRange, endSec)) };
 }
 
 function aspectRatio(width: number, height: number): string {

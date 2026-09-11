@@ -45,6 +45,28 @@ const subtitleSchema = z.object({
   if (value.endSec <= value.startSec) context.addIssue({ code: 'custom', path: ['endSec'], message: 'subtitle endSec must be greater than startSec' });
 });
 
+export const defaultSubtitleSettings = {
+  visible: true,
+  fontSize: 42,
+  color: '#FFFFFF',
+  strokeColor: '#000000',
+  strokeWidth: 2,
+  lineHeight: 1.2,
+  letterSpacing: 0,
+  position: 'bottom' as const,
+};
+
+export const subtitleSettingsSchema = z.object({
+  visible: z.boolean().default(defaultSubtitleSettings.visible),
+  fontSize: z.number().finite().min(12).max(120).default(defaultSubtitleSettings.fontSize),
+  color: hexColorSchema.default(defaultSubtitleSettings.color),
+  strokeColor: hexColorSchema.default(defaultSubtitleSettings.strokeColor),
+  strokeWidth: z.number().finite().min(0).max(12).default(defaultSubtitleSettings.strokeWidth),
+  lineHeight: z.number().finite().min(0.8).max(2.5).default(defaultSubtitleSettings.lineHeight),
+  letterSpacing: z.number().finite().min(-10).max(20).default(defaultSubtitleSettings.letterSpacing),
+  position: z.enum(['top', 'center', 'bottom']).default(defaultSubtitleSettings.position),
+}).strict().default(defaultSubtitleSettings);
+
 const packagingCadenceSchema = z.object({
   stepMs: z.number().finite().min(0).max(120000).optional(),
   staggerMs: z.number().finite().min(0).max(120000).optional(),
@@ -101,6 +123,7 @@ export const projectCompositionSchema = z.object({
   schema: z.literal('cuecut.composition/1'),
   schemaVersion: z.literal(1).default(1),
   subtitles: z.array(subtitleSchema).default([]),
+  subtitleSettings: subtitleSettingsSchema,
   project: z.object({
     projectId: z.string().min(1),
     durationSec: z.number().finite().positive(),
@@ -177,5 +200,7 @@ export const projectCompositionSchema = z.object({
   });
 });
 
-export type ProjectComposition = z.infer<typeof projectCompositionSchema>;
-export type EffectInstance = ProjectComposition['effects'][number];
+export type SubtitleSettings = z.infer<typeof subtitleSettingsSchema>;
+export type ParsedProjectComposition = z.infer<typeof projectCompositionSchema>;
+export type ProjectComposition = Omit<ParsedProjectComposition, 'subtitleSettings'> & { subtitleSettings?: SubtitleSettings };
+export type EffectInstance = ParsedProjectComposition['effects'][number];
