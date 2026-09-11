@@ -55,7 +55,7 @@ export function createCanvasRenderer(project: ProjectComposition, options: { bac
       target.strokeStyle = item.appearance.accent;
       target.strokeRect(8, 8, Math.max(12, Math.min(width, height) - 16), Math.max(12, Math.min(width, height) - 16));
       textRegions.forEach((region) => drawTextRegion(target, region, textColor));
-    } else if (item.visualKind === 'list' && item.content.kind === 'list') {
+    } else if (item.visualKind === 'list') {
       target.fillStyle = '#171B26';
       target.fillRect(0, 0, width, height);
       target.fillStyle = item.appearance.accent;

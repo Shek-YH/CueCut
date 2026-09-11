@@ -126,7 +126,7 @@ function baseRegion(item: SceneItem, width: number, height: number): TextRegion 
     width: Math.max(1, width - 24),
     height: Math.max(1, height),
     fontSize: kind === 'quote' ? 28 : kind === 'highlight' || kind === 'badge' ? 24 : kind === 'chart' ? 22 : 32,
-    maxLines: kind === 'list' && item.content.kind === 'list' ? Math.max(1, item.content.items.length * 4) : 4,
+    maxLines: kind === 'list' ? Math.max(4, contentText(item.content).split('\n').length * 4) : 4,
     align: kind === 'list' || kind === 'quote' ? 'left' : 'center',
     weight: kind === 'quote' ? 700 : 600,
   };
@@ -158,13 +158,14 @@ export function sceneItemBox(item: SceneItem, canvasWidth: number, canvasHeight:
   const width = Math.min(canvasWidth, Math.max(1, item.layout.nw * canvasWidth));
   const baseHeight = Math.min(canvasHeight, Math.max(1, item.layout.nh * canvasHeight));
   let height = baseHeight;
-  if (item.visualKind === 'list' && item.content.kind === 'list') {
+  if (item.visualKind === 'list') {
+    const listText = contentText(item.content);
     const probe = fitText({
-      text: contentText(item.content),
+      text: listText,
       maxWidth: Math.max(1, width - 30),
       maxHeight: Number.MAX_SAFE_INTEGER,
       fontSize: 24,
-      maxLines: Math.max(1, item.content.items.length * 4),
+      maxLines: Math.max(4, listText.split('\n').length * 4),
     });
     const desiredHeight = 20 + probe.lines.length * probe.lineHeight;
     height = Math.max(baseHeight, Math.min(canvasHeight * 0.5, desiredHeight));

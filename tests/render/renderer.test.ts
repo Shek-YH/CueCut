@@ -150,4 +150,48 @@ describe('unified render runtime', () => {
     expect(context.strokeRect).not.toHaveBeenCalled();
     expect(context.fillText).toHaveBeenCalledWith('92', expect.any(Number), expect.any(Number));
   });
+
+  it('uses list visual layout for text content consistently across shared layout, Canvas, and export', () => {
+    const project = createFixtureProject();
+    project.effects = [{
+      ...project.effects[1]!,
+      familyId: 'list',
+      variantId: 'animated-list',
+      layout: { ...project.effects[1]!.layout, nh: 0.04 },
+      content: { text: '这是列表族中的一段很长的文本内容，需要沿用列表布局并在三个渲染端保持一致。' },
+    }];
+    const frame = evaluateSceneAtTime(project, 4);
+    const item = frame.items.find((entry) => entry.effectId === 'fx-quote');
+    if (!item) throw new Error('List fixture item missing');
+
+    expect(item.visualKind).toBe('list');
+    expect(textRegionsForSceneItem(item, 600, 220)).toMatchObject([{ text: '这是列表族中的一段很长的文本内容，需要沿用列表布局并在三个渲染端保持一致。' }]);
+    expect(sceneItemBox(item, 1920, 1080).height).toBeGreaterThan(project.effects[0]!.layout.nh * 1080);
+
+    const context = {
+      canvas: { width: 1920, height: 1080 },
+      fillStyle: '',
+      globalAlpha: 1,
+      font: '',
+      textAlign: 'left',
+      filter: 'none',
+      fillRect: vi.fn(),
+      fillText: vi.fn(),
+      strokeRect: vi.fn(),
+      save: vi.fn(),
+      restore: vi.fn(),
+      translate: vi.fn(),
+      rotate: vi.fn(),
+      scale: vi.fn(),
+    } as unknown as CanvasRenderingContext2D;
+
+    createCanvasRenderer(project).renderFrame(4, context);
+    expect(context.strokeRect).not.toHaveBeenCalled();
+    expect(context.fillText).toHaveBeenCalled();
+
+    const exportBox = sceneItemBox(item, 1920, 1080);
+    const buffer = renderSceneFrameToRgba(frame, 1920, 1080);
+    const offset = (Math.floor(exportBox.y + 1) * 1920 + Math.floor(exportBox.x + 1)) * 4;
+    expect([...buffer.subarray(offset, offset + 4)]).toEqual([255, 255, 255, 220]);
+  });
 });
