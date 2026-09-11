@@ -29,6 +29,7 @@ function drawRectClipped(buffer: Buffer, canvasWidth: number, canvasHeight: numb
 }
 
 function glyphSeed(character: string): number {
+  // Export intentionally keeps deterministic glyphSeed: this backend has no external font dependency; layout, spacing, and clipping remain shared with the editor.
   let seed = 17;
   for (const code of character) seed = (seed * 31 + code.charCodeAt(0)) >>> 0;
   return seed;
