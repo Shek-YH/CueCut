@@ -4,8 +4,9 @@ import { promisify } from 'node:util';
 import { describe, expect, it } from 'vitest';
 import { createFixtureProject } from '../../src/project/fixtures';
 import { createExportController } from '../../src/export/controller';
-import { renderProjectFrame } from '../../src/export/renderer';
+import { renderProjectFrame, renderSceneFrameToRgba } from '../../src/export/renderer';
 import { probeVideoFile } from '../../src/media/videoProbe';
+import { evaluateSceneAtTime } from '../../src/render/scene';
 
 const execFileAsync = promisify(execFile);
 const fixturePath = 'test-results/cuecut-portable-fixture.mp4';
@@ -36,20 +37,40 @@ function exportProject() {
 }
 
 describe('portable actual export', () => {
-  it('exports a real MP4 and transparent ProRes MOV and validates both with ffprobe', async () => {
-  it('omits hidden subtitles from portable export frames', () => {
-    const project = createFixtureProject();
-    project.effects = [];
-    project.subtitles = [{ id: 's-1', startSec: 0, endSec: 2, text: 'Export subtitle' }];
-    project.subtitleSettings = { visible: true, fontSize: 42, color: '#FFFFFF', strokeColor: '#000000', strokeWidth: 2, lineHeight: 1.2, letterSpacing: 0, position: 'bottom' };
+  describe('portable subtitle frames', () => {
+    it('omits hidden subtitles from portable export frames', () => {
+      const project = createFixtureProject();
+      project.effects = [];
+      project.subtitles = [{ id: 's-1', startSec: 0, endSec: 2, text: 'Export subtitle' }];
+      project.subtitleSettings = { visible: true, fontSize: 42, color: '#FFFFFF', strokeColor: '#000000', strokeWidth: 2, lineHeight: 1.2, letterSpacing: 0, position: 'bottom' };
 
-    const visibleFrame = renderProjectFrame(project, 1);
-    project.subtitleSettings.visible = false;
-    const hiddenFrame = renderProjectFrame(project, 1);
+      const visibleFrame = renderProjectFrame(project, 1);
+      project.subtitleSettings.visible = false;
+      const hiddenFrame = renderProjectFrame(project, 1);
 
-    expect(visibleFrame.some((value) => value !== 0)).toBe(true);
-    expect(hiddenFrame.every((value) => value === 0)).toBe(true);
+      expect(visibleFrame.some((value) => value !== 0)).toBe(true);
+      expect(hiddenFrame.every((value) => value === 0)).toBe(true);
+    });
+
+    it('scales subtitle glyphs from the actual project canvas width', () => {
+      const project = createFixtureProject();
+      project.project.canvasWidth = 320;
+      project.project.canvasHeight = 180;
+      project.project.aspectRatio = '16:9';
+      project.effects = [];
+      project.subtitles = [{ id: 's-1', startSec: 0, endSec: 2, text: 'A subtitle long enough to wrap' }];
+      project.subtitleSettings = { visible: true, fontSize: 42, color: '#FFFFFF', strokeColor: '#000000', strokeWidth: 2, lineHeight: 1.2, letterSpacing: 0, position: 'bottom' };
+
+      const frame = evaluateSceneAtTime(project, 1);
+      const projectSizedFrame = renderSceneFrameToRgba(frame, 320, 180, project.subtitleSettings, project.project.canvasWidth);
+      const legacySizedFrame = renderSceneFrameToRgba(frame, 320, 180, project.subtitleSettings, 1920);
+      const opaquePixels = (rgba: Buffer) => Array.from(rgba).filter((value, index) => index % 4 === 3 && value > 0).length;
+
+      expect(opaquePixels(projectSizedFrame)).toBeGreaterThan(opaquePixels(legacySizedFrame));
+    });
   });
+
+  it('exports a real MP4 and transparent ProRes MOV and validates both with ffprobe', async () => {
     await ensureFixture();
     const project = exportProject();
     const mp4Path = 'test-results/cuecut-portable-output.mp4';

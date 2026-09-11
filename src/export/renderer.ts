@@ -60,8 +60,8 @@ function drawGlyphs(buffer: Buffer, canvasWidth: number, canvasHeight: number, r
   });
 }
 
-function drawSubtitleGlyphs(buffer: Buffer, width: number, height: number, text: string, settings: SubtitleSettings, opacity: number): void {
-  const scale = width / 1920;
+function drawSubtitleGlyphs(buffer: Buffer, width: number, height: number, text: string, settings: SubtitleSettings, opacity: number, projectCanvasWidth: number): void {
+  const scale = width / Math.max(1, projectCanvasWidth);
   const regionX = width * 0.05;
   const regionY = ({ top: 0.08, center: 0.42, bottom: 0.78 }[settings.position]) * height;
   const regionWidth = width * 0.9;
@@ -96,7 +96,7 @@ function drawSubtitleGlyphs(buffer: Buffer, width: number, height: number, text:
   });
 }
 
-export function renderSceneFrameToRgba(frame: SceneFrame, width: number, height: number, subtitleSettings: SubtitleSettings = defaultSubtitleSettings): Buffer {
+export function renderSceneFrameToRgba(frame: SceneFrame, width: number, height: number, subtitleSettings: SubtitleSettings = defaultSubtitleSettings, projectCanvasWidth = width): Buffer {
   const buffer = Buffer.alloc(width * height * 4);
   [...frame.items].sort((left, right) => left.zIndex - right.zIndex).filter((item) => item.variantId !== 'subtitle' && item.visible && item.opacity > 0).forEach((item) => {
     const [red, green, blue] = colorFromHex(item.appearance.accent);
@@ -133,14 +133,14 @@ export function renderSceneFrameToRgba(frame: SceneFrame, width: number, height:
   });
   if (subtitleSettings.visible) {
     [...frame.items].filter((item) => item.variantId === 'subtitle' && item.visible && item.opacity > 0).forEach((item) => {
-      if (item.content.kind === 'text') drawSubtitleGlyphs(buffer, width, height, item.content.text, subtitleSettings, item.opacity);
+      if (item.content.kind === 'text') drawSubtitleGlyphs(buffer, width, height, item.content.text, subtitleSettings, item.opacity, projectCanvasWidth);
     });
   }
   return buffer;
 }
 
 export function renderProjectFrame(project: ProjectComposition, timeSec: number): Buffer {
-  return renderSceneFrameToRgba(evaluateSceneAtTime(project, timeSec), project.project.canvasWidth, project.project.canvasHeight, project.subtitleSettings ?? defaultSubtitleSettings);
+  return renderSceneFrameToRgba(evaluateSceneAtTime(project, timeSec), project.project.canvasWidth, project.project.canvasHeight, project.subtitleSettings ?? defaultSubtitleSettings, project.project.canvasWidth);
 }
 
 export function frameCount(project: ProjectComposition): number {
