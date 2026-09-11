@@ -4,6 +4,7 @@ import type { ProjectComposition } from '../../project/schema';
 import type { ProjectStore } from '../../project/store';
 import { evaluateSceneAtTime } from '../../render/scene';
 import { findEffectDefinition } from '../../effects/registry';
+import { previewTimeForEffect } from '../selection/previewTime';
 
 interface CanvasStageProps {
   project: ProjectComposition;
@@ -19,6 +20,8 @@ interface CanvasStageProps {
 
 export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, store, playing, onVideoTime, onVideoMetadata, onSelect }: CanvasStageProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const didDragRef = useRef(false);
+  const pointerDownRef = useRef(false);
   const [drag, setDrag] = useState<{ effectId: string; mode: 'move' | 'resize'; clientX: number; clientY: number; nx: number; ny: number; nw: number; nh: number; width: number; height: number } | null>(null);
   const [preview, setPreview] = useState<Record<string, { nx: number; ny: number; nw: number; nh: number }>>({});
 
@@ -49,6 +52,8 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
 
   const beginDrag = (event: ReactPointerEvent<HTMLButtonElement>, effectId: string, mode: 'move' | 'resize' = 'move') => {
     event.stopPropagation();
+    didDragRef.current = false;
+    pointerDownRef.current = true;
     const effect = project.effects.find((item) => item.effectId === effectId);
     const canvas = event.currentTarget.closest('.canvas');
     if (!effect || !(canvas instanceof HTMLElement)) return;
@@ -70,6 +75,7 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
 
   const moveDrag = (event: ReactPointerEvent<HTMLButtonElement>) => {
     if (!drag) return;
+    didDragRef.current = event.clientX !== drag.clientX || event.clientY !== drag.clientY;
     const effect = project.effects.find((item) => item.effectId === drag.effectId);
     if (!effect) return;
     const dx = (event.clientX - drag.clientX) / drag.width;
@@ -97,6 +103,17 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
     }
   };
 
+  const selectEffect = (effectId: string) => {
+    const wasPointerDown = pointerDownRef.current;
+    pointerDownRef.current = false;
+    if (didDragRef.current) {
+      didDragRef.current = false;
+      return;
+    }
+    if (!wasPointerDown) onSelect(effectId);
+    const effect = project.effects.find((item) => item.effectId === effectId);
+    if (effect) onVideoTime(previewTimeForEffect({ ...effect.time, fps: project.project.fps }));
+  };
   const scene = evaluateSceneAtTime(project, currentTime);
 
   return (
@@ -127,7 +144,7 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
                 data-motion-phase={sceneItem?.phase ?? 'hidden'}
                 data-testid={'effect-card-' + effect.effectId}
                 key={effect.effectId}
-                onClick={() => onSelect(effect.effectId)}
+                onClick={() => selectEffect(effect.effectId)}
                 onPointerDown={(event) => beginDrag(event, effect.effectId)}
                 onPointerMove={moveDrag}
                 onPointerUp={finishDrag}

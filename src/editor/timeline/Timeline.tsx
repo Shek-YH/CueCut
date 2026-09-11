@@ -3,12 +3,14 @@ import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { ProjectComposition } from '../../project/schema';
 import type { ProjectStore } from '../../project/store';
 import { timelineItems } from '../../project/timeline';
+import { previewTimeForEffect } from '../selection/previewTime';
 import { clampEffectMove, clampEffectTrim, secondsFromTimelineX } from './timeMath';
 
 interface TimelineProps {
   project: ProjectComposition;
   store: ProjectStore;
   currentTime: number;
+  onSelect?: (effectId: string) => void;
   onSeek: (timeSec: number) => void;
 }
 
@@ -16,16 +18,18 @@ type DragState = {
   effectId: string;
   mode: 'move' | 'start' | 'end';
   clientX: number;
+  clientY: number;
   startSec: number;
   endSec: number;
   width: number;
 };
 
-export function Timeline({ project, store, currentTime, onSeek }: TimelineProps) {
+export function Timeline({ project, store, currentTime, onSelect, onSeek }: TimelineProps) {
   const [zoom, setZoom] = useState(1);
   const [drag, setDrag] = useState<DragState | null>(null);
   const [preview, setPreview] = useState<Record<string, { startSec: number; endSec: number }>>({});
   const [scrubbing, setScrubbing] = useState(false);
+  const didDragRef = useRef(false);
   const viewportRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -52,6 +56,7 @@ export function Timeline({ project, store, currentTime, onSeek }: TimelineProps)
     mode: DragState['mode'],
   ) => {
     event.stopPropagation();
+    didDragRef.current = false;
     const effect = project.effects.find((item) => item.effectId === effectId);
     const content = contentRef.current;
     if (!effect || !content) return;
@@ -61,6 +66,7 @@ export function Timeline({ project, store, currentTime, onSeek }: TimelineProps)
       effectId,
       mode,
       clientX: event.clientX,
+      clientY: event.clientY,
       startSec: effect.time.startSec,
       endSec: effect.time.endSec,
       width: rect.width,
@@ -73,6 +79,7 @@ export function Timeline({ project, store, currentTime, onSeek }: TimelineProps)
 
   const moveEffectDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (!drag) return;
+    didDragRef.current = event.clientX !== drag.clientX || event.clientY !== drag.clientY;
     const deltaSec = (event.clientX - drag.clientX) / drag.width * project.project.durationSec;
     const next = drag.mode === 'move'
       ? clampEffectMove({ startSec: drag.startSec, endSec: drag.endSec, deltaSec, durationSec: project.project.durationSec })
@@ -97,6 +104,17 @@ export function Timeline({ project, store, currentTime, onSeek }: TimelineProps)
     setPreview({});
   };
 
+  const selectEffect = (effectId: string) => {
+    if (didDragRef.current) {
+      didDragRef.current = false;
+      return;
+    }
+    const effect = project.effects.find((item) => item.effectId === effectId);
+    if (!effect) return;
+    onSelect?.(effectId);
+    const range = preview[effectId] ?? effect.time;
+    onSeek(previewTimeForEffect({ ...range, fps: project.project.fps }));
+  };
   return (
     <section className="timeline" data-testid="timeline">
       <div className="tlbar">
@@ -159,6 +177,7 @@ export function Timeline({ project, store, currentTime, onSeek }: TimelineProps)
                   <div
                     aria-label={effect.effectId + ' effect clip'}
                     className={'clip ' + effect.familyId}
+                    onClick={() => selectEffect(effect.effectId)}
                     onPointerDown={(event) => beginEffectDrag(event, effect.effectId, 'move')}
                     style={{ left: toPercent(range.startSec) + '%', width: toPercent(range.endSec - range.startSec) + '%' }}
                   >

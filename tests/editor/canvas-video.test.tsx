@@ -102,4 +102,40 @@ describe('Canvas video surface', () => {
 
     expect(video.currentTime).toBe(2.37);
   });
+
+  it('selects and seeks to a visible preview frame when an effect card is clicked without breaking drag', () => {
+    const onSelect = vi.fn();
+    const onVideoTime = vi.fn();
+    render(
+      <CanvasStage
+        currentTime={0}
+        onSelect={onSelect}
+        onVideoMetadata={() => undefined}
+        onVideoTime={onVideoTime}
+        playing={false}
+        project={createFixtureProject()}
+        selectedEffectId="fx-ring"
+        store={createProjectStore(createFixtureProject())}
+        videoSrc={null}
+      />,
+    );
+
+    const card = screen.getByTestId('effect-card-fx-quote');
+    fireEvent.click(card);
+
+    expect(onSelect).toHaveBeenCalledWith('fx-quote');
+    expect(onVideoTime).toHaveBeenCalledWith(2.2 + 5 / 30);
+
+    vi.clearAllMocks();
+    const canvas = card.closest('.canvas');
+    if (!canvas) throw new Error('Canvas fixture missing');
+    Object.defineProperty(canvas, 'getBoundingClientRect', { configurable: true, value: () => ({ width: 100, height: 100 }) });
+    Object.defineProperty(card, 'setPointerCapture', { configurable: true, value: vi.fn() });
+    fireEvent.pointerDown(card, { clientX: 10, clientY: 10, pointerId: 1 });
+    fireEvent.pointerMove(card, { clientX: 20, clientY: 10, pointerId: 1 });
+    fireEvent.pointerUp(card, { clientX: 20, clientY: 10, pointerId: 1 });
+    fireEvent.click(card);
+
+    expect(onVideoTime).not.toHaveBeenCalled();
+  });
 });

@@ -700,7 +700,7 @@ export function App() {
           {view === 'learn' && <LearnView />}
         </div>
       </section>
-      <Timeline project={project} store={store} currentTime={clockSnapshot.currentTime} onSeek={onSeek} />
+      <Timeline project={project} store={store} currentTime={clockSnapshot.currentTime} onSelect={onSelect} onSeek={onSeek} />
     </div>
   );
 }
