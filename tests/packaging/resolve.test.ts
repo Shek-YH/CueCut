@@ -80,6 +80,69 @@ describe('packaging plan resolver', () => {
     expect(result.runtimeTimeline.items).toHaveLength(2);
   });
 
+  it('uses supplied subtitle and subject rects for spatial collision resolution', () => {
+    const plan = {
+      schemaVersion: '1.0' as const, projectId: 'p', canvas: { width: 1080, height: 1920, aspectRatio: '9:16', fps: 30 },
+      globalStyle: { visualStyle: 'clean-tech', energy: 0.5, density: 'auto' as const, paletteIntent: 'brand', motionIntensity: 0.5 },
+      timeline: [{ id: 'spatial', startSec: 1, endSec: 3, intent: 'highlight', category: 'headline' as const, content: { text: '空间测试' }, importance: 0.9, visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'normal' as const }, motionIntent: { entrance: 'fade_in' as const, emphasis: 'none' as const, exit: 'fade_out' as const }, placementIntent: { preferredZones: ['upper-left' as const], subjectRelation: 'avoid' as const, anchor: 'scene-safe' as const }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false } }],
+      constraints: { maxConcurrentOverlays: 2, allowBehindSubject: false, subjectAvoidPadding: 0, edgeInsets: { top: 0.04, bottom: 0.08, left: 0.05, right: 0.05 } }, exportHints: { formats: ['mp4' as const], transparent: false },
+    };
+
+    const result = resolvePackagingPlan(plan, {
+      subtitleRects: [{ x: 0.04, y: 0.03, width: 0.4, height: 0.2 }],
+      subjectRects: [{ x: 0.04, y: 0.03, width: 0.4, height: 0.2 }],
+    });
+
+    expect(result.overlays[0]?.rect).not.toEqual({ x: 0.05, y: 0.04, width: 0.36, height: 0.12 });
+    expect(result.diagnostics.collisionRepairs).toBeGreaterThan(0);
+  });
+
+  it('expands subject collision rects by padding unless behind-subject placement is allowed', () => {
+    const base = {
+      schemaVersion: '1.0' as const, projectId: 'p', canvas: { width: 1080, height: 1920, aspectRatio: '9:16', fps: 30 },
+      globalStyle: { visualStyle: 'clean-tech', energy: 0.5, density: 'auto' as const, paletteIntent: 'brand', motionIntensity: 0.5 },
+      timeline: [{ id: 'padding', startSec: 1, endSec: 3, intent: 'highlight', category: 'headline' as const, content: { text: 'padding' }, importance: 0.9, visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'normal' as const }, motionIntent: { entrance: 'fade_in' as const, emphasis: 'none' as const, exit: 'fade_out' as const }, placementIntent: { preferredZones: ['upper-left' as const], subjectRelation: 'avoid' as const, anchor: 'scene-safe' as const }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false } }],
+      constraints: { maxConcurrentOverlays: 2, allowBehindSubject: false, subjectAvoidPadding: 0.02, edgeInsets: { top: 0.04, bottom: 0.08, left: 0.05, right: 0.05 } }, exportHints: { formats: ['mp4' as const], transparent: false },
+    };
+    const subjectRects = [{ x: 0.42, y: 0.04, width: 0.1, height: 0.12 }];
+
+    const blocked = resolvePackagingPlan(base, { subjectRects });
+    const allowed = resolvePackagingPlan({ ...base, constraints: { ...base.constraints, allowBehindSubject: true } }, { subjectRects });
+
+    expect(blocked.overlays[0]?.rect).not.toEqual(allowed.overlays[0]?.rect);
+    expect(allowed.overlays[0]?.rect).toEqual({ x: 0.05, y: 0.04, width: 0.36, height: 0.12 });
+  });
+
+  it('keeps the most important concurrent overlays and reports deterministic drops', () => {
+    const base = {
+      schemaVersion: '1.0' as const, projectId: 'p', canvas: { width: 1080, height: 1920, aspectRatio: '9:16', fps: 30 },
+      globalStyle: { visualStyle: 'clean-tech', energy: 0.5, density: 'auto' as const, paletteIntent: 'brand', motionIntensity: 0.5 },
+      constraints: { maxConcurrentOverlays: 1, allowBehindSubject: false, subjectAvoidPadding: 0, edgeInsets: { top: 0.04, bottom: 0.08, left: 0.05, right: 0.05 } }, exportHints: { formats: ['mp4' as const], transparent: false },
+    };
+    const item = (id: string, importance: number) => ({ id, startSec: 1, endSec: 4, intent: id, category: 'headline' as const, content: { text: id }, importance, visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'normal' as const }, motionIntent: { entrance: 'fade_in' as const, emphasis: 'none' as const, exit: 'fade_out' as const }, placementIntent: { preferredZones: ['upper-left' as const], subjectRelation: 'avoid' as const, anchor: 'scene-safe' as const }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false } });
+
+    const result = resolvePackagingPlan({ ...base, timeline: [item('low', 0.2), item('high', 0.9)] });
+
+    expect(result.overlays.map((overlay) => overlay.id)).toEqual(['high']);
+    expect(result.diagnostics.dropped).toEqual(['low']);
+    expect(result.diagnostics.repairs).toEqual(expect.arrayContaining([{ overlayId: 'low', action: 'drop' }]));
+  });
+
+  it('retains protected overlays above the hard concurrency limit and reports a warning', () => {
+    const base = {
+      schemaVersion: '1.0' as const, projectId: 'p', canvas: { width: 1080, height: 1920, aspectRatio: '9:16', fps: 30 },
+      globalStyle: { visualStyle: 'clean-tech', energy: 0.5, density: 'auto' as const, paletteIntent: 'brand', motionIntensity: 0.5 },
+      constraints: { maxConcurrentOverlays: 1, allowBehindSubject: false, subjectAvoidPadding: 0, edgeInsets: { top: 0.04, bottom: 0.08, left: 0.05, right: 0.05 } }, exportHints: { formats: ['mp4' as const], transparent: false },
+    };
+    const item = (id: string, locked: boolean) => ({ id, startSec: 1, endSec: 4, intent: id, category: 'headline' as const, content: { text: id }, importance: 0.9, userOverride: { locked }, visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'normal' as const }, motionIntent: { entrance: 'fade_in' as const, emphasis: 'none' as const, exit: 'fade_out' as const }, placementIntent: { preferredZones: ['upper-left' as const], subjectRelation: 'avoid' as const, anchor: 'scene-safe' as const }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false } });
+
+    const result = resolvePackagingPlan({ ...base, timeline: [item('locked', true), item('important', false)] });
+
+    expect(result.overlays.map((overlay) => overlay.id)).toEqual(['locked', 'important']);
+    expect(result.diagnostics.dropped).toEqual([]);
+    expect(result.diagnostics.warnings).toEqual(['maxConcurrentOverlays exceeded by protected overlay important']);
+  });
+
   it('round-trips real resolver effects and metadata through apply into composition', () => {
     const result = resolvePackagingPlan({
       schemaVersion: '1.0', projectId: 'fixture', canvas: { width: 1920, height: 1080, aspectRatio: '16:9', fps: 30 },
