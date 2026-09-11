@@ -70,22 +70,28 @@ describe('portable actual export', () => {
     });
   });
 
-  it('exports a real MP4 and transparent ProRes MOV and validates both with ffprobe', async () => {
+  it('exports a real MP4, transparent ProRes MOV, and transparent WebM and validates all with ffprobe', async () => {
     await ensureFixture();
     const project = exportProject();
     const mp4Path = 'test-results/cuecut-portable-output.mp4';
     const movPath = 'test-results/cuecut-portable-overlay.mov';
+    const webmPath = 'test-results/cuecut-portable-overlay.webm';
     await rm(mp4Path, { force: true });
     await rm(movPath, { force: true });
+    await rm(webmPath, { force: true });
 
     const mp4 = await createExportController().start({ mode: 'full-video', project, inputPath: fixturePath, outputPath: mp4Path });
     const mov = await createExportController().start({ mode: 'transparent-mov', project, outputPath: movPath });
+    const webm = await createExportController().start({ mode: 'transparent-webm', project, outputPath: webmPath });
 
     expect(mp4.metadata).toMatchObject({ width: 320, height: 180, hasAudio: true });
     expect(mov.metadata).toMatchObject({ width: 320, height: 180, hasAudio: false, pixelFormat: expect.stringMatching(/yuva|rgba|argb/i) });
+    expect(webm.metadata).toMatchObject({ width: 320, height: 180, hasAudio: false, codec: 'vp9', alphaMode: '1' });
     expect(mp4.metadata.durationSec).toBeCloseTo(2, 1);
     expect(mov.metadata.durationSec).toBeCloseTo(2, 1);
+    expect(webm.metadata.durationSec).toBeCloseTo(2, 1);
     expect((await probeVideoFile(mp4Path)).codec).toBe('h264');
     expect((await probeVideoFile(movPath)).codec).toContain('prores');
+    expect((await probeVideoFile(webmPath)).codec).toBe('vp9');
   }, 120_000);
 });

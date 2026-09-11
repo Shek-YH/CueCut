@@ -1,5 +1,8 @@
-import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { EffectInstance, ProjectComposition } from '../project/schema';
+import type { PackagingPlan } from '../packaging-ir/schema';
+import { resolvePackagingPlan } from '../packaging/resolve';
+import { applyResolvedPackagingToProject } from '../packaging/apply';
 import { createFixtureProject } from '../project/fixtures';
 import { createProjectStore, type ProjectStore } from '../project/store';
 import { createPlaybackClock } from '../playback/clock';
@@ -309,7 +312,7 @@ function EffectLabView({
         <div className="previewFooter">
           <button className="btn" onClick={reset} type="button">恢复 AI 方案</button>
           <button className="btn" onClick={onClose} type="button">取消</button>
-          <button className="btn primary" onClick={apply} type="button">应用到 Workspace</button>
+          <button className="btn primary" onClick={apply} type="button">确认修改</button>
         </div>
       </main>
 
@@ -397,6 +400,7 @@ function LearnView() {
 
 export function App() {
   const [store] = useState(() => createProjectStore(createFixtureProject()));
+  const videoInputRef = useRef<HTMLInputElement>(null);
   const project = useStoreSnapshot(store);
   const [clock] = useState(() => createPlaybackClock({ durationSec: project.project.durationSec, fps: project.project.fps, initialTime: 6.6 }));
   const [preferenceEngine] = useState(() => createPreferenceEngine());
@@ -408,7 +412,16 @@ export function App() {
   const [generationState, setGenerationState] = useState<'idle' | 'generating' | 'success' | 'error'>('idle');
   const [generationError, setGenerationError] = useState<string | null>(null);
   const [generationDiagnostics, setGenerationDiagnostics] = useState<GenerationDiagnostics | null>(null);
-  const [exportMode, setExportMode] = useState<'full-video' | 'transparent-mov'>('full-video');
+  const [packagingState, setPackagingState] = useState<'idle' | 'generating' | 'success' | 'error'>('idle');
+  const [packagingPlan, setPackagingPlan] = useState<PackagingPlan | null>(null);
+  const [packagingResolvedCount, setPackagingResolvedCount] = useState(0);
+  const [packagingError, setPackagingError] = useState<string | null>(null);
+  const [packagingPreferences, setPackagingPreferences] = useState({ density: 'auto' as 'low' | 'medium' | 'high' | 'auto', motionIntensity: 0.5, subjectAvoidPadding: 0.1, allowBehindSubject: true, maxConcurrentOverlays: 2, visualStyle: 'clean-tech' });
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsConfigured, setSettingsConfigured] = useState(false);
+  const [settingsApiKey, setSettingsApiKey] = useState('');
+  const [settingsStatus, setSettingsStatus] = useState<string | null>(null);
+  const [exportMode, setExportMode] = useState<'full-video' | 'transparent-mov' | 'transparent-webm'>('full-video');
   const [exportState, setExportState] = useState<'idle' | 'exporting' | 'success' | 'error'>('idle');
   const [exportError, setExportError] = useState<string | null>(null);
   const [exportAbortController, setExportAbortController] = useState<AbortController | null>(null);
@@ -550,6 +563,62 @@ export function App() {
     }
   };
 
+  const handleGeneratePackaging = async () => {
+    if (!sourceVideoFile || mediaProbeState !== 'ready' || packagingState === 'generating') return;
+    setPackagingState('generating');
+    setPackagingError(null);
+    try {
+      let transcript = project.subtitles;
+      if (transcript.length === 0) {
+        const transcriptionResponse = await fetch('/api/transcribe-video', {
+          method: 'POST',
+          headers: {
+            'Content-Type': sourceVideoFile.type || 'video/mp4',
+            'X-CueCut-Filename': encodeURIComponent(sourceVideoFile.name),
+          },
+          body: sourceVideoFile,
+        });
+        const transcriptionPayload = await transcriptionResponse.json() as { message?: string; transcript?: TranscriptSegment[] };
+        if (!transcriptionResponse.ok || !Array.isArray(transcriptionPayload.transcript)) {
+          throw new Error(transcriptionPayload.message ?? ('SRT 生成失败（HTTP ' + transcriptionResponse.status + '）'));
+        }
+        transcript = transcriptionPayload.transcript;
+        store.setSubtitles(transcript);
+      }
+      const projectForPackaging = store.getSnapshot();
+      const response = await fetch('/api/generate-packaging', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          analysis: {
+            videoMeta: { width: projectForPackaging.project.canvasWidth, height: projectForPackaging.project.canvasHeight, fps: projectForPackaging.project.fps, durationSec: projectForPackaging.project.durationSec },
+            transcript,
+            scenes: [{ id: 'scene-0', startSec: 0, endSec: projectForPackaging.project.durationSec }],
+            subjects: [], faces: [], safeZones: [],
+            edgeInsets: { top: 0.04, bottom: 0.08, left: 0.05, right: 0.05 },
+            audioEnvelope: [], beats: [], sceneDensity: [],
+            effectLibrary: effectRegistry.map((effect) => ({ familyId: effect.familyId, variantId: effect.variantId, displayName: effect.displayName, contentSlots: effect.contentSlots, tags: [...effect.semanticTags, ...(effect.visualTags ?? [])] })),
+            motionLibrary: motionRegistry.map((motion) => ({ motionId: motion.motionId, role: motion.role, category: motion.category })),
+          },
+          project: { projectId: projectForPackaging.project.projectId, durationSec: projectForPackaging.project.durationSec, fps: projectForPackaging.project.fps, canvasWidth: projectForPackaging.project.canvasWidth, canvasHeight: projectForPackaging.project.canvasHeight, aspectRatio: projectForPackaging.project.aspectRatio },
+          preferences: { style: packagingPreferences.visualStyle, energy: 'medium', ...packagingPreferences },
+        }),
+      });
+      const payload = await response.json() as { message?: string; plan?: PackagingPlan; aiCallCount?: number };
+      if (!response.ok || !payload.plan) throw new Error(payload.message ?? ('包装生成失败（HTTP ' + response.status + '）'));
+      setPackagingPlan(payload.plan);
+      const resolved = resolvePackagingPlan(payload.plan);
+      const appliedProject = applyResolvedPackagingToProject(projectForPackaging, resolved);
+      store.replaceComposition(appliedProject);
+      setSelectedEffectId(appliedProject.effects[0]?.effectId ?? '');
+      setPackagingResolvedCount(resolved.runtimeTimeline.items.length);
+      setPackagingState('success');
+    } catch (error) {
+      setPackagingState('error');
+      setPackagingError(error instanceof Error ? error.message : '包装生成失败');
+    }
+  };
+
   const handleExport = async () => {
     if (exportState === 'exporting' || mediaProbeState !== 'ready' || (exportMode === 'full-video' && !sourceVideoFile)) return;
     setExportState('exporting');
@@ -557,26 +626,30 @@ export function App() {
     const abortController = new AbortController();
     setExportAbortController(abortController);
     try {
+      const compositionJson = JSON.stringify(project);
+      const isFullVideoExport = exportMode === 'full-video';
+      const requestBody = isFullVideoExport
+        ? new Blob([compositionJson, '\n', sourceVideoFile!], { type: 'application/x-cuecut-export' })
+        : JSON.stringify({ composition: project });
       const response = await fetch('/api/export', {
         method: 'POST',
         headers: {
-          'Content-Type': sourceVideoFile?.type || 'application/octet-stream',
+          'Content-Type': isFullVideoExport ? 'application/x-cuecut-export' : 'application/json',
           'X-CueCut-Export-Mode': exportMode,
-          'X-CueCut-Filename': encodeURIComponent(sourceVideoFile?.name ?? 'cuecut-overlay.mov'),
-          'X-CueCut-Composition': encodeURIComponent(JSON.stringify(project)),
+          'X-CueCut-Filename': encodeURIComponent(sourceVideoFile?.name ?? (exportMode === 'transparent-webm' ? 'cuecut-overlay.webm' : 'cuecut-overlay.mov')),
         },
-        body: exportMode === 'full-video' ? sourceVideoFile : undefined,
+        body: requestBody,
         signal: abortController.signal,
       });
       if (!response.ok) {
-        const payload = await response.json() as { message?: string };
+        const payload = await readJsonError(response);
         throw new Error(payload.message ?? ('导出失败（HTTP ' + response.status + '）'));
       }
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement('a');
       anchor.href = url;
-      anchor.download = exportMode === 'transparent-mov' ? 'cuecut-overlay.mov' : 'cuecut-export.mp4';
+       anchor.download = exportMode === 'transparent-mov' ? 'cuecut-overlay.mov' : exportMode === 'transparent-webm' ? 'cuecut-overlay.webm' : 'cuecut-export.mp4';
       anchor.click();
       URL.revokeObjectURL(url);
       setExportState('success');
@@ -592,7 +665,45 @@ export function App() {
     }
   };
 
+  async function readJsonError(response: Response): Promise<{ message?: string }> {
+    const body = await response.text();
+    if (!body.trim()) return {};
+    try {
+      const payload = JSON.parse(body) as { message?: unknown };
+      return { message: typeof payload.message === 'string' ? payload.message : undefined };
+    } catch {
+      return { message: body.trim().slice(0, 240) };
+    }
+  }
+
   const handleCancelExport = () => exportAbortController?.abort();
+
+  const handleOpenSettings = async () => {
+    setSettingsOpen((current) => !current);
+    if (settingsOpen) return;
+    try {
+      const response = await fetch('/api/settings');
+      const payload = await response.json() as { bailianApiKeyConfigured?: boolean };
+      setSettingsConfigured(payload.bailianApiKeyConfigured === true);
+      setSettingsStatus(null);
+    } catch {
+      setSettingsStatus('设置服务不可用');
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    if (!settingsApiKey.trim()) return;
+    try {
+      const response = await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: settingsApiKey }) });
+      const payload = await response.json() as { ok?: boolean; message?: string };
+      if (!response.ok || payload.ok !== true) throw new Error(payload.message ?? '保存失败');
+      setSettingsConfigured(true);
+      setSettingsApiKey('');
+      setSettingsStatus('已保存到本机私密配置');
+    } catch (error) {
+      setSettingsStatus(error instanceof Error ? error.message : '保存失败');
+    }
+  };
 
   const handleRealtimeCapture = async (durationSec?: number) => {
     if (!['IDLE', 'SUCCESS', 'FAILED', 'CANCELLED'].includes(realtimeState)) return;
@@ -638,12 +749,28 @@ export function App() {
         <span className="director">◆ AI Director · 本地一次调用边界</span>
         <span className="pill">后续调整全部本地</span>
         <span className="spacer" />
-        <input accept="video/*" className="file-input" data-testid="video-input" id="video-input" onChange={handleVideoImport} type="file" />
-        <label className="btn" htmlFor="video-input">导入视频</label>
+        <input ref={videoInputRef} accept="video/*" className="file-input" data-testid="video-input" id="video-input" onChange={handleVideoImport} type="file" />
+        <button className="btn import-video-control" data-testid="video-import-control" onClick={() => videoInputRef.current?.click()} type="button">导入视频</button>
         <span className="file-name">{project.project.video.sourceFileName ?? '未导入视频'}</span>
         <button className="btn primary" disabled={!sourceVideoFile || mediaProbeState !== 'ready' || generationState === 'generating' || generationState === 'success'} onClick={() => void handleGenerateEffects()} type="button">
           {generationState === 'generating' ? '生成中…' : generationState === 'success' ? generationDiagnostics?.usedFallback ? '已载入（本地回退）' : '已生成并载入' : '开始生成动效'}
         </button>
+        <button className="btn primary" data-testid="packaging-generate-button" disabled={!sourceVideoFile || mediaProbeState !== 'ready' || packagingState === 'generating'} onClick={() => void handleGeneratePackaging()} type="button">
+          {packagingState === 'generating' ? '生成 AI 包装中…' : '生成 AI 包装'}
+        </button>
+        {packagingState === 'generating' && <span className="tiny" data-testid="packaging-status">提取音频 → 生成 SRT → SRT+动效库 → 一次 AI 生成 → 生成包装</span>}
+        {packagingState === 'success' && packagingPlan && <span className="tiny" data-testid="packaging-status">已生成包装计划 · {packagingPlan.timeline.length} 个意图 · {packagingResolvedCount} 个已排版 · AI 1 次</span>}
+        {packagingError && <span className="tiny error" role="alert">{packagingError}</span>}
+        <details className="packaging-settings">
+          <summary>包装设置</summary>
+          <div className="packaging-settings-panel">
+            <label>包装密度<select aria-label="包装密度" value={packagingPreferences.density} onChange={(event) => setPackagingPreferences((current) => ({ ...current, density: event.target.value as typeof current.density }))}><option value="auto">自动</option><option value="low">低</option><option value="medium">中</option><option value="high">高</option></select></label>
+            <label>动效强度<input aria-label="动效强度" type="range" min="0" max="1" step="0.05" value={packagingPreferences.motionIntensity} onChange={(event) => setPackagingPreferences((current) => ({ ...current, motionIntensity: Number(event.target.value) }))} /></label>
+            <label>人物避让距离<input aria-label="人物避让距离" type="number" min="0" max="50" step="1" value={Math.round(packagingPreferences.subjectAvoidPadding * 100)} onChange={(event) => setPackagingPreferences((current) => ({ ...current, subjectAvoidPadding: Number(event.target.value) / 100 }))} />%</label>
+            <label><input aria-label="允许人物后方文字" type="checkbox" checked={packagingPreferences.allowBehindSubject} onChange={(event) => setPackagingPreferences((current) => ({ ...current, allowBehindSubject: event.target.checked }))} />允许人物后方文字</label>
+            <label>最大同时包装数量<input aria-label="最大同时包装数量" type="number" min="1" max="8" value={packagingPreferences.maxConcurrentOverlays} onChange={(event) => setPackagingPreferences((current) => ({ ...current, maxConcurrentOverlays: Number(event.target.value) }))} /></label>
+          </div>
+        </details>
         {generationState === 'generating' && <span className="tiny" data-testid="generation-status">提取音频 → ASR → Director → Workspace</span>}
         {generationState === 'success' && generationDiagnostics?.usedFallback && <span className="tiny error" data-testid="generation-fallback">⚠ 已使用本地回退，结果已载入（非 Director 成功）</span>}
         {generationState === 'success' && <span className="tiny" data-testid="generation-status">{generationDiagnostics?.usedFallback ? '已载入 Workspace · 非 Director 成功' : '已载入 Workspace'}</span>}
@@ -652,12 +779,13 @@ export function App() {
         {mediaProbeError && <span className="tiny error" role="alert">{mediaProbeError}</span>}
         <button className="btn" disabled={store.undoDepth() === 0} onClick={() => store.undo()} type="button">↶</button>
         <button className="btn" disabled={store.redoDepth() === 0} onClick={() => store.redo()} type="button">↷</button>
-        <select aria-label="导出模式" className="search export-mode" value={exportMode} onChange={(event) => setExportMode(event.target.value as typeof exportMode)}>
+        <select aria-label="导出模式" className="export-mode" title="选择导出格式" value={exportMode} onChange={(event) => setExportMode(event.target.value as typeof exportMode)}>
           <option value="full-video">MP4 · 完整视频</option>
           <option value="transparent-mov">MOV · 透明叠加</option>
+          <option value="transparent-webm">WebM · 透明叠加</option>
         </select>
-        <button className="btn primary" disabled={exportState === 'exporting' || mediaProbeState !== 'ready' || (exportMode === 'full-video' && !sourceVideoFile)} onClick={() => void handleExport()} type="button">
-          {exportState === 'exporting' ? '导出中…' : '导出'}
+        <button aria-label="导出" className="btn primary export-action" disabled={exportState === 'exporting' || mediaProbeState !== 'ready' || (exportMode === 'full-video' && !sourceVideoFile)} onClick={() => void handleExport()} title="导出当前项目视频文件" type="button">
+          {exportState === 'exporting' ? '导出中…' : '导出文件'}
         </button>
         {exportState === 'exporting' && <button className="btn" onClick={handleCancelExport} type="button">取消导出</button>}
         {exportState === 'success' && <span className="tiny" data-testid="export-status">已生成本地文件</span>}
@@ -671,8 +799,19 @@ export function App() {
           onCancel={() => realtimeController.cancel()}
           onDownload={() => { if (realtimeResult) createRealtimeCaptureDownload(realtimeResult); }}
         />
-        <button className="btn" onClick={handleSaveProject} type="button">保存</button>
-        <button className="btn" onClick={handleContinueProject} type="button">继续</button>
+        <button aria-label="保存" className="btn" onClick={handleSaveProject} title="保存当前项目到本机" type="button">保存项目</button>
+        <button aria-label="继续" className="btn" onClick={handleContinueProject} title="继续上次保存的项目" type="button">继续项目</button>
+        <button className="btn" aria-expanded={settingsOpen} aria-haspopup="dialog" onClick={() => void handleOpenSettings()} type="button">设置</button>
+        {settingsOpen && <div className="settings-popover" role="dialog" aria-label="设置">
+          <div className="phead"><strong>设置</strong><button className="btn" onClick={() => setSettingsOpen(false)} type="button">关闭</button></div>
+          <section>
+            <strong>大模型 API Key</strong>
+            <div className="tiny">阿里百炼 · {settingsConfigured ? '已配置' : '未配置'}</div>
+            <label>阿里百炼 API Key<input aria-label="阿里百炼 API Key" type="password" value={settingsApiKey} onChange={(event) => setSettingsApiKey(event.target.value)} placeholder="输入后保存，不会回显" /></label>
+            <button className="btn primary" disabled={!settingsApiKey.trim()} onClick={() => void handleSaveSettings()} type="button">保存 API Key</button>
+            {settingsStatus && <div className="tiny">{settingsStatus}</div>}
+          </section>
+        </div>}
         {projectStatus && <span className="tiny" data-testid="project-status">{projectStatus}</span>}
       </header>
       {generationState === 'success' && generationDiagnostics && generationDiagnostics.selectionTrace.length > 0 && (

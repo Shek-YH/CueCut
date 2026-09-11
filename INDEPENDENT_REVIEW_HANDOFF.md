@@ -7,9 +7,11 @@ This handoff is generated for an external independent reviewer. It is navigation
 - Git mode: `EXISTING`
 - Git root: `F:\CCPJ\CueCut3`
 - Branch: `main`
-- Latest commit: `c58f635b941db7abe15e9f7b7e9ababae09c9c0d`
+- Latest commit: `63165ad49c296017c46389ee282d1d0535427b4e`
 - Working tree: `DIRTY`
 - Push performed: `NO`
+
+> Director review scope: inspect Director commits through `63165ad` and the Director artifacts below. The workspace also contains a separate, concurrent Realtime Chroma Capture P0 effort; its pending files and Ledger entries are outside this Director review and must not be reverted or counted as Director evidence.
 
 ## Requirements
 
@@ -27,6 +29,20 @@ This handoff is generated for an external independent reviewer. It is navigation
 - REQ-DIR-012: IMPLEMENTED_NOT_VERIFIED · tasks=director-phase2-selection-trace, director-phase3-trace-viewer
 - REQ-DIR-013: IMPLEMENTED_NOT_VERIFIED · tasks=director-phase2-composition-linter
 - REQ-DIR-014: IMPLEMENTED_NOT_VERIFIED · tasks=director-phase2-fallback-contract, director-phase3-real-regression
+- REQ-RT-001: IMPLEMENTED_NOT_VERIFIED · tasks=realtime-p0-controller-ui
+- REQ-RT-002: IMPLEMENTED_NOT_VERIFIED · tasks=realtime-p0-capture-backend, realtime-p0-controller-ui
+- REQ-RT-003: IMPLEMENTED_NOT_VERIFIED · tasks=realtime-p0-capture-backend, realtime-p0-controller-ui
+- REQ-RT-004: IMPLEMENTED_NOT_VERIFIED · tasks=realtime-p0-capture-backend, realtime-p0-benchmark
+- REQ-RT-005: IMPLEMENTED_NOT_VERIFIED · tasks=realtime-p0-contracts, realtime-p0-capture-backend
+- REQ-RT-006: IMPLEMENTED_NOT_VERIFIED · tasks=realtime-p0-capture-backend
+- REQ-RT-007: IMPLEMENTED_NOT_VERIFIED · tasks=realtime-p0-contracts, realtime-p0-controller-ui
+- REQ-RT-008: IMPLEMENTED_NOT_VERIFIED · tasks=realtime-p0-contracts, realtime-p0-controller-ui, realtime-p0-benchmark
+- REQ-RT-009: IMPLEMENTED_NOT_VERIFIED · tasks=realtime-p0-contracts, realtime-p0-controller-ui, realtime-p0-benchmark
+- REQ-RT-010: IMPLEMENTED_NOT_VERIFIED · tasks=realtime-p0-capture-backend, realtime-p0-controller-ui
+- REQ-RT-011: IMPLEMENTED_NOT_VERIFIED · tasks=realtime-p0-controller-ui, realtime-p0-benchmark
+- REQ-RT-012: IMPLEMENTED_NOT_VERIFIED · tasks=realtime-p0-benchmark, realtime-p0-verification
+- REQ-RT-013: IMPLEMENTED_NOT_VERIFIED · tasks=realtime-p0-benchmark, realtime-p0-verification
+- REQ-RT-014: BLOCKED · tasks=realtime-p0-benchmark, realtime-p0-verification
 
 ## Core Freeze
 
@@ -67,6 +83,12 @@ This handoff is generated for an external independent reviewer. It is navigation
 - director-phase3-acceptance: COMPLETED (100%) · requirements=none
 - director-phase4-independent-review: WAITING_REVIEW (90%) · requirements=none
 - director-phase2-layout-integration: COMPLETED (100%) · requirements=none
+- realtime-p0-architecture: COMPLETED (100%) · requirements=none
+- realtime-p0-contracts: COMPLETED (100%) · requirements=REQ-RT-005, REQ-RT-007, REQ-RT-008, REQ-RT-009
+- realtime-p0-capture-backend: COMPLETED (100%) · requirements=REQ-RT-002, REQ-RT-003, REQ-RT-004, REQ-RT-005, REQ-RT-006, REQ-RT-010
+- realtime-p0-controller-ui: COMPLETED (100%) · requirements=REQ-RT-001, REQ-RT-002, REQ-RT-003, REQ-RT-007, REQ-RT-008, REQ-RT-009, REQ-RT-010, REQ-RT-011
+- realtime-p0-benchmark: COMPLETED (100%) · requirements=REQ-RT-004, REQ-RT-006, REQ-RT-008, REQ-RT-009, REQ-RT-011, REQ-RT-012, REQ-RT-013, REQ-RT-014
+- realtime-p0-verification: WAITING_REVIEW (90%) · requirements=REQ-RT-012, REQ-RT-013, REQ-RT-014
 
 ## Tests and Runtime Results
 
@@ -103,6 +125,13 @@ No separate REAL_TEST_REQUIREMENTS.md was recorded.
 - director-reviewer-regressions: tests/director/reviewer-regressions.test.ts
 - director-four-step-fixture: tests/fixtures/director/ai-reading-four-step.srt
 - director-core-freeze-amendment: docs/director-recovery/CORE_FREEZE_AMENDMENT.md
+- realtime-p0-architecture-notes: P0_ARCHITECTURE_NOTES.md
+- realtime-p0-design: docs/superpowers/specs/2026-09-09-realtime-chroma-capture-design.md
+- realtime-p0-plan: docs/superpowers/plans/2026-09-09-realtime-chroma-capture-p0.md
+- realtime-p0-report: P0_REALTIME_CAPTURE_REPORT.md
+- realtime-p0-e2e: tests/e2e/realtime-capture.spec.ts
+- realtime-p0-10s-media: renders/realtime-capture/fixture-10s.webm
+- realtime-p0-60s-media: renders/realtime-capture/fixture-60s.webm
 
 ## Known Issues
 

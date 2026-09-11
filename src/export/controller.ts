@@ -25,7 +25,7 @@ interface ExportControllerDependencies {
 }
 
 export interface ExportRequest {
-  mode: 'full-video' | 'transparent-mov';
+  mode: 'full-video' | 'transparent-mov' | 'transparent-webm';
   project: ProjectComposition;
   outputPath: string;
   inputPath?: string;
@@ -57,7 +57,7 @@ function assertOutputMetadata(project: ProjectComposition, mode: ExportRequest['
   if (metadata.width !== project.project.canvasWidth || metadata.height !== project.project.canvasHeight) throw new Error('Export resolution does not match the composition');
   if (Math.abs(metadata.fps - project.project.fps) > 0.02) throw new Error('Export frame rate does not match the composition');
   if (Math.abs(metadata.durationSec - project.project.durationSec) > Math.max(0.15, 2 / project.project.fps)) throw new Error('Export duration does not match the composition');
-  if (mode === 'transparent-mov' && !/(yuva|rgba|argb)/i.test(metadata.pixelFormat)) throw new Error('Transparent MOV does not contain an alpha-capable pixel format');
+  if ((mode === 'transparent-mov' || mode === 'transparent-webm') && !/(yuva|rgba|argb)/i.test(metadata.pixelFormat) && metadata.alphaMode !== '1') throw new Error('Transparent export does not contain an alpha-capable pixel format or alpha_mode metadata');
 }
 
 export function createExportController(dependencies: ExportControllerDependencies = {}) {
@@ -94,7 +94,7 @@ export function createExportController(dependencies: ExportControllerDependencie
       const cancelSignal = new Promise<never>((_resolve, reject) => { rejectCancellation = reject; });
       const rawInput: RawVideoFfmpegInput = request.mode === 'full-video'
         ? { mode: 'full-video', inputPath: request.inputPath ?? (() => { throw new Error('Full-video export requires inputPath'); })(), outputPath: request.outputPath, width: project.project.canvasWidth, height: project.project.canvasHeight, fps: project.project.fps, durationSec: project.project.durationSec }
-        : { mode: 'transparent-mov', outputPath: request.outputPath, width: project.project.canvasWidth, height: project.project.canvasHeight, fps: project.project.fps, durationSec: project.project.durationSec };
+        : { mode: request.mode, outputPath: request.outputPath, width: project.project.canvasWidth, height: project.project.canvasHeight, fps: project.project.fps, durationSec: project.project.durationSec };
       const args = createRawVideoFfmpegCommand(rawInput);
       child = spawnProcess(request.ffmpegPath ?? 'ffmpeg', args);
       const processDone = waitForProcess(child);

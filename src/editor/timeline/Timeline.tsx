@@ -5,6 +5,7 @@ import type { ProjectStore } from '../../project/store';
 import { timelineItems } from '../../project/timeline';
 import { previewTimeForEffect } from '../selection/previewTime';
 import { clampEffectMove, clampEffectTrim, secondsFromTimelineX } from './timeMath';
+import { groupEffectsIntoTracks } from './trackLayout';
 
 interface TimelineProps {
   project: ProjectComposition;
@@ -38,6 +39,7 @@ export function Timeline({ project, store, currentTime, onSelect, onSeek }: Time
   const subtitleItems = canonicalItems.filter((item) => item.type === 'SUBTITLE');
   const sfxItems = canonicalItems.filter((item) => item.type === 'SFX');
   const videoItem = canonicalItems.find((item) => item.type === 'VIDEO');
+  const effectTracks = groupEffectsIntoTracks(project.effects.map((effect) => ({ ...effect, time: preview[effect.effectId] ?? effect.time })));
   const toPercent = (value: number) => value / project.project.durationSec * 100;
   const seekFromEvent = (event: ReactPointerEvent<HTMLElement>) => {
     const rect = contentRef.current?.getBoundingClientRect();
@@ -104,6 +106,13 @@ export function Timeline({ project, store, currentTime, onSelect, onSeek }: Time
     setPreview({});
   };
 
+  const cancelEffectDrag = () => {
+    didDragRef.current = false;
+    setDrag(null);
+    setPreview({});
+    setScrubbing(false);
+  };
+
   const selectEffect = (effectId: string) => {
     if (didDragRef.current) {
       didDragRef.current = false;
@@ -115,6 +124,7 @@ export function Timeline({ project, store, currentTime, onSelect, onSeek }: Time
     const range = preview[effectId] ?? effect.time;
     onSeek(previewTimeForEffect({ ...range, fps: project.project.fps }));
   };
+
   return (
     <section className="timeline" data-testid="timeline">
       <div className="tlbar">
@@ -137,8 +147,8 @@ export function Timeline({ project, store, currentTime, onSelect, onSeek }: Time
       </div>
       <div className="tlbody">
         <div className="labels">
-          {[...project.effects.map((_, index) => `FX${project.effects.length - index}`), 'SFX', 'SUB', 'VIDEO 🔒'].map((label, index) => (
-            <div className={'tlabel' + (index === 5 ? ' video' : '')} key={label}>{label}</div>
+          {[...effectTracks.map((_, index) => `FX${index + 1}`), 'SFX', 'SUB', 'VIDEO 🔒'].map((label) => (
+            <div className={'tlabel' + (label === 'VIDEO 🔒' ? ' video' : '')} key={label}>{label}</div>
           ))}
         </div>
         <div className="viewport" ref={viewportRef}>
@@ -160,8 +170,7 @@ export function Timeline({ project, store, currentTime, onSelect, onSeek }: Time
               finishEffectDrag();
             }}
             onPointerCancel={() => {
-              setScrubbing(false);
-              finishEffectDrag();
+              cancelEffectDrag();
             }}
             style={{ width: Math.max(100, zoom * 100) + '%' }}
           >
@@ -170,43 +179,46 @@ export function Timeline({ project, store, currentTime, onSelect, onSeek }: Time
                 <span className="tick" key={tick} style={{ left: toPercent(tick) + '%' }}>{tick}s</span>
               ))}
             </div>
-            {project.effects.map((effect, index) => {
-              const range = preview[effect.effectId] ?? effect.time;
-              return (
-                <div className="track" data-testid={'track-' + effect.effectId} key={effect.effectId}>
-                  <div
-                    aria-label={effect.effectId + ' effect clip'}
-                    className={'clip ' + effect.familyId}
-                    onClick={() => selectEffect(effect.effectId)}
-                    onPointerDown={(event) => beginEffectDrag(event, effect.effectId, 'move')}
-                    style={{ left: toPercent(range.startSec) + '%', width: toPercent(range.endSec - range.startSec) + '%' }}
-                  >
-                    <span
-                      className="handle left"
-                      onPointerDown={(event) => {
-                        event.stopPropagation();
-                        beginEffectDrag(event, effect.effectId, 'start');
-                      }}
-                    />
-                    {effect.familyId} {index + 1}
-                    <button aria-label={`${effect.effectId} duplicate`} className="clip-action" onClick={(event) => { event.stopPropagation(); store.duplicateEffect(effect.effectId); }} type="button">⧉</button>
-                    <button aria-label={`${effect.effectId} delete`} className="clip-action" onClick={(event) => { event.stopPropagation(); store.deleteEffect(effect.effectId); }} type="button">×</button>
-                    <span
-                      className="handle right"
-                      onPointerDown={(event) => {
-                        event.stopPropagation();
-                        beginEffectDrag(event, effect.effectId, 'end');
-                      }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+            {effectTracks.map((track, trackIndex) => (
+              <div className="track" data-testid={'track-effects-' + trackIndex} key={'effect-track-' + trackIndex}>
+                {track.map((effect, effectIndex) => {
+                  const range = preview[effect.effectId] ?? effect.time;
+                  return (
+                    <div
+                      aria-label={effect.effectId + ' effect clip'}
+                      className={'clip ' + effect.familyId}
+                      key={effect.effectId}
+                      onClick={() => selectEffect(effect.effectId)}
+                      onPointerDown={(event) => beginEffectDrag(event, effect.effectId, 'move')}
+                      style={{ left: toPercent(range.startSec) + '%', width: toPercent(range.endSec - range.startSec) + '%' }}
+                    >
+                      <span
+                        className="handle left"
+                        onPointerDown={(event) => {
+                          event.stopPropagation();
+                          beginEffectDrag(event, effect.effectId, 'start');
+                        }}
+                      />
+                      {effect.familyId} {effectIndex + 1}
+                      <button aria-label={`${effect.effectId} duplicate`} className="clip-action" onClick={(event) => { event.stopPropagation(); store.duplicateEffect(effect.effectId); }} type="button">⧉</button>
+                      <button aria-label={`${effect.effectId} delete`} className="clip-action" onClick={(event) => { event.stopPropagation(); store.deleteEffect(effect.effectId); }} type="button">×</button>
+                      <span
+                        className="handle right"
+                        onPointerDown={(event) => {
+                          event.stopPropagation();
+                          beginEffectDrag(event, effect.effectId, 'end');
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
             <div className="track">
               {sfxItems.map((item) => <div className="clip sfx" key={item.id} style={{ left: toPercent(item.startSec) + '%', width: toPercent(item.endSec - item.startSec) + '%' }}>{item.sfxId}<button aria-label={`${item.id} delete`} className="clip-action" onClick={(event) => { event.stopPropagation(); store.deleteSoundEvent(item.id); }} type="button">×</button></div>)}
             </div>
             <div className="track">
-              {subtitleItems.map((item) => <div className="clip sub" key={item.id} style={{ left: toPercent(item.startSec) + '%', width: toPercent(item.endSec - item.startSec) + '%' }}>{item.text}<button aria-label={`${item.id} duplicate`} className="clip-action" onClick={(event) => { event.stopPropagation(); store.duplicateSubtitle(item.id); }} type="button">⧉</button><button aria-label={`${item.id} delete`} className="clip-action" onClick={(event) => { event.stopPropagation(); store.deleteSubtitle(item.id); }} type="button">×</button></div>)}
+              {subtitleItems.map((item, index) => <div className="clip sub" key={item.id} style={{ left: toPercent(item.startSec) + '%', width: toPercent(item.endSec - item.startSec) + '%' }}>字幕 {index + 1}<button aria-label={`${item.id} duplicate`} className="clip-action" onClick={(event) => { event.stopPropagation(); store.duplicateSubtitle(item.id); }} type="button">⧉</button><button aria-label={`${item.id} delete`} className="clip-action" onClick={(event) => { event.stopPropagation(); store.deleteSubtitle(item.id); }} type="button">×</button></div>)}
             </div>
             <div className="track"><div className="videobar">{videoItem?.label ?? '原始视频'} · Layer 0</div></div>
             <div className="playhead" style={{ left: toPercent(currentTime) + '%' }} />

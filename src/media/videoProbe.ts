@@ -7,6 +7,7 @@ export interface VideoMetadata {
   height: number;
   codec: string;
   pixelFormat: string;
+  alphaMode?: string;
   rFrameRate: number;
   avgFrameRate: number;
   fps: number;
@@ -24,6 +25,7 @@ interface FfprobePayload {
     r_frame_rate?: string;
     avg_frame_rate?: string;
     pix_fmt?: string;
+    tags?: { alpha_mode?: string; ALPHA_MODE?: string };
   }>;
 }
 
@@ -51,6 +53,7 @@ export function parseFfprobeJson(json: string): VideoMetadata {
     height,
     codec: video.codec_name,
     pixelFormat: video.pix_fmt,
+    alphaMode: video.tags?.alpha_mode ?? video.tags?.ALPHA_MODE,
     rFrameRate,
     avgFrameRate,
     fps: avgFrameRate,
@@ -63,7 +66,7 @@ export async function probeVideoFile(videoPath: string, ffprobePath = 'ffprobe')
   const output = await new Promise<string>((resolve, reject) => {
     const child = spawn(ffprobePath, [
       '-v', 'error',
-      '-show_entries', 'format=duration:stream=codec_type,codec_name,width,height,r_frame_rate,avg_frame_rate,pix_fmt',
+      '-show_entries', 'format=duration:stream=codec_type,codec_name,width,height,r_frame_rate,avg_frame_rate,pix_fmt:stream_tags=alpha_mode',
       '-of', 'json',
       videoPath,
     ], { windowsHide: true });

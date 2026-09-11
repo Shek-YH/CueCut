@@ -35,4 +35,24 @@ describe('Timeline effect selection', () => {
     expect(onSelect).not.toHaveBeenCalled();
     expect(onSeek).not.toHaveBeenCalled();
   });
+
+  it('discards an effect clip preview when the pointer drag is cancelled', () => {
+    const project = createFixtureProject();
+    const store = createProjectStore(project);
+    render(<Timeline project={project} store={store} currentTime={0} onSelect={() => undefined} onSeek={() => undefined} />);
+
+    const timeline = screen.getByTestId('timeline');
+    const content = timeline.querySelector('.content');
+    const clip = screen.getByLabelText('fx-quote effect clip');
+    if (!content) throw new Error('Timeline content fixture missing');
+    Object.defineProperty(content, 'getBoundingClientRect', { configurable: true, value: () => ({ left: 0, width: 100 }) });
+    Object.defineProperty(clip, 'setPointerCapture', { configurable: true, value: vi.fn() });
+    const before = store.getSnapshot().effects.find((effect) => effect.effectId === 'fx-quote')?.time;
+
+    fireEvent.pointerDown(clip, { clientX: 10, clientY: 10, pointerId: 1 });
+    fireEvent.pointerMove(clip, { clientX: 20, clientY: 10, pointerId: 1 });
+    fireEvent.pointerCancel(content, { clientX: 20, clientY: 10, pointerId: 1 });
+
+    expect(store.getSnapshot().effects.find((effect) => effect.effectId === 'fx-quote')?.time).toEqual(before);
+  });
 });

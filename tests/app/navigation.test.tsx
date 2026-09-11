@@ -42,15 +42,19 @@ describe('CueCut prototype navigation', () => {
     expect(screen.getByTestId('timeline')).toBeVisible();
   });
 
-  it('seeks to a visible frame when selecting a layer effect', () => {
+  it('seeks to a visible layer effect frame when selecting it and opens that effect in the library', async () => {
     render(<App />);
 
     fireEvent.click(screen.getByTestId('layer-fx-quote'));
-
     expect(screen.getByText((_, element) => element?.classList.contains('time') === true && element.textContent?.includes('2.37') === true)).toBeVisible();
-    expect(screen.getByTestId('layer-fx-quote')).toHaveClass('sel');
     expect(screen.getByTestId('effect-card-fx-quote')).toHaveAttribute('data-motion-phase', 'enter');
+
+    fireEvent.click(screen.getByRole('button', { name: /动效库/ }));
+    await waitFor(() => expect(screen.getByTestId('effect-lab')).toBeVisible());
+    expect(screen.getByText('quote Family')).toBeVisible();
+    expect(screen.getByRole('button', { name: '确认修改' })).toBeVisible();
   });
+
   it('browses formal pack variants from the effect registry', async () => {
     render(<App />);
 

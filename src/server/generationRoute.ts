@@ -20,6 +20,7 @@ import { projectCompositionSchema, type ProjectComposition } from '../project/sc
 import { createGenerationWorkflow, type GenerationInput } from '../generation/workflow';
 import { serializeSrt } from '../subtitles/srt';
 import { createUnavailableVisualContext } from '../layout/visualContext';
+import { createUserSecretStore } from './secretStore';
 
 const MAX_VIDEO_BYTES = 512 * 1024 * 1024;
 const MAX_AUDIO_BASE64_BYTES = 10 * 1024 * 1024;
@@ -213,7 +214,9 @@ function runProcess(command: string, args: string[]): Promise<string> {
   });
 }
 
-async function readBailianApiKey(envPath: string): Promise<string> {
+export async function readBailianApiKey(envPath: string): Promise<string> {
+  const configured = createUserSecretStore().get('bailianApiKey');
+  if (configured) return configured;
   const lines = (await fs.readFile(envPath, 'utf8')).split(/\r?\n/);
   const sectionIndex = lines.findIndex((line) => line.trim() === '阿里云百炼');
   if (sectionIndex < 0) throw new Error('Alibaba Bailian section is missing from the local env file');

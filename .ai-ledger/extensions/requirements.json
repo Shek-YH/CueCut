@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "projectId": "cuecut3-cecb1e53",
-  "updatedAt": "2026-09-09T12:48:44.694Z",
+  "updatedAt": "2026-09-10T01:47:59.964Z",
   "requirements": [
     {
       "requirementId": "REQ-DIR-001",
@@ -671,6 +671,1349 @@
         "acceptanceStatus": "NOT_VERIFIED"
       },
       "updatedAt": "2026-09-09T12:48:44.694Z"
+    },
+    {
+      "requirementId": "REQ-RT-001",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Realtime_Chroma_Capture_Export_PRD_V1.0.md",
+        "section": "§71 Feature Flag",
+        "quote": "realtimeChromaCapture"
+      },
+      "title": "REQ-RT-001 — Realtime capture is feature-flagged",
+      "description": "所有实验性 Realtime Chroma Capture 能力必须受 realtimeChromaCapture feature flag 控制，并可在关闭时保持现有导出行为。",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "FEATURE_FLAG",
+      "acceptanceType": [
+        "CODE",
+        "TEST"
+      ],
+      "implementationTasks": [
+        "realtime-p0-controller-ui"
+      ],
+      "dependencies": [],
+      "codeEvidence": [],
+      "testEvidence": [],
+      "artifactEvidence": [],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "updatedAt": "2026-09-09T20:10:00.000Z"
+    },
+    {
+      "requirementId": "REQ-RT-002",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Realtime_Chroma_Capture_Export_PRD_V1.0.md",
+        "section": "§8 Capture Scene",
+        "quote": "Capture Scene"
+      },
+      "title": "REQ-RT-002 — Dedicated clean capture scene",
+      "description": "捕获场景必须独立于编辑器 UI，只包含固定色度背景与真实 CueCut 视觉内容，不包含工具栏、Timeline、鼠标、选择框、辅助线或 Debug UI。",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "CAPTURE_SCENE",
+      "acceptanceType": [
+        "CODE",
+        "TEST",
+        "REAL_WORLD"
+      ],
+      "implementationTasks": [
+        "realtime-p0-capture-backend",
+        "realtime-p0-controller-ui"
+      ],
+      "dependencies": [
+        "realtime-p0-contracts"
+      ],
+      "codeEvidence": [],
+      "testEvidence": [],
+      "artifactEvidence": [],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "updatedAt": "2026-09-09T20:10:00.000Z"
+    },
+    {
+      "requirementId": "REQ-RT-003",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Realtime_Chroma_Capture_Export_PRD_V1.0.md",
+        "section": "§9 Capture Scene 数据来源",
+        "quote": "Project State"
+      },
+      "title": "REQ-RT-003 — Shared read-only project snapshot",
+      "description": "Capture Scene 必须读取同一份 Project State 的冻结序列化快照，复用 timeline、layers、motion、assets、text、transforms、timing 和 scene dimensions，不维护第二套项目。",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "DATA_CONSISTENCY",
+      "acceptanceType": [
+        "CODE",
+        "TEST"
+      ],
+      "implementationTasks": [
+        "realtime-p0-capture-backend",
+        "realtime-p0-controller-ui"
+      ],
+      "dependencies": [
+        "realtime-p0-contracts"
+      ],
+      "codeEvidence": [],
+      "testEvidence": [],
+      "artifactEvidence": [],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "updatedAt": "2026-09-09T20:10:00.000Z"
+    },
+    {
+      "requirementId": "REQ-RT-004",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Realtime_Chroma_Capture_Export_PRD_V1.0.md",
+        "section": "§11 P0 默认参数",
+        "quote": "1920×1080"
+      },
+      "title": "REQ-RT-004 — Fixed P0 capture profile",
+      "description": "P0 默认捕获必须锁定 1920×1080、30 FPS、#00FF00 背景、Timeline duration 和关闭音频，并避免 DPI/devicePixelRatio 改变输出尺寸。",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "CAPTURE_PROFILE",
+      "acceptanceType": [
+        "CODE",
+        "TEST",
+        "REAL_WORLD"
+      ],
+      "implementationTasks": [
+        "realtime-p0-capture-backend",
+        "realtime-p0-benchmark"
+      ],
+      "dependencies": [
+        "realtime-p0-contracts"
+      ],
+      "codeEvidence": [],
+      "testEvidence": [],
+      "artifactEvidence": [],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "updatedAt": "2026-09-09T20:10:00.000Z"
+    },
+    {
+      "requirementId": "REQ-RT-005",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Realtime_Chroma_Capture_Export_PRD_V1.0.md",
+        "section": "§12 Capture Backend 抽象",
+        "quote": "CaptureBackend"
+      },
+      "title": "REQ-RT-005 — Host-neutral capture backend",
+      "description": "必须定义可替换的 CaptureBackend 接口，P0 实现当前 Web 架构可用的 Canvas Capture backend，并保留未来 Electron Window backend 的接入边界。",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "BACKEND_CONTRACT",
+      "acceptanceType": [
+        "CODE",
+        "TEST"
+      ],
+      "implementationTasks": [
+        "realtime-p0-contracts",
+        "realtime-p0-capture-backend"
+      ],
+      "dependencies": [],
+      "codeEvidence": [],
+      "testEvidence": [],
+      "artifactEvidence": [],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "updatedAt": "2026-09-09T20:10:00.000Z"
+    },
+    {
+      "requirementId": "REQ-RT-006",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Realtime_Chroma_Capture_Export_PRD_V1.0.md",
+        "section": "§14 MediaRecorder 编码策略",
+        "quote": "MediaRecorder.isTypeSupported()"
+      },
+      "title": "REQ-RT-006 — Feature-detected recording with WebM fallback",
+      "description": "运行时必须使用 MediaRecorder capability detection 选择编码；MP4/H.264 仅在受支持时使用，WebM 是允许的 P0 fallback，不能因 MP4 不可用阻塞技术验证。",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "MEDIA_RECORDING",
+      "acceptanceType": [
+        "CODE",
+        "TEST",
+        "REAL_WORLD"
+      ],
+      "implementationTasks": [
+        "realtime-p0-capture-backend"
+      ],
+      "dependencies": [
+        "realtime-p0-contracts"
+      ],
+      "codeEvidence": [],
+      "testEvidence": [],
+      "artifactEvidence": [],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "updatedAt": "2026-09-09T20:10:00.000Z"
+    },
+    {
+      "requirementId": "REQ-RT-007",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Realtime_Chroma_Capture_Export_PRD_V1.0.md",
+        "section": "§16 Export State Machine",
+        "quote": "显式状态机"
+      },
+      "title": "REQ-RT-007 — Explicit capture lifecycle",
+      "description": "必须实现从 PREPARING、asset loading、warmup、recorder/timeline armed、capturing/playing、end pending、stopping、finalizing、validating 到 SUCCESS/FAILED/CANCELLED 的显式状态机，禁止用分散布尔值拼接流程。",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "STATE_MACHINE",
+      "acceptanceType": [
+        "CODE",
+        "TEST"
+      ],
+      "implementationTasks": [
+        "realtime-p0-contracts",
+        "realtime-p0-controller-ui"
+      ],
+      "dependencies": [],
+      "codeEvidence": [],
+      "testEvidence": [],
+      "artifactEvidence": [],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "updatedAt": "2026-09-09T20:10:00.000Z"
+    },
+    {
+      "requirementId": "REQ-RT-008",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Realtime_Chroma_Capture_Export_PRD_V1.0.md",
+        "section": "§24 CaptureClock / §25 Timeline Drift",
+        "quote": "one authoritative timeline clock"
+      },
+      "title": "REQ-RT-008 — Authoritative clock and drift evidence",
+      "description": "Capture 必须由一个权威单调时钟驱动 Timeline，持续记录 maxDrift、averageDrift、finalDrift，并以一帧 33.333ms 作为 30FPS 的验收边界。",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "TIMELINE_SYNC",
+      "acceptanceType": [
+        "CODE",
+        "TEST",
+        "REAL_WORLD"
+      ],
+      "implementationTasks": [
+        "realtime-p0-contracts",
+        "realtime-p0-controller-ui",
+        "realtime-p0-benchmark"
+      ],
+      "dependencies": [
+        "realtime-p0-contracts"
+      ],
+      "codeEvidence": [],
+      "testEvidence": [],
+      "artifactEvidence": [],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "updatedAt": "2026-09-09T20:10:00.000Z"
+    },
+    {
+      "requirementId": "REQ-RT-009",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Realtime_Chroma_Capture_Export_PRD_V1.0.md",
+        "section": "§33 Capture Health Monitor / §34 掉帧定义",
+        "quote": "CaptureHealthMonitor"
+      },
+      "title": "REQ-RT-009 — FPS and dropped-frame health",
+      "description": "必须记录 expected/actual FPS、expected/observed frames、dropped-frame estimate、recording/timeline duration、wall clock、file size、warnings 和 errors；严重掉帧不得标记成功。",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "HEALTH_MONITOR",
+      "acceptanceType": [
+        "CODE",
+        "TEST",
+        "REAL_WORLD"
+      ],
+      "implementationTasks": [
+        "realtime-p0-contracts",
+        "realtime-p0-controller-ui",
+        "realtime-p0-benchmark"
+      ],
+      "dependencies": [
+        "realtime-p0-contracts"
+      ],
+      "codeEvidence": [],
+      "testEvidence": [],
+      "artifactEvidence": [],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "updatedAt": "2026-09-09T20:10:00.000Z"
+    },
+    {
+      "requirementId": "REQ-RT-010",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Realtime_Chroma_Capture_Export_PRD_V1.0.md",
+        "section": "§18 LOADING_ASSETS / §74 资源释放",
+        "quote": "document.fonts.ready"
+      },
+      "title": "REQ-RT-010 — Asset readiness and complete cleanup",
+      "description": "开始捕获前必须等待 fonts/images/scene readiness；success、failure、cancel 都必须释放 track、recorder、RAF、timer、listeners、canvas/object URL 和临时资源。",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "LIFECYCLE_SAFETY",
+      "acceptanceType": [
+        "CODE",
+        "TEST"
+      ],
+      "implementationTasks": [
+        "realtime-p0-capture-backend",
+        "realtime-p0-controller-ui"
+      ],
+      "dependencies": [
+        "realtime-p0-contracts"
+      ],
+      "codeEvidence": [],
+      "testEvidence": [],
+      "artifactEvidence": [],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "updatedAt": "2026-09-09T20:10:00.000Z"
+    },
+    {
+      "requirementId": "REQ-RT-011",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Realtime_Chroma_Capture_Export_PRD_V1.0.md",
+        "section": "§26 END_PENDING / §29 VALIDATING / §30 临时文件机制",
+        "quote": "atomic move / rename"
+      },
+      "title": "REQ-RT-011 — Final-frame-safe temporary output and validation",
+      "description": "结束时必须绘制并提交最后一帧后再停止 recorder；媒体先写入临时产物，验证文件存在、可读、container、duration、frames、drift 和 errors 后再完成输出，失败不得留下成功文件。",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "FINALIZATION",
+      "acceptanceType": [
+        "CODE",
+        "TEST",
+        "REAL_WORLD"
+      ],
+      "implementationTasks": [
+        "realtime-p0-controller-ui",
+        "realtime-p0-benchmark"
+      ],
+      "dependencies": [
+        "realtime-p0-capture-backend",
+        "realtime-p0-contracts"
+      ],
+      "codeEvidence": [],
+      "testEvidence": [],
+      "artifactEvidence": [],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "updatedAt": "2026-09-09T20:10:00.000Z"
+    },
+    {
+      "requirementId": "REQ-RT-012",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Realtime_Chroma_Capture_Export_PRD_V1.0.md",
+        "section": "§82 Regression / §99 P0 Definition of Done",
+        "quote": "Alpha Export"
+      },
+      "title": "REQ-RT-012 — Existing export regression protection",
+      "description": "Realtime Chroma Capture 必须独立新增，现有 Alpha MOV、Normal Export、Preview 和 Editor Timeline 的行为与测试不得被破坏。",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "REGRESSION",
+      "acceptanceType": [
+        "TEST",
+        "REAL_WORLD"
+      ],
+      "implementationTasks": [
+        "realtime-p0-benchmark",
+        "realtime-p0-verification"
+      ],
+      "dependencies": [
+        "realtime-p0-controller-ui"
+      ],
+      "codeEvidence": [],
+      "testEvidence": [],
+      "artifactEvidence": [],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "updatedAt": "2026-09-09T20:10:00.000Z"
+    },
+    {
+      "requirementId": "REQ-RT-013",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Realtime_Chroma_Capture_Export_PRD_V1.0.md",
+        "section": "§46 P0 Benchmark Test Set / §107 Codex 第一轮最终任务",
+        "quote": "真实 CueCut Timeline"
+      },
+      "title": "REQ-RT-013 — Real 10-second and 60-second benchmark",
+      "description": "必须在真实 Chromium 媒体运行时对真实 CueCut canonical composition 执行 10 秒与 60 秒捕获，保存可播放媒体并记录 wall-clock、FPS、dropped frames、drift、container/codec、尺寸与文件大小。",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "REAL_BENCHMARK",
+      "acceptanceType": [
+        "CODE",
+        "TEST",
+        "REAL_WORLD"
+      ],
+      "implementationTasks": [
+        "realtime-p0-benchmark",
+        "realtime-p0-verification"
+      ],
+      "dependencies": [
+        "realtime-p0-controller-ui"
+      ],
+      "codeEvidence": [],
+      "testEvidence": [],
+      "artifactEvidence": [],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "updatedAt": "2026-09-09T20:10:00.000Z"
+    },
+    {
+      "requirementId": "REQ-RT-014",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Realtime_Chroma_Capture_Export_PRD_V1.0.md",
+        "section": "§50 P0 最重要的人工验收 / §52 P0 Go / No-Go Gate",
+        "quote": "CapCut"
+      },
+      "title": "REQ-RT-014 — Downstream chroma-key acceptance is explicit",
+      "description": "报告必须分别记录文字、SVG、卡片、阴影、Blur、Glow 的剪映/CapCut 色度抠像结果；没有真实下游人工证据时不得伪造 PASS，必须给出条件性结论或阻塞。",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "DOWNSTREAM_ACCEPTANCE",
+      "acceptanceType": [
+        "REAL_WORLD"
+      ],
+      "implementationTasks": [
+        "realtime-p0-benchmark",
+        "realtime-p0-verification"
+      ],
+      "dependencies": [
+        "realtime-p0-benchmark"
+      ],
+      "codeEvidence": [],
+      "testEvidence": [],
+      "artifactEvidence": [],
+      "verificationStatus": "BLOCKED",
+      "deviationId": null,
+      "updatedAt": "2026-09-09T20:10:00.000Z"
+    },
+    {
+      "requirementId": "REQ-SP-001",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§2.1 / §49 / §51.1",
+        "quote": "每个视频项目的自动包装流程原则上只允许执行一次生成式 AI 调用。"
+      },
+      "title": "Single generative call",
+      "description": "An automatic packaging run performs at most one generative AI call and persists the count.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "SINGLE_PASS",
+      "acceptanceType": [
+        "CODE",
+        "TEST",
+        "REAL_WORLD"
+      ],
+      "implementationTasks": [
+        "single-pass-18-ai-director"
+      ],
+      "dependencies": [],
+      "codeEvidence": [
+        "src/packaging-ai/prompt.ts",
+        "src/packaging-ai/service.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
+    },
+    {
+      "requirementId": "REQ-SP-002",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§4.1",
+        "quote": "Analysis Engine"
+      },
+      "title": "Deterministic analysis contract",
+      "description": "Analysis produces metadata, transcript, scenes, subjects, faces, safe zones, edge insets, audio envelope, beats, and density without generative AI.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "ANALYSIS",
+      "acceptanceType": [
+        "CODE",
+        "TEST"
+      ],
+      "implementationTasks": [
+        "single-pass-01-analysis-contract"
+      ],
+      "dependencies": [],
+      "codeEvidence": [
+        "src/analysis/packagingAnalysis.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
+    },
+    {
+      "requirementId": "REQ-SP-003",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§5.2 / §6",
+        "quote": "Packaging IR"
+      },
+      "title": "Validated Packaging IR",
+      "description": "Packaging IR is schema-validated and contains canvas, style, timeline, constraints, and export hints.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "IR_SCHEMA",
+      "acceptanceType": [
+        "CODE",
+        "TEST"
+      ],
+      "implementationTasks": [
+        "single-pass-02-ir-schema"
+      ],
+      "dependencies": [],
+      "codeEvidence": [
+        "src/packaging-ir/schema.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
+    },
+    {
+      "requirementId": "REQ-SP-004",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§29 / §45",
+        "quote": "数据结构持久化"
+      },
+      "title": "Local plan persistence",
+      "description": "Packaging IR and resolved plans are persisted locally and remain editable offline.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "PERSISTENCE",
+      "acceptanceType": [
+        "CODE",
+        "TEST"
+      ],
+      "implementationTasks": [
+        "single-pass-03-persistence"
+      ],
+      "dependencies": [
+        "REQ-SP-003"
+      ],
+      "codeEvidence": [
+        "src/packaging-ir/persistence.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
+    },
+    {
+      "requirementId": "REQ-SP-005",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§9",
+        "quote": "Registry 系统"
+      },
+      "title": "Registry manifest contract",
+      "description": "Effects are described by an independent manifest contract with capability metadata and license provenance.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "REGISTRY",
+      "acceptanceType": [
+        "CODE",
+        "TEST",
+        "REAL_WORLD"
+      ],
+      "implementationTasks": [
+        "single-pass-04-registry-manifest"
+      ],
+      "dependencies": [
+        "REQ-SP-003"
+      ],
+      "codeEvidence": [
+        "src/packaging-registry/manifest.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
+    },
+    {
+      "requirementId": "REQ-SP-006",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§32 V1 / §51.4-5",
+        "quote": "至少支持 8 类包装"
+      },
+      "title": "V1 registry breadth",
+      "description": "V1 supports at least eight packaging categories and at least thirty registry effects.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "REGISTRY",
+      "acceptanceType": [
+        "CODE",
+        "TEST",
+        "REAL_WORLD"
+      ],
+      "implementationTasks": [
+        "single-pass-05-registry-catalog"
+      ],
+      "dependencies": [
+        "REQ-SP-005"
+      ],
+      "codeEvidence": [
+        "src/packaging-registry/catalog.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
+    },
+    {
+      "requirementId": "REQ-SP-007",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§10",
+        "quote": "Registry Resolver"
+      },
+      "title": "Deterministic registry resolver",
+      "description": "Registry resolution scores candidates deterministically and never requires an AI-selected final template ID.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "REGISTRY_RESOLUTION",
+      "acceptanceType": [
+        "CODE",
+        "TEST"
+      ],
+      "implementationTasks": [
+        "single-pass-06-registry-resolver"
+      ],
+      "dependencies": [
+        "REQ-SP-006"
+      ],
+      "codeEvidence": [
+        "src/packaging-registry/resolver.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
+    },
+    {
+      "requirementId": "REQ-SP-008",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§11 / §53.8",
+        "quote": "CueCut Motion DSL"
+      },
+      "title": "Seeded Motion DSL",
+      "description": "Motion is compiled from a finite DSL vocabulary with seed-controlled deterministic behavior; AI cannot emit keyframes.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "MOTION_DSL",
+      "acceptanceType": [
+        "CODE",
+        "TEST"
+      ],
+      "implementationTasks": [
+        "single-pass-07-motion-dsl"
+      ],
+      "dependencies": [
+        "REQ-SP-003"
+      ],
+      "codeEvidence": [
+        "src/packaging-motion/compiler.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
+    },
+    {
+      "requirementId": "REQ-SP-009",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§13 / §32 V1",
+        "quote": "Edge Safe Area"
+      },
+      "title": "Independent edge insets",
+      "description": "Top, bottom, left, and right edge insets are independently configurable and enforced.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "SAFE_AREA",
+      "acceptanceType": [
+        "CODE",
+        "TEST"
+      ],
+      "implementationTasks": [
+        "single-pass-08-safe-area"
+      ],
+      "dependencies": [
+        "REQ-SP-003"
+      ],
+      "codeEvidence": [
+        "src/packaging-layout/safeArea.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
+    },
+    {
+      "requirementId": "REQ-SP-010",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§12 / §32 V1",
+        "quote": "Subject Spatial System"
+      },
+      "title": "Subject avoid and foreground",
+      "description": "Subject avoid and foreground relations are resolved deterministically with configurable padding.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "SUBJECT_SPATIAL",
+      "acceptanceType": [
+        "CODE",
+        "TEST",
+        "REAL_WORLD"
+      ],
+      "implementationTasks": [
+        "single-pass-09-subject-spatial"
+      ],
+      "dependencies": [
+        "REQ-SP-009"
+      ],
+      "codeEvidence": [
+        "src/packaging-subject/spatial.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
+    },
+    {
+      "requirementId": "REQ-SP-011",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§14-15",
+        "quote": "Layout Solver"
+      },
+      "title": "Candidate layout solver",
+      "description": "Layout uses normalized coordinates and evaluates preferred plus fallback zones using deterministic placement scoring.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "LAYOUT",
+      "acceptanceType": [
+        "CODE",
+        "TEST"
+      ],
+      "implementationTasks": [
+        "single-pass-10-layout"
+      ],
+      "dependencies": [
+        "REQ-SP-007",
+        "REQ-SP-010"
+      ],
+      "codeEvidence": [
+        "src/packaging-layout/solver.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
+    },
+    {
+      "requirementId": "REQ-SP-012",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§16 / §32 V1",
+        "quote": "Collision Resolver"
+      },
+      "title": "Deterministic collision resolver",
+      "description": "Collision resolution handles overlay, subtitle, subject, face, edge, safe-zone, and PiP conflicts without AI.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "COLLISION",
+      "acceptanceType": [
+        "CODE",
+        "TEST"
+      ],
+      "implementationTasks": [
+        "single-pass-11-collision"
+      ],
+      "dependencies": [
+        "REQ-SP-011"
+      ],
+      "codeEvidence": [
+        "src/packaging-collision/resolver.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
+    },
+    {
+      "requirementId": "REQ-SP-013",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§17 / §32 V1",
+        "quote": "Fallback Engine"
+      },
+      "title": "Deterministic fallback chains",
+      "description": "Every V1 effect has a deterministic fallback chain and failed layout never masquerades as successful primary placement.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "FALLBACK",
+      "acceptanceType": [
+        "CODE",
+        "TEST"
+      ],
+      "implementationTasks": [
+        "single-pass-12-fallback"
+      ],
+      "dependencies": [
+        "REQ-SP-012"
+      ],
+      "codeEvidence": [
+        "src/packaging-fallback/engine.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
+    },
+    {
+      "requirementId": "REQ-SP-014",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§18 / §32 V1",
+        "quote": "Packaging Validator"
+      },
+      "title": "Packaging Validator",
+      "description": "Packaging Validator checks geometry, typography, timing, visual, and runtime constraints without AI.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "VALIDATION",
+      "acceptanceType": [
+        "CODE",
+        "TEST"
+      ],
+      "implementationTasks": [
+        "single-pass-13-validator"
+      ],
+      "dependencies": [
+        "REQ-SP-013"
+      ],
+      "codeEvidence": [
+        "src/packaging-validator/validator.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
+    },
+    {
+      "requirementId": "REQ-SP-015",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§19-20",
+        "quote": "Snapshot QA"
+      },
+      "title": "Snapshot QA and auto repair",
+      "description": "Snapshot checkpoints are generated before full render and validator failures use only deterministic repairs.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "SNAPSHOT_QA",
+      "acceptanceType": [
+        "CODE",
+        "TEST",
+        "REAL_WORLD"
+      ],
+      "implementationTasks": [
+        "single-pass-14-snapshot-qa"
+      ],
+      "dependencies": [
+        "REQ-SP-014"
+      ],
+      "codeEvidence": [
+        "src/packaging-preview/snapshots.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
+    },
+    {
+      "requirementId": "REQ-SP-016",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§21 / §53",
+        "quote": "Timeline Compiler"
+      },
+      "title": "Resolved timeline compiler",
+      "description": "Final runtime timeline is compiled from resolved plans; render code never reads raw AI JSON directly.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "TIMELINE",
+      "acceptanceType": [
+        "CODE",
+        "TEST"
+      ],
+      "implementationTasks": [
+        "single-pass-15-timeline-compiler"
+      ],
+      "dependencies": [
+        "REQ-SP-008",
+        "REQ-SP-015"
+      ],
+      "codeEvidence": [
+        "src/packaging-timeline/compiler.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
+    },
+    {
+      "requirementId": "REQ-SP-017",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§25 / §32 V1",
+        "quote": "Preview 与 Render 分离"
+      },
+      "title": "Preview/render separation",
+      "description": "Preview and final render are separate paths; preview/scrub does not invoke final export.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "PREVIEW_RENDER",
+      "acceptanceType": [
+        "CODE",
+        "TEST",
+        "REAL_WORLD"
+      ],
+      "implementationTasks": [
+        "single-pass-16-preview-render-separation"
+      ],
+      "dependencies": [
+        "REQ-SP-016"
+      ],
+      "codeEvidence": [
+        "src/packaging-preview/service.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
+    },
+    {
+      "requirementId": "REQ-SP-018",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§24 / §32 V1 / §51.15",
+        "quote": "透明通道导出"
+      },
+      "title": "MP4 and transparent WebM",
+      "description": "V1 exports normal MP4 and transparent WebM when the host codec supports it, with explicit capability errors otherwise.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "EXPORT",
+      "acceptanceType": [
+        "CODE",
+        "TEST",
+        "REAL_WORLD"
+      ],
+      "implementationTasks": [
+        "single-pass-17-export"
+      ],
+      "dependencies": [
+        "REQ-SP-017"
+      ],
+      "codeEvidence": [
+        "src/packaging-export/formats.ts",
+        "src/export/ffmpeg.ts",
+        "src/export/controller.ts",
+        "src/server/exportRoute.ts",
+        "src/export/exporter.ts",
+        "src/media/videoProbe.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
+    },
+    {
+      "requirementId": "REQ-SP-019",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§26-27 / §45",
+        "quote": "用户可修改而不重新调用 AI 的参数"
+      },
+      "title": "Edits without AI",
+      "description": "Theme, template, color, font, subtitle style, safe area, subject padding, speed, intensity, opacity, aspect ratio, and format edits reuse existing IR without another AI call.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "EDITING",
+      "acceptanceType": [
+        "CODE",
+        "TEST"
+      ],
+      "implementationTasks": [
+        "single-pass-19-edit-without-ai"
+      ],
+      "dependencies": [
+        "REQ-SP-018"
+      ],
+      "codeEvidence": [
+        "src/packaging-ir/editing.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
+    },
+    {
+      "requirementId": "REQ-SP-020",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§28",
+        "quote": "用户手动修改后状态"
+      },
+      "title": "Locked user override",
+      "description": "AI intent, resolved state, and locked user override are persisted separately; locked overrides are not auto-moved.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "USER_OVERRIDE",
+      "acceptanceType": [
+        "CODE",
+        "TEST"
+      ],
+      "implementationTasks": [
+        "single-pass-19-edit-without-ai"
+      ],
+      "dependencies": [
+        "REQ-SP-011"
+      ],
+      "codeEvidence": [
+        "src/packaging-ir/editing.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
+    },
+    {
+      "requirementId": "REQ-SP-021",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§41-42 / §51.17",
+        "quote": "稳定性要求"
+      },
+      "title": "Deterministic replay",
+      "description": "The same IR, registry version, engine version, and seed produce stable resolved output.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "DETERMINISM",
+      "acceptanceType": [
+        "CODE",
+        "TEST"
+      ],
+      "implementationTasks": [
+        "single-pass-20-determinism"
+      ],
+      "dependencies": [
+        "REQ-SP-019"
+      ],
+      "codeEvidence": [
+        "src/packaging-timeline/compiler.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
+    },
+    {
+      "requirementId": "REQ-SP-022",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§36 / §46 / §53.9",
+        "quote": "错误处理"
+      },
+      "title": "No automatic AI retry",
+      "description": "Invalid AI JSON is repaired locally once; if still invalid, the run fails without an automatic second AI call.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "AI_CONTRACT",
+      "acceptanceType": [
+        "CODE",
+        "TEST"
+      ],
+      "implementationTasks": [
+        "single-pass-18-ai-director"
+      ],
+      "dependencies": [
+        "REQ-SP-003"
+      ],
+      "codeEvidence": [
+        "src/packaging-ai/prompt.ts",
+        "src/packaging-ai/service.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
+    },
+    {
+      "requirementId": "REQ-SP-023",
+      "source": {
+        "type": "PRD",
+        "document": "CueCut_Single_Pass_AI_Packaging_Engine_PRD_V1.0.md",
+        "section": "§49-50",
+        "quote": "核心埋点"
+      },
+      "title": "Packaging observability",
+      "description": "Telemetry records AI success/failure, registry/layout fallback, collision repair, dropped overlays, render/export outcomes, manual override, and aiCallCount.",
+      "level": "MUST",
+      "priority": "P0",
+      "category": "TELEMETRY",
+      "acceptanceType": [
+        "CODE",
+        "TEST"
+      ],
+      "implementationTasks": [
+        "single-pass-21-telemetry"
+      ],
+      "dependencies": [
+        "REQ-SP-018",
+        "REQ-SP-022"
+      ],
+      "codeEvidence": [
+        "src/packaging-telemetry/events.ts"
+      ],
+      "testEvidence": [
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "artifactEvidence": [
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "verificationStatus": "IMPLEMENTED_NOT_VERIFIED",
+      "deviationId": null,
+      "projectId": "cuecut3-cecb1e53",
+      "updatedAt": "2026-09-10T01:47:59.964Z"
     }
   ]
 }

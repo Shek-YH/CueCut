@@ -66,4 +66,50 @@ describe('host FFmpeg export adapter', () => {
       'exports/final.mp4',
     ]);
   });
+
+  it('plans transparent WebM as VP9 with alpha and disables alt-ref', () => {
+    expect(createFfmpegCommand({
+      mode: 'transparent-webm',
+      inputPath: 'rendered-rgba.webm',
+      outputPath: 'exports/overlay.webm',
+    })).toEqual([
+      '-y',
+      '-i', 'rendered-rgba.webm',
+      '-c:v', 'libvpx-vp9',
+      '-pix_fmt', 'yuva420p',
+      '-auto-alt-ref', '0',
+      '-b:v', '0',
+      '-crf', '30',
+      '-metadata:s:v:0', 'alpha_mode=1',
+      '-an',
+      'exports/overlay.webm',
+    ]);
+  });
+
+  it('plans streamed RGBA frames for transparent WebM', () => {
+    expect(createRawVideoFfmpegCommand({
+      mode: 'transparent-webm',
+      outputPath: 'exports/overlay.webm',
+      width: 1920,
+      height: 1080,
+      fps: 30,
+      durationSec: 5,
+    })).toEqual([
+      '-y',
+      '-f', 'rawvideo',
+      '-pix_fmt', 'rgba',
+      '-s', '1920x1080',
+      '-r', '30',
+      '-i', 'pipe:0',
+      '-t', '5',
+      '-c:v', 'libvpx-vp9',
+      '-pix_fmt', 'yuva420p',
+      '-auto-alt-ref', '0',
+      '-b:v', '0',
+      '-crf', '30',
+      '-metadata:s:v:0', 'alpha_mode=1',
+      '-an',
+      'exports/overlay.webm',
+    ]);
+  });
 });

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "projectId": "cuecut3-cecb1e53",
-  "updatedAt": "2026-09-09T18:17:20.418Z",
+  "updatedAt": "2026-09-11T02:05:35.231Z",
   "tasks": [
     {
       "id": "motion-packs",
@@ -213,7 +213,11 @@
         "docs/director-recovery/PHASE1_EXECUTION_LOG.md",
         "docs/director-recovery/requirement-traceability.json"
       ],
-      "completedAt": "2026-09-09T09:30:59.324Z"
+      "completedAt": "2026-09-09T09:30:59.324Z",
+      "requirementIds": [
+        "REQ-DIR-010"
+      ],
+      "updatedAt": "2026-09-10T00:58:58.851Z"
     },
     {
       "id": "director-phase1-retrieval-decision",
@@ -240,7 +244,11 @@
         "docs/director-recovery/PHASE1_EXECUTION_LOG.md",
         "docs/director-recovery/requirement-traceability.json"
       ],
-      "completedAt": "2026-09-09T09:30:59.324Z"
+      "completedAt": "2026-09-09T09:30:59.324Z",
+      "requirementIds": [
+        "REQ-DIR-003"
+      ],
+      "updatedAt": "2026-09-10T00:58:58.851Z"
     },
     {
       "id": "director-phase1-core-freeze-plan",
@@ -362,7 +370,13 @@
         "pnpm lint",
         "pnpm build"
       ],
-      "completedAt": "2026-09-09T12:48:44.694Z"
+      "completedAt": "2026-09-09T12:48:44.694Z",
+      "requirementIds": [
+        "REQ-DIR-001",
+        "REQ-DIR-002",
+        "REQ-DIR-008"
+      ],
+      "updatedAt": "2026-09-10T00:58:58.851Z"
     },
     {
       "id": "director-phase2-visual-unit-contract",
@@ -398,7 +412,11 @@
         "pnpm lint",
         "pnpm build"
       ],
-      "completedAt": "2026-09-09T12:48:44.694Z"
+      "completedAt": "2026-09-09T12:48:44.694Z",
+      "requirementIds": [
+        "REQ-DIR-009"
+      ],
+      "updatedAt": "2026-09-10T00:58:58.851Z"
     },
     {
       "id": "director-phase2-capability-contract",
@@ -432,7 +450,11 @@
         "pnpm lint",
         "pnpm build"
       ],
-      "completedAt": "2026-09-09T12:48:44.694Z"
+      "completedAt": "2026-09-09T12:48:44.694Z",
+      "requirementIds": [
+        "REQ-DIR-004"
+      ],
+      "updatedAt": "2026-09-10T00:58:58.851Z"
     },
     {
       "id": "director-phase2-per-unit-retrieval",
@@ -468,7 +490,11 @@
         "pnpm lint",
         "pnpm build"
       ],
-      "completedAt": "2026-09-09T12:48:44.694Z"
+      "completedAt": "2026-09-09T12:48:44.694Z",
+      "requirementIds": [
+        "REQ-DIR-003"
+      ],
+      "updatedAt": "2026-09-10T00:58:58.851Z"
     },
     {
       "id": "director-phase2-data-contract-validation",
@@ -501,7 +527,12 @@
         "pnpm lint",
         "pnpm build"
       ],
-      "completedAt": "2026-09-09T12:48:44.694Z"
+      "completedAt": "2026-09-09T12:48:44.694Z",
+      "requirementIds": [
+        "REQ-DIR-005",
+        "REQ-DIR-006"
+      ],
+      "updatedAt": "2026-09-10T00:58:58.851Z"
     },
     {
       "id": "director-phase2-duration-validation",
@@ -534,7 +565,11 @@
         "pnpm lint",
         "pnpm build"
       ],
-      "completedAt": "2026-09-09T12:48:44.694Z"
+      "completedAt": "2026-09-09T12:48:44.694Z",
+      "requirementIds": [
+        "REQ-DIR-007"
+      ],
+      "updatedAt": "2026-09-10T00:58:58.851Z"
     },
     {
       "id": "director-phase2-selection-trace",
@@ -568,7 +603,11 @@
         "pnpm lint",
         "pnpm build"
       ],
-      "completedAt": "2026-09-09T12:48:44.694Z"
+      "completedAt": "2026-09-09T12:48:44.694Z",
+      "requirementIds": [
+        "REQ-DIR-012"
+      ],
+      "updatedAt": "2026-09-10T00:58:58.851Z"
     },
     {
       "id": "director-phase2-composition-linter",
@@ -603,7 +642,16 @@
         "pnpm lint",
         "pnpm build"
       ],
-      "completedAt": "2026-09-09T12:48:44.694Z"
+      "completedAt": "2026-09-09T12:48:44.694Z",
+      "requirementIds": [
+        "REQ-DIR-005",
+        "REQ-DIR-007",
+        "REQ-DIR-008",
+        "REQ-DIR-009",
+        "REQ-DIR-011",
+        "REQ-DIR-013"
+      ],
+      "updatedAt": "2026-09-10T00:58:58.851Z"
     },
     {
       "id": "director-phase2-fallback-contract",
@@ -636,7 +684,11 @@
         "pnpm lint",
         "pnpm build"
       ],
-      "completedAt": "2026-09-09T12:48:44.694Z"
+      "completedAt": "2026-09-09T12:48:44.694Z",
+      "requirementIds": [
+        "REQ-DIR-014"
+      ],
+      "updatedAt": "2026-09-10T00:58:58.851Z"
     },
     {
       "id": "director-phase2-golden-tests",
@@ -715,7 +767,11 @@
         "pnpm build",
         "pnpm test:e2e"
       ],
-      "completedAt": "2026-09-09T18:17:20.418Z"
+      "completedAt": "2026-09-09T18:17:20.418Z",
+      "requirementIds": [
+        "REQ-DIR-001"
+      ],
+      "updatedAt": "2026-09-10T00:58:58.851Z"
     },
     {
       "id": "director-phase3-trace-viewer",
@@ -742,7 +798,11 @@
         "pnpm build",
         "pnpm test:e2e"
       ],
-      "completedAt": "2026-09-09T18:17:20.418Z"
+      "completedAt": "2026-09-09T18:17:20.418Z",
+      "requirementIds": [
+        "REQ-DIR-012"
+      ],
+      "updatedAt": "2026-09-10T00:58:58.851Z"
     },
     {
       "id": "director-phase3-real-regression",
@@ -767,7 +827,14 @@
         "pnpm build",
         "pnpm test:e2e"
       ],
-      "completedAt": "2026-09-09T18:17:20.418Z"
+      "completedAt": "2026-09-09T18:17:20.418Z",
+      "requirementIds": [
+        "REQ-DIR-006",
+        "REQ-DIR-008",
+        "REQ-DIR-010",
+        "REQ-DIR-014"
+      ],
+      "updatedAt": "2026-09-10T00:58:58.851Z"
     },
     {
       "id": "director-phase3-acceptance",
@@ -846,7 +913,827 @@
         "pnpm lint",
         "pnpm build"
       ],
-      "completedAt": "2026-09-09T12:48:44.694Z"
+      "completedAt": "2026-09-09T12:48:44.694Z",
+      "requirementIds": [
+        "REQ-DIR-010"
+      ],
+      "updatedAt": "2026-09-10T00:58:58.851Z"
+    },
+    {
+      "id": "realtime-p0-architecture",
+      "title": "Realtime Capture P0 architecture notes, requirements, and freeze",
+      "phaseId": "realtime-p0",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-RT-ARCH",
+      "verifier": "R-RT-VERIFY",
+      "dependencies": [],
+      "requirementIds": [],
+      "evidence": [
+        "P0_ARCHITECTURE_NOTES.md",
+        "docs/superpowers/specs/2026-09-09-realtime-chroma-capture-design.md",
+        "docs/superpowers/plans/2026-09-09-realtime-chroma-capture-p0.md"
+      ],
+      "completedAt": "2026-09-09T19:30:00.000Z"
+    },
+    {
+      "id": "realtime-p0-contracts",
+      "title": "Implement Capture contracts, clock, state machine, and health monitor",
+      "phaseId": "realtime-p0",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-RT-BUILD",
+      "verifier": "R-RT-VERIFY",
+      "dependencies": [
+        "realtime-p0-architecture"
+      ],
+      "requirementIds": [
+        "REQ-RT-005",
+        "REQ-RT-007",
+        "REQ-RT-008",
+        "REQ-RT-009"
+      ],
+      "evidence": [
+        "src/export/realtime/types.ts",
+        "src/export/realtime/clock.ts",
+        "src/export/realtime/stateMachine.ts",
+        "src/export/realtime/health.ts",
+        "tests/export/realtime/clock.test.ts",
+        "tests/export/realtime/stateMachine.test.ts",
+        "tests/export/realtime/health.test.ts",
+        "pnpm exec vitest run tests/export/realtime/clock.test.ts tests/export/realtime/stateMachine.test.ts tests/export/realtime/health.test.ts"
+      ],
+      "completedAt": "2026-09-09T19:32:00.000Z",
+      "updatedAt": "2026-09-10T00:58:58.851Z"
+    },
+    {
+      "id": "realtime-p0-capture-backend",
+      "title": "Implement clean capture surface and browser MediaRecorder backend",
+      "phaseId": "realtime-p0",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-RT-BUILD",
+      "verifier": "R-RT-VERIFY",
+      "dependencies": [
+        "realtime-p0-contracts"
+      ],
+      "requirementIds": [
+        "REQ-RT-002",
+        "REQ-RT-003",
+        "REQ-RT-004",
+        "REQ-RT-005",
+        "REQ-RT-006",
+        "REQ-RT-010"
+      ],
+      "evidence": [
+        "src/export/realtime/captureScene.ts",
+        "src/export/realtime/mime.ts",
+        "src/export/realtime/browserCanvasBackend.ts",
+        "tests/export/realtime/mime.test.ts",
+        "tests/export/realtime/browserCanvasBackend.test.ts",
+        "pnpm exec vitest run tests/export/realtime"
+      ],
+      "completedAt": "2026-09-09T20:10:00.000Z",
+      "updatedAt": "2026-09-10T00:58:58.851Z"
+    },
+    {
+      "id": "realtime-p0-controller-ui",
+      "title": "Implement realtime controller, finalizer, validator, flag, and debug entry",
+      "phaseId": "realtime-p0",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-RT-BUILD",
+      "verifier": "R-RT-VERIFY",
+      "dependencies": [
+        "realtime-p0-capture-backend"
+      ],
+      "requirementIds": [
+        "REQ-RT-001",
+        "REQ-RT-002",
+        "REQ-RT-003",
+        "REQ-RT-007",
+        "REQ-RT-008",
+        "REQ-RT-009",
+        "REQ-RT-010",
+        "REQ-RT-011"
+      ],
+      "evidence": [
+        "src/export/realtime/controller.ts",
+        "src/export/realtime/finalizer.ts",
+        "src/export/realtime/validator.ts",
+        "src/export/realtime/mediaMetadata.ts",
+        "src/export/realtime/featureFlag.ts",
+        "src/editor/realtime/RealtimeCapturePanel.tsx",
+        "src/app/App.tsx",
+        "tests/export/realtime/controller.test.ts",
+        "tests/export/realtime/validator.test.ts",
+        "tests/export/realtime/featureFlag.test.ts",
+        "tests/editor/realtime-capture-panel.test.tsx",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "completedAt": "2026-09-09T20:10:00.000Z",
+      "updatedAt": "2026-09-10T00:58:58.851Z"
+    },
+    {
+      "id": "realtime-p0-benchmark",
+      "title": "Run real Chromium capture benchmarks and regression evidence",
+      "phaseId": "realtime-p0",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-RT-QA",
+      "verifier": "R-RT-VERIFY",
+      "dependencies": [
+        "realtime-p0-controller-ui"
+      ],
+      "requirementIds": [
+        "REQ-RT-004",
+        "REQ-RT-008",
+        "REQ-RT-009",
+        "REQ-RT-011",
+        "REQ-RT-012",
+        "REQ-RT-013",
+        "REQ-RT-014"
+      ],
+      "evidence": [
+        "tests/e2e/realtime-capture.spec.ts",
+        "tests/e2e/realtime-capture-real-project.spec.ts",
+        "tests/server/realtimeCaptureStore.test.ts",
+        "tests/server/realtimeCaptureRoute.test.ts",
+        "src/server/realtimeCaptureStore.ts",
+        "src/server/realtimeCaptureRoute.ts",
+        "renders/realtime-capture/fixture-10s.webm",
+        "renders/realtime-capture/fixture-60s.webm",
+        "renders/realtime-capture/metrics.json",
+        "P0_REALTIME_CAPTURE_REPORT.md",
+        "REAL_TEST_REQUIREMENTS.md",
+        "pnpm exec playwright test tests/e2e/realtime-capture.spec.ts",
+        "pnpm exec playwright test tests/e2e/realtime-capture-real-project.spec.ts",
+        "pnpm test:e2e",
+        "pnpm test --run",
+        "pnpm lint",
+        "pnpm build"
+      ],
+      "completedAt": "2026-09-09T20:10:00.000Z",
+      "updatedAt": "2026-09-10T00:58:58.851Z"
+    },
+    {
+      "id": "realtime-p0-verification",
+      "title": "Independent P0 verification, report, and final acceptance gate",
+      "phaseId": "realtime-p0",
+      "status": "WAITING_REVIEW",
+      "progress": 90,
+      "owner": "R-RT-VERIFY",
+      "verifier": "R-RT-VERIFY",
+      "dependencies": [
+        "realtime-p0-benchmark"
+      ],
+      "requirementIds": [
+        "REQ-RT-012",
+        "REQ-RT-013",
+        "REQ-RT-014"
+      ],
+      "evidence": [
+        "P0_REALTIME_CAPTURE_REPORT.md",
+        "INDEPENDENT_REVIEW_HANDOFF.md"
+      ],
+      "updatedAt": "2026-09-10T00:58:58.851Z"
+    },
+    {
+      "id": "realtime-p0-timing-repair",
+      "title": "Repair strict realtime media duration and recorder timestamp alignment",
+      "phaseId": "realtime-p0",
+      "status": "BLOCKED",
+      "progress": 1,
+      "owner": "R-RT-BUILD",
+      "verifier": "R-RT-VERIFY",
+      "dependencies": [
+        "realtime-p0-benchmark"
+      ],
+      "requirementIds": [
+        "REQ-RT-008",
+        "REQ-RT-009",
+        "REQ-RT-011",
+        "REQ-RT-013"
+      ],
+      "evidence": [
+        "P0_REALTIME_CAPTURE_REPORT.md",
+        "tests/e2e/realtime-capture.spec.ts",
+        "tests/e2e/realtime-capture-real-project.spec.ts"
+      ],
+      "blockedReason": "MediaRecorder Canvas path cannot guarantee exact P0 duration in the available Chrome runtime; explicit timestamp encoder or Electron host runtime is required.",
+      "createdAt": "2026-09-09T20:50:00.000Z"
+    },
+    {
+      "id": "single-pass-01-analysis-contract",
+      "title": "Define deterministic analysis snapshot contract",
+      "phaseId": "single-pass-architecture",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-SP-ARCH",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [],
+      "requirementIds": [
+        "REQ-SP-002"
+      ],
+      "evidence": [
+        "src/analysis/packagingAnalysis.ts",
+        "tests/analysis/packagingAnalysis.test.ts"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T01:03:09.964Z",
+      "sequence": 1,
+      "completedAt": "2026-09-10T01:03:09.964Z"
+    },
+    {
+      "id": "single-pass-02-ir-schema",
+      "title": "Define and validate Packaging IR schema",
+      "phaseId": "single-pass-architecture",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-SP-ARCH",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-01-analysis-contract"
+      ],
+      "requirementIds": [
+        "REQ-SP-003"
+      ],
+      "evidence": [
+        "src/packaging-ir/schema.ts",
+        "tests/packaging-ir/schema.test.ts"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T01:05:04.665Z",
+      "sequence": 2,
+      "completedAt": "2026-09-10T01:05:04.665Z"
+    },
+    {
+      "id": "single-pass-03-persistence",
+      "title": "Persist analysis, AI plan, and resolved plan atomically",
+      "phaseId": "single-pass-architecture",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-SP-BUILD",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-02-ir-schema"
+      ],
+      "requirementIds": [
+        "REQ-SP-004"
+      ],
+      "evidence": [
+        "src/packaging-ir/persistence.ts",
+        "tests/packaging-ir/persistence.test.ts"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T01:12:16.952Z",
+      "sequence": 3,
+      "completedAt": "2026-09-10T01:12:16.952Z"
+    },
+    {
+      "id": "single-pass-04-registry-manifest",
+      "title": "Define independent registry manifest schema and license provenance",
+      "phaseId": "single-pass-v1-deterministic",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-SP-BUILD",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-02-ir-schema"
+      ],
+      "requirementIds": [
+        "REQ-SP-005"
+      ],
+      "evidence": [
+        "src/packaging-registry/manifest.ts",
+        "tests/packaging-registry/manifest.test.ts"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T01:12:17.049Z",
+      "sequence": 4,
+      "completedAt": "2026-09-10T01:12:17.049Z"
+    },
+    {
+      "id": "single-pass-05-registry-catalog",
+      "title": "Build the V1 catalog with eight categories and thirty effects",
+      "phaseId": "single-pass-v1-deterministic",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-SP-BUILD",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-04-registry-manifest"
+      ],
+      "requirementIds": [
+        "REQ-SP-006"
+      ],
+      "evidence": [
+        "src/packaging-registry/catalog.ts",
+        "tests/packaging-registry/catalog.test.ts"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T01:12:17.149Z",
+      "sequence": 5,
+      "completedAt": "2026-09-10T01:12:17.149Z"
+    },
+    {
+      "id": "single-pass-06-registry-resolver",
+      "title": "Resolve templates with deterministic capability scoring",
+      "phaseId": "single-pass-v1-deterministic",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-SP-BUILD",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-05-registry-catalog"
+      ],
+      "requirementIds": [
+        "REQ-SP-007"
+      ],
+      "evidence": [
+        "src/packaging-registry/resolver.ts",
+        "tests/packaging-registry/resolver.test.ts"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T01:12:17.263Z",
+      "sequence": 6,
+      "completedAt": "2026-09-10T01:12:17.263Z"
+    },
+    {
+      "id": "single-pass-07-motion-dsl",
+      "title": "Compile the finite Motion DSL with seeded determinism",
+      "phaseId": "single-pass-v1-deterministic",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-SP-BUILD",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-02-ir-schema"
+      ],
+      "requirementIds": [
+        "REQ-SP-008"
+      ],
+      "evidence": [
+        "src/packaging-motion/compiler.ts",
+        "tests/packaging-motion/dsl.test.ts"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T01:15:02.448Z",
+      "sequence": 7,
+      "completedAt": "2026-09-10T01:15:02.448Z"
+    },
+    {
+      "id": "single-pass-08-safe-area",
+      "title": "Implement independent edge insets and safe-area constraints",
+      "phaseId": "single-pass-v1-deterministic",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-SP-BUILD",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-02-ir-schema"
+      ],
+      "requirementIds": [
+        "REQ-SP-009"
+      ],
+      "evidence": [
+        "src/packaging-layout/safeArea.ts",
+        "tests/packaging-layout/safeArea.test.ts"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T01:17:15.856Z",
+      "sequence": 8,
+      "completedAt": "2026-09-10T01:17:15.856Z"
+    },
+    {
+      "id": "single-pass-09-subject-spatial",
+      "title": "Implement subject avoid and foreground relations",
+      "phaseId": "single-pass-v1-deterministic",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-SP-BUILD",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-08-safe-area"
+      ],
+      "requirementIds": [
+        "REQ-SP-010"
+      ],
+      "evidence": [
+        "src/packaging-subject/spatial.ts",
+        "tests/packaging-subject/spatial.test.ts"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T01:17:24.023Z",
+      "sequence": 9,
+      "completedAt": "2026-09-10T01:17:24.023Z"
+    },
+    {
+      "id": "single-pass-10-layout",
+      "title": "Implement normalized candidate layout solving",
+      "phaseId": "single-pass-v1-deterministic",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-SP-BUILD",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-06-registry-resolver",
+        "single-pass-09-subject-spatial"
+      ],
+      "requirementIds": [
+        "REQ-SP-011"
+      ],
+      "evidence": [
+        "src/packaging-layout/solver.ts",
+        "tests/packaging-layout/solver.test.ts"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T01:18:52.257Z",
+      "sequence": 10,
+      "completedAt": "2026-09-10T01:18:52.257Z"
+    },
+    {
+      "id": "single-pass-11-collision",
+      "title": "Implement deterministic overlay collision resolution",
+      "phaseId": "single-pass-v1-deterministic",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-SP-BUILD",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-10-layout"
+      ],
+      "requirementIds": [
+        "REQ-SP-012"
+      ],
+      "evidence": [
+        "src/packaging-collision/resolver.ts",
+        "tests/packaging-collision/resolver.test.ts"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T01:20:04.082Z",
+      "sequence": 11,
+      "completedAt": "2026-09-10T01:20:04.082Z"
+    },
+    {
+      "id": "single-pass-12-fallback",
+      "title": "Implement registry/layout/collision fallback chains",
+      "phaseId": "single-pass-v1-deterministic",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-SP-BUILD",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-11-collision"
+      ],
+      "requirementIds": [
+        "REQ-SP-013"
+      ],
+      "evidence": [
+        "src/packaging-fallback/engine.ts",
+        "tests/packaging-fallback/engine.test.ts"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T01:21:10.235Z",
+      "sequence": 12,
+      "completedAt": "2026-09-10T01:21:10.235Z"
+    },
+    {
+      "id": "single-pass-13-validator",
+      "title": "Implement Packaging Validator and deterministic repair",
+      "phaseId": "single-pass-v1-deterministic",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-SP-BUILD",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-12-fallback"
+      ],
+      "requirementIds": [
+        "REQ-SP-014"
+      ],
+      "evidence": [
+        "src/packaging-validator/validator.ts",
+        "tests/packaging-validator/validator.test.ts"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T01:22:55.100Z",
+      "sequence": 13,
+      "completedAt": "2026-09-10T01:22:55.100Z"
+    },
+    {
+      "id": "single-pass-14-snapshot-qa",
+      "title": "Implement snapshot checkpoints and pre-render QA",
+      "phaseId": "single-pass-v1-deterministic",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-SP-BUILD",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-13-validator"
+      ],
+      "requirementIds": [
+        "REQ-SP-015"
+      ],
+      "evidence": [
+        "src/packaging-preview/snapshots.ts",
+        "tests/packaging-preview/snapshots.test.ts"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T01:24:13.089Z",
+      "sequence": 14,
+      "completedAt": "2026-09-10T01:24:13.089Z"
+    },
+    {
+      "id": "single-pass-15-timeline-compiler",
+      "title": "Compile resolved plans into the runtime timeline",
+      "phaseId": "single-pass-v1-deterministic",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-SP-BUILD",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-07-motion-dsl",
+        "single-pass-14-snapshot-qa"
+      ],
+      "requirementIds": [
+        "REQ-SP-016"
+      ],
+      "evidence": [
+        "src/packaging-timeline/compiler.ts",
+        "tests/packaging-timeline/compiler.test.ts"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T01:25:40.060Z",
+      "sequence": 15,
+      "completedAt": "2026-09-10T01:25:40.060Z"
+    },
+    {
+      "id": "single-pass-16-preview-render-separation",
+      "title": "Separate interactive preview from final render",
+      "phaseId": "single-pass-v1-integration",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-SP-BUILD",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-15-timeline-compiler"
+      ],
+      "requirementIds": [
+        "REQ-SP-017"
+      ],
+      "evidence": [
+        "src/packaging-preview/service.ts",
+        "tests/packaging-preview/service.test.ts"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T01:32:16.050Z",
+      "sequence": 16,
+      "completedAt": "2026-09-10T01:32:16.050Z"
+    },
+    {
+      "id": "single-pass-17-export",
+      "title": "Wire MP4 and transparent WebM export capabilities",
+      "phaseId": "single-pass-v1-integration",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-SP-BUILD",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-16-preview-render-separation"
+      ],
+      "requirementIds": [
+        "REQ-SP-018"
+      ],
+      "evidence": [
+        "src/packaging-export/formats.ts",
+        "tests/packaging-export/formats.test.ts",
+        "src/export/ffmpeg.ts",
+        "src/export/controller.ts",
+        "src/server/exportRoute.ts",
+        "src/export/exporter.ts",
+        "src/media/videoProbe.ts",
+        "tests/export/ffmpeg.test.ts",
+        "tests/export/controller.test.ts",
+        "tests/export/portable-export.test.ts",
+        "tests/server/exportRoute.test.ts"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T01:47:35.775Z",
+      "sequence": 17,
+      "completedAt": "2026-09-10T01:47:35.775Z"
+    },
+    {
+      "id": "single-pass-18-ai-director",
+      "title": "Integrate the single-pass Packaging Director AI contract",
+      "phaseId": "single-pass-v1-integration",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-SP-BUILD",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-15-timeline-compiler"
+      ],
+      "requirementIds": [
+        "REQ-SP-001",
+        "REQ-SP-022"
+      ],
+      "evidence": [
+        "src/packaging-ai/prompt.ts",
+        "src/packaging-ai/service.ts",
+        "tests/packaging-ai/service.test.ts"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T01:28:27.426Z",
+      "sequence": 18,
+      "completedAt": "2026-09-10T01:28:27.426Z"
+    },
+    {
+      "id": "single-pass-19-edit-without-ai",
+      "title": "Support user edits, aspect changes, and locked overrides without AI",
+      "phaseId": "single-pass-v1-integration",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-SP-BUILD",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-18-ai-director",
+        "single-pass-17-export"
+      ],
+      "requirementIds": [
+        "REQ-SP-019",
+        "REQ-SP-020"
+      ],
+      "evidence": [
+        "src/packaging-ir/editing.ts",
+        "tests/packaging-ir/editing.test.ts"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T01:30:34.830Z",
+      "sequence": 19,
+      "completedAt": "2026-09-10T01:30:34.830Z"
+    },
+    {
+      "id": "single-pass-20-determinism",
+      "title": "Prove repeatable resolution and render inputs",
+      "phaseId": "single-pass-v1-verification",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-SP-BUILD",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-19-edit-without-ai"
+      ],
+      "requirementIds": [
+        "REQ-SP-021"
+      ],
+      "evidence": [
+        "src/packaging-timeline/compiler.ts",
+        "tests/packaging-timeline/determinism.test.ts"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T01:30:34.922Z",
+      "sequence": 20,
+      "completedAt": "2026-09-10T01:30:34.922Z"
+    },
+    {
+      "id": "single-pass-21-telemetry",
+      "title": "Record AI call count and required packaging events",
+      "phaseId": "single-pass-v1-integration",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-SP-BUILD",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-18-ai-director"
+      ],
+      "requirementIds": [
+        "REQ-SP-023"
+      ],
+      "evidence": [
+        "src/packaging-telemetry/events.ts",
+        "tests/packaging-telemetry/events.test.ts"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T01:28:27.523Z",
+      "sequence": 21,
+      "completedAt": "2026-09-10T01:28:27.523Z"
+    },
+    {
+      "id": "single-pass-22-ui-flow",
+      "title": "Expose the generate-packaging flow and advanced settings",
+      "phaseId": "single-pass-v1-integration",
+      "status": "COMPLETED",
+      "progress": 100,
+      "owner": "R-SP-BUILD",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-18-ai-director",
+        "single-pass-21-telemetry"
+      ],
+      "requirementIds": [],
+      "evidence": [
+        "src/app/App.tsx",
+        "tests/app/generation-flow.test.tsx",
+        "src/server/packagingRoute.ts",
+        "src/packaging/resolve.ts",
+        "tests/server/packagingRoute.test.ts",
+        "tests/packaging/resolve.test.ts",
+        "src/app/layout.css",
+        "src/server/settingsRoute.ts",
+        "src/server/secretStore.ts",
+        "tests/server/settingsRoute.test.ts",
+        "src/packaging-ai/service.ts",
+        "tests/packaging-ai/service.test.ts",
+        "src/packaging/apply.ts",
+        "tests/packaging/apply.test.ts",
+        "docs/single-pass-packaging/EXECUTION_LOG.md",
+        "src/server/transcriptionRoute.ts",
+        "tests/server/transcriptionRoute.test.ts",
+        "src/packaging-layout/solver.ts",
+        "src/packaging-collision/resolver.ts",
+        "tests/packaging-layout/solver.test.ts",
+        "tests/packaging-collision/resolver.test.ts",
+        "src/packaging-registry/resolver.ts",
+        "tests/packaging-registry/resolver.test.ts",
+        "src/editor/timeline/Timeline.tsx",
+        "src/editor/timeline/trackLayout.ts",
+        "tests/editor/timeline-track-layout.test.ts",
+        "src/server/exportRoute.ts",
+        "tests/server/exportRoute.test.ts",
+        "src/editor/inspector/Inspector.tsx",
+        "src/editor/layers/LayersPanel.tsx",
+        "tests/app/navigation.test.tsx",
+        "tests/editor/timeline.test.tsx"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-11T02:05:35.231Z",
+      "sequence": 22,
+      "completedAt": "2026-09-11T02:05:35.231Z"
+    },
+    {
+      "id": "single-pass-23-independent-verification",
+      "title": "Run V1 fidelity, security, regression, and independent verification gates",
+      "phaseId": "single-pass-v1-verification",
+      "status": "WAITING_REVIEW",
+      "progress": 90,
+      "owner": "R-SP-VERIFY",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-20-determinism",
+        "single-pass-22-ui-flow"
+      ],
+      "requirementIds": [],
+      "evidence": [
+        "docs/single-pass-packaging/00_REQUIREMENT_MATRIX.md",
+        "docs/single-pass-packaging/01_ARCHITECTURE.md",
+        "docs/single-pass-packaging/EXECUTION_LOG.md"
+      ],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T02:21:28.584Z",
+      "sequence": 23
+    },
+    {
+      "id": "single-pass-24-final-acceptance",
+      "title": "Prepare final acceptance and safe local checkpoint",
+      "phaseId": "single-pass-v1-verification",
+      "status": "NOT_STARTED",
+      "progress": 0,
+      "owner": "R00",
+      "verifier": "R-SP-VERIFY",
+      "dependencies": [
+        "single-pass-23-independent-verification"
+      ],
+      "requirementIds": [],
+      "evidence": [],
+      "executionRef": null,
+      "createdAt": "2026-09-10T00:58:58.739Z",
+      "updatedAt": "2026-09-10T00:58:58.739Z",
+      "sequence": 24
     }
   ]
 }

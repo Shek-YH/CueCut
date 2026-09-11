@@ -4,9 +4,9 @@
   "ledgerWriter": "AI_Autonomous_Project_Ledger_Skill_v2.3.0",
   "active": true,
   "currentTaskIds": [
-    "director-phase4-independent-review"
+    "realtime-p0-verification"
   ],
-  "lastWriteAt": "2026-09-09T19:19:03.619Z",
+  "lastWriteAt": "2026-09-11T02:05:35.235Z",
   "dashboard": {
     "enabled": true,
     "status": "RUNNING",
@@ -17,7 +17,7 @@
     "openedAt": "2026-09-09T04:20:30.079Z",
     "startedAt": "2026-09-09T18:19:34.034Z",
     "stoppedAt": null,
-    "lastHealthAt": "2026-09-09T18:19:34.276Z",
+    "lastHealthAt": "2026-09-10T01:36:45.240Z",
     "lastError": null,
     "runtimeVersion": "2.3.0"
   }

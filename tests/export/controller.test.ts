@@ -55,4 +55,23 @@ describe('export controller', () => {
     expect(controller.getState()).toBe('Cancelled');
     expect(child.kill).toHaveBeenCalled();
   }, 10_000);
+
+  it('validates transparent WebM as an alpha-capable VP9 export', async () => {
+    const project = createFixtureProject();
+    project.project.durationSec = 0.1;
+    project.project.canvasWidth = 320;
+    project.project.canvasHeight = 180;
+    const outputPath = 'test-results/controller-output.webm';
+    await writeFile(outputPath, Buffer.from('placeholder'));
+    const child = new EventEmitter() as EventEmitter & { stdin: Writable; kill: ReturnType<typeof vi.fn> };
+    child.stdin = new Writable({ write(_chunk, _encoding, callback) { callback(); } });
+    child.kill = vi.fn();
+    const controller = createExportController({
+      spawnProcess: vi.fn(() => { queueMicrotask(() => child.emit('close', 0)); return child; }),
+      probe: vi.fn(async () => ({ durationSec: 0.1, width: 320, height: 180, codec: 'vp9', pixelFormat: 'yuva420p', rFrameRate: 30, avgFrameRate: 30, fps: 30, hasAudio: false, isVfr: false })),
+    });
+
+    const result = await controller.start({ mode: 'transparent-webm', project, outputPath });
+    expect(result.outputPath).toBe(outputPath);
+  });
 });

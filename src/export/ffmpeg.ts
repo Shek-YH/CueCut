@@ -1,10 +1,12 @@
 export type FfmpegExportInput =
   | { mode: 'full-video'; inputPath: string; renderFramesPath: string; outputPath: string }
-  | { mode: 'transparent-mov'; inputPath: string; outputPath: string };
+  | { mode: 'transparent-mov'; inputPath: string; outputPath: string }
+  | { mode: 'transparent-webm'; inputPath: string; outputPath: string };
 
 export type RawVideoFfmpegInput =
   | { mode: 'full-video'; inputPath: string; outputPath: string; width: number; height: number; fps: number; durationSec: number }
-  | { mode: 'transparent-mov'; outputPath: string; width: number; height: number; fps: number; durationSec: number };
+  | { mode: 'transparent-mov'; outputPath: string; width: number; height: number; fps: number; durationSec: number }
+  | { mode: 'transparent-webm'; outputPath: string; width: number; height: number; fps: number; durationSec: number };
 
 export function createFfmpegCommand(input: FfmpegExportInput): string[] {
   if (input.mode === 'full-video') {
@@ -17,6 +19,21 @@ export function createFfmpegCommand(input: FfmpegExportInput): string[] {
       '-map', '0:a?',
       '-c:v', 'libx264',
       '-c:a', 'aac',
+      input.outputPath,
+    ];
+  }
+
+  if (input.mode === 'transparent-webm') {
+    return [
+      '-y',
+      '-i', input.inputPath,
+      '-c:v', 'libvpx-vp9',
+      '-pix_fmt', 'yuva420p',
+      '-auto-alt-ref', '0',
+      '-b:v', '0',
+      '-crf', '30',
+      '-metadata:s:v:0', 'alpha_mode=1',
+      '-an',
       input.outputPath,
     ];
   }
@@ -54,6 +71,22 @@ export function createRawVideoFfmpegCommand(input: RawVideoFfmpegInput): string[
       input.outputPath,
     ];
   }
+  if (input.mode === 'transparent-webm') {
+    return [
+      '-y',
+      ...rawInput,
+      '-t', String(input.durationSec),
+      '-c:v', 'libvpx-vp9',
+      '-pix_fmt', 'yuva420p',
+      '-auto-alt-ref', '0',
+      '-b:v', '0',
+      '-crf', '30',
+      '-metadata:s:v:0', 'alpha_mode=1',
+      '-an',
+      input.outputPath,
+    ];
+  }
+
   return [
     '-y',
     ...rawInput,

@@ -34,6 +34,7 @@ worktrees/
 *.webm
 .gstack/
 graphify-out/
+.superpowers/
 
 # >>> AI Autonomous Project Ledger Skill managed
 .env

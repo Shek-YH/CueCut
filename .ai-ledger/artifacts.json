@@ -157,5 +157,41 @@
       "kind": "architecture-amendment",
       "status": "COMPLETED"
     }
+    ,{
+      "id": "realtime-p0-architecture-notes", "path": "P0_ARCHITECTURE_NOTES.md", "kind": "architecture-notes", "status": "COMPLETED"
+    },
+    {
+      "id": "realtime-p0-design", "path": "docs/superpowers/specs/2026-09-09-realtime-chroma-capture-design.md", "kind": "design-spec", "status": "COMPLETED"
+    },
+    {
+      "id": "realtime-p0-plan", "path": "docs/superpowers/plans/2026-09-09-realtime-chroma-capture-p0.md", "kind": "implementation-plan", "status": "COMPLETED"
+    },
+    {
+      "id": "realtime-p0-report", "path": "P0_REALTIME_CAPTURE_REPORT.md", "kind": "real-world-benchmark-report", "status": "WAITING_REVIEW"
+    },
+    {
+      "id": "realtime-p0-e2e", "path": "tests/e2e/realtime-capture.spec.ts", "kind": "real-browser-test", "status": "COMPLETED"
+    },
+    {
+      "id": "realtime-p0-10s-media", "path": "renders/realtime-capture/fixture-10s.webm", "kind": "real-media-output", "status": "COMPLETED"
+    },
+    {
+      "id": "realtime-p0-60s-media", "path": "renders/realtime-capture/fixture-60s.webm", "kind": "real-media-output", "status": "COMPLETED"
+    },
+    {
+      "id": "realtime-p0-final-acceptance", "path": "FINAL_ACCEPTANCE.md", "kind": "final-acceptance", "status": "WAITING_REVIEW"
+    },
+    {
+      "id": "realtime-p0-temp-store", "path": "src/server/realtimeCaptureStore.ts", "kind": "atomic-temp-store", "status": "COMPLETED"
+    },
+    {
+      "id": "realtime-p0-persistence-route", "path": "src/server/realtimeCaptureRoute.ts", "kind": "host-persistence-route", "status": "COMPLETED"
+    },
+    {
+      "id": "realtime-p0-timing-repair", "path": "P0_REALTIME_CAPTURE_REPORT.md", "kind": "repair_evidence", "status": "IN_PROGRESS"
+    },
+    {
+      "id": "realtime-p0-real-test-requirements", "path": "REAL_TEST_REQUIREMENTS.md", "kind": "real-test-readiness", "status": "WAITING_USER"
+    }
   ]
 }

@@ -5,6 +5,9 @@ import { createGenerationRoute, createHostGenerationRunner, type GenerationRunne
 import { createExportRoute, createHostExportRunner, type ExportRouteRunner } from './exportRoute';
 import { createProbeRoute, createHostProbeRunner, type ProbeRouteRunner } from './probeRoute';
 import { createRealtimeCaptureRoute } from './realtimeCaptureRoute';
+import { createPackagingRoute, createHostPackagingRunner, type PackagingRunner } from './packagingRoute';
+import { createSettingsRoute } from './settingsRoute';
+import { createTranscriptionRoute, createHostTranscriptionRunner, type TranscriptionRunner } from './transcriptionRoute';
 
 export interface ProductionHostOptions {
   runner?: GenerationRunner;
@@ -20,15 +23,19 @@ export interface ProductionHostOptions {
   webRoot?: string;
   exportRunner?: ExportRouteRunner;
   probeRunner?: ProbeRouteRunner;
+  packagingRunner?: PackagingRunner;
+  transcriptionRunner?: TranscriptionRunner;
 }
 
 export function createProductionServer(options: ProductionHostOptions = {}): Server {
-  const { runner, exportRunner, probeRunner, webRoot = resolve(process.cwd(), 'dist'), host: _host, port: _port, ...runnerOptions } = options;
+  const { runner, exportRunner, probeRunner, packagingRunner, transcriptionRunner, webRoot = resolve(process.cwd(), 'dist'), host: _host, port: _port, ...runnerOptions } = options;
   const generationRunner = runner ?? createHostGenerationRunner(runnerOptions);
   const generationRoute = createGenerationRoute(generationRunner);
   const exportRoute = createExportRoute(exportRunner ?? createHostExportRunner(runnerOptions));
   const probeRoute = createProbeRoute(probeRunner ?? createHostProbeRunner(runnerOptions));
   const realtimeCaptureRoute = createRealtimeCaptureRoute();
+  const packagingRoute = createPackagingRoute(packagingRunner ?? createHostPackagingRunner(runnerOptions));
+  const transcriptionRoute = createTranscriptionRoute(transcriptionRunner ?? createHostTranscriptionRunner(runnerOptions));
   return createServer((request, response) => {
     const pathname = request.url?.split('?')[0] ?? '/';
     if (pathname === '/api/export') {
@@ -45,6 +52,18 @@ export function createProductionServer(options: ProductionHostOptions = {}): Ser
     }
     if (pathname === '/api/generate-effects') {
       void generationRoute(request, response);
+      return;
+    }
+    if (pathname === '/api/generate-packaging') {
+      void packagingRoute(request, response);
+      return;
+    }
+    if (pathname === '/api/transcribe-video') {
+      void transcriptionRoute(request, response);
+      return;
+    }
+    if (pathname === '/api/settings') {
+      void createSettingsRoute()(request, response);
       return;
     }
     void serveStatic(request, response, webRoot);

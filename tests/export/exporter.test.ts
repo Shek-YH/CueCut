@@ -19,5 +19,13 @@ describe('export plan', () => {
       usesPngSequence: false,
     });
   });
-});
 
+  it('plans Transparent WebM as alpha output', () => {
+    expect(createExportPlan({ mode: 'transparent-webm', durationSec: 30 })).toEqual({
+      mode: 'transparent-webm',
+      outputExtension: 'webm',
+      renderer: 'unified-render-runtime',
+      usesPngSequence: false,
+    });
+  });
+});

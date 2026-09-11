@@ -60,6 +60,41 @@
       "id": "R-VERIFY",
       "name": "Director Independent Verifier",
       "responsibility": "Independent review of requirements, source, tests, artifacts, and real runtime evidence"
+    },
+    {
+      "id": "R-RT-ARCH",
+      "name": "Realtime Capture Architect",
+      "responsibility": "P0 architecture, contracts, reuse boundaries, and acceptance contract"
+    },
+    {
+      "id": "R-RT-BUILD",
+      "name": "Realtime Capture Builder",
+      "responsibility": "Capture controller, browser backend, finalizer, validator, and debug entry"
+    },
+    {
+      "id": "R-RT-QA",
+      "name": "Realtime Capture QA",
+      "responsibility": "Real Chromium media benchmarks, regression, output probing, and evidence"
+    },
+    {
+      "id": "R-RT-VERIFY",
+      "name": "Realtime Capture Independent Verifier",
+      "responsibility": "Independent reread of PRD, source, tests, artifacts, runtime, and final acceptance"
+    },
+    {
+      "id": "R-SP-ARCH",
+      "name": "Single-Pass Architect",
+      "responsibility": "Packaging IR, deterministic pipeline contracts, HyperFrames boundary, and Core Freeze"
+    },
+    {
+      "id": "R-SP-BUILD",
+      "name": "Single-Pass Builder",
+      "responsibility": "V1 implementation inside the frozen packaging contracts"
+    },
+    {
+      "id": "R-SP-VERIFY",
+      "name": "Single-Pass Independent Verifier",
+      "responsibility": "Independent PRD fidelity, tests, artifacts, and runtime evidence review"
     }
   ]
 }

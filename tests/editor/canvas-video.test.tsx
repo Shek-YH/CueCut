@@ -315,6 +315,66 @@ describe('Canvas video surface', () => {
     expect(onVideoTime).not.toHaveBeenCalled();
   });
 
+  it('keeps a stale paused timeupdate invalid after the animation-frame guard would have expired', () => {
+    let frameCallback: FrameRequestCallback | undefined;
+    let now = 0;
+    vi.spyOn(performance, 'now').mockImplementation(() => now);
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+      frameCallback = callback;
+      return 1;
+    });
+    const onVideoTime = vi.fn();
+    const props = {
+      onSelect: () => undefined,
+      onVideoMetadata: () => undefined,
+      onVideoTime,
+      playing: false,
+      project: createFixtureProject(),
+      selectedEffectId: 'fx-quote',
+      store: createProjectStore(createFixtureProject()),
+      videoSrc: 'blob:fixture',
+    };
+    const { rerender } = render(<CanvasStage {...props} currentTime={0} />);
+    const video = screen.getByTestId('preview-video');
+    Object.defineProperty(video, 'currentTime', { configurable: true, writable: true, value: 0 });
+
+    rerender(<CanvasStage {...props} currentTime={2.35} />);
+    frameCallback?.(0);
+    now = 1000;
+    video.currentTime = 2.30;
+    fireEvent.timeUpdate(video);
+
+    expect(onVideoTime).not.toHaveBeenCalled();
+  });
+
+  it('establishes paused stale-event protection when playback pauses without a currentTime change', () => {
+    let frameCallback: FrameRequestCallback | undefined;
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+      frameCallback = callback;
+      return 1;
+    });
+    const onVideoTime = vi.fn();
+    const props = {
+      onSelect: () => undefined,
+      onVideoMetadata: () => undefined,
+      onVideoTime,
+      project: createFixtureProject(),
+      selectedEffectId: 'fx-quote',
+      store: createProjectStore(createFixtureProject()),
+      videoSrc: 'blob:fixture',
+    };
+    const { rerender } = render(<CanvasStage {...props} currentTime={2.35} playing />);
+    const video = screen.getByTestId('preview-video');
+    Object.defineProperty(video, 'currentTime', { configurable: true, writable: true, value: 2.30 });
+
+    rerender(<CanvasStage {...props} currentTime={2.35} playing={false} />);
+    frameCallback?.(0);
+    video.currentTime = 2.30;
+    fireEvent.timeUpdate(video);
+
+    expect(onVideoTime).not.toHaveBeenCalled();
+  });
+
   it('seeks the native video to the current frame when metadata arrives after a clock seek', () => {
     render(
       <CanvasStage
