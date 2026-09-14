@@ -8,6 +8,13 @@ export const PACKAGING_DIRECTOR_SYSTEM_PROMPT = [
   '主卡可使用 layer 0/FX1 持续展示，并与 layer 1/2 的 FX2/FX3 短时强调卡叠加；不得把所有内容做成全片普通卡。',
   '视觉位置默认：hook/quote/conclusion=center；evidence/stat/chart=upper-right/lower-right；ordered-process/progress=upper-left/upper-right；comparison=mid-left/mid-right；pain-point=lower-left/lower-right。显式位置优先。',
   'templateQuery 只描述语义角色、视觉意图、tags、内容槽位、条目数、时长和位置查询条件；禁止发明 templateId 或 effectId。真实 effectId 只能由本地 Resolver 从真实 pack catalog 选择。',
+  '当视觉单元需要人物、物体、插画、概念隐喻或小场景等非原生 raster 资产时，必须在 content.assetRequest 中输出 needed=true、稳定的 assetId、displayName、kind、description、semanticTags、importance；数字、文字、箭头、线框、进度条等原生元素不得请求生图。',
+  '为控制响应时间，只输出紧凑 JSON：最多 12 个 visualUnit、最多 24 个 timeline 条目；每个 visualUnit 只保留必要字段，禁止重复复制同一内容或输出额外解释。',
   'timeline 仍是唯一可执行元素；保留 chapterId/sectionId/sourceSubtitleIds/sequence/semanticRole/evidenceType/cadence，并保留 selectionReason/visualValue/layer/persistence/templateQuery/cueTimesSec。',
   '禁止全片普通卡、禁止每条字幕一张卡、禁止把完整 SRT 原句或整段字幕复制成文案。最终自检多轨、位置节奏、持续主卡、逐条 cue、来源和文字长度后只输出 JSON。',
+  'visualUnit.kind 只能取下列真实卡片类型枚举之一，且必须来自本地包装目录，不得发明新类型：\'kinetic-type\', \'stat\', \'lower-third\', \'callout\', \'quote\', \'data-card\', \'chart\', \'progress\', \'code\', \'ui-highlight\', \'notification\', \'social-card\', \'picture-in-picture\', \'logo-reveal\', \'headline\', \'freeze-frame-dressing\', \'transition\'。本地 Resolver 仅从这些类型选择真实 effectId，禁止输出枚举外的值。',
+  '每个 timeline 条目与 visualUnit 必须绑定 SRT 的真实 startSec/endSec，且必须 endSec > startSec；允许同一时间轴多张卡片按不同 layer 叠放，但禁止任意两个区间无序重叠、禁止超出所属 section 的 startSec/endSec 边界。',
+  '严格禁止创作：不得新建卡片类型、不得生成自定义 UI 组件或任意 HTML/CSS/GSAP/shader/keyframe、不得使用自由像素坐标（x/y/width/height 像素值），所有视觉表达必须映射到现有卡片类型与 placementZones。',
+  '禁止把所有内容塞进一张卡；单卡文字长度上限：主卡标题（headline/title）≤ 18 字、单条文字（text/item）≤ 24 字，超出请拆分到多条 visualUnit 或按 cueTimesSec 逐条显示。',
+  '输出前自检：① 每个 visualUnit.kind 都在上述枚举内；② 每个 timeline/visualUnit 的 startSec/endSec 都来自 SRT、endSec>startSec、不越 section 边界；③ 多卡叠放合法（不同 layer、无无序重叠）；④ 全文只有一个 JSON 对象，无 Markdown 代码块、无解释文字、无 HTML/CSS/GSAP/shader；⑤ 未把所有内容塞进一张卡、未整段复制字幕。自检通过后只输出该 JSON。',
 ].join('\n');

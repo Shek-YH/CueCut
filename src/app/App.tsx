@@ -21,6 +21,12 @@ import { effectRegistry } from '../effects/registry';
 import { findMotion, motionRegistry } from '../motions/registry';
 import { evaluateMotion } from '../motions/runtime';
 import { evaluateSceneAtTime } from '../render/scene';
+import { createEffectRenderSpec, renderSpecSignature } from '../render/effectRenderSpec';
+import { updateEffectDraftMotion } from '../runtime/draft';
+import { compileProjectToRuntime } from '../runtime/compiler';
+import { validateVisualGrounding } from '../director/grounding';
+import { planVisualAssets } from '../visual-assets/planner';
+import { validateResolvedPackagingPlan } from '../packaging/validateResolved';
 import type { SelectionTraceEntry } from '../director/types';
 import { createBrowserCanvasCaptureBackend } from '../export/realtime/browserCanvasBackend';
 import { createRealtimeCaptureController } from '../export/realtime/controller';
@@ -29,6 +35,9 @@ import { isRealtimeChromaCaptureEnabled } from '../export/realtime/featureFlag';
 import type { CaptureState, RealtimeCaptureResult } from '../export/realtime/types';
 import { RealtimeCapturePanel } from '../editor/realtime/RealtimeCapturePanel';
 import { previewTimeForEffect } from '../editor/selection/previewTime';
+import { createInitialBrowserPlaybackState, type BrowserPlaybackState } from '../media/videoPlayback';
+import { importExternalBundle } from '../import/externalBundle';
+import { buildAtlasPrompt, planAtlasPages } from '../visual-assets';
 
 type ViewId = 'edit' | 'lab' | 'sfx' | 'learn';
 
@@ -37,6 +46,33 @@ type GenerationDiagnostics = {
   warnings: string[];
   selectionTrace: SelectionTraceEntry[];
 };
+
+type PackagingWorkflowStepId = 'preflight' | 'video-read' | 'video-audio' | 'audio-srt' | 'director' | 'asset-plan' | 'visual-generation' | 'resolve-layout' | 'runtime' | 'workspace';
+type PackagingWorkflowStep = { id: PackagingWorkflowStepId; label: string; status: 'pending' | 'running' | 'success' | 'failed'; detail?: string };
+
+const packagingWorkflowTemplate: Array<Pick<PackagingWorkflowStep, 'id' | 'label'>> = [
+  { id: 'preflight', label: '配置检查' },
+  { id: 'video-read', label: '视频读取' },
+  { id: 'video-audio', label: '视频 → 音频' },
+  { id: 'audio-srt', label: '音频 → SRT' },
+  { id: 'director', label: 'SRT → Director' },
+  { id: 'asset-plan', label: '视觉资产规划' },
+  { id: 'visual-generation', label: '视觉资产生成' },
+  { id: 'resolve-layout', label: '本地 Resolve / Layout' },
+  { id: 'runtime', label: 'Runtime 编译' },
+  { id: 'workspace', label: '载入 Workspace' },
+];
+
+function createPackagingWorkflow(): PackagingWorkflowStep[] {
+  return packagingWorkflowTemplate.map((step) => ({ ...step, status: 'pending' }));
+}
+
+function assetRequestId(content: Record<string, unknown>): string | undefined {
+  const request = content.assetRequest;
+  if (!request || typeof request !== 'object' || Array.isArray(request)) return undefined;
+  const assetId = (request as Record<string, unknown>).assetId;
+  return typeof assetId === 'string' && assetId.length > 0 ? assetId : undefined;
+}
 
 const navItems: Array<{ id: ViewId; icon: string; label: string }> = [
   { id: 'edit', icon: '✦', label: '编辑' },
@@ -78,6 +114,8 @@ function EditView({
   subtitleSettings,
   onSubtitleSettingsChange,
   onVideoMetadata,
+  onVideoPlaybackState,
+  onVideoPlaybackError,
   onOpenLab,
 }: {
   project: ReturnType<typeof createFixtureProject>;
@@ -93,6 +131,8 @@ function EditView({
   subtitleSettings?: ProjectComposition['subtitleSettings'];
   onSubtitleSettingsChange: (update: Partial<NonNullable<ProjectComposition['subtitleSettings']>>) => void;
   onVideoMetadata: (metadata: { durationSec: number; canvasWidth: number; canvasHeight: number }) => void;
+  onVideoPlaybackState?: (state: BrowserPlaybackState) => void;
+  onVideoPlaybackError?: (message: string) => void;
   onOpenLab: () => void;
 }) {
   const handleLayerSelect = (effectId: string) => {
@@ -122,6 +162,8 @@ function EditView({
         playing={playing}
         onVideoTime={onSeek}
         onVideoMetadata={onVideoMetadata}
+        onVideoPlaybackState={onVideoPlaybackState}
+        onVideoPlaybackError={onVideoPlaybackError}
         onSelect={onSelect}
       />
       <Inspector
@@ -159,17 +201,9 @@ function EffectLabView({
   if (!source || !draft) return null;
 
   const setEnter = (motionId: string) =>
-    setDraft((current) =>
-      current
-        ? { ...current, motion: { ...current.motion, enter: { ...current.motion.enter, motionId } } }
-        : current,
-    );
+    setDraft((current) => current ? updateEffectDraftMotion(current, 'enter', { motionId }) : current);
   const setExit = (motionId: string) =>
-    setDraft((current) =>
-      current
-        ? { ...current, motion: { ...current.motion, exit: { ...current.motion.exit, motionId } } }
-        : current,
-    );
+    setDraft((current) => current ? updateEffectDraftMotion(current, 'exit', { motionId }) : current);
   const setColor = (accent: string) =>
     setDraft((current) => (current ? { ...current, appearance: { ...current.appearance, accent } } : current));
   const setSfx = (sfxId: string) =>
@@ -206,6 +240,7 @@ function EffectLabView({
     ? Math.max(draft.time.startSec, draft.time.endSec - draft.motion.exit.durationSec / 2)
     : draft.time.startSec + Math.min(draft.motion.enter.durationSec / 2, (draft.time.endSec - draft.time.startSec) / 2);
   const previewItem = evaluateSceneAtTime(previewProject, previewTime).items.find((item) => item.effectId === draft.effectId);
+  const previewSpec = previewItem ? createEffectRenderSpec(previewItem) : null;
   const previewItemTransform = previewItem ? `translate(${previewItem.translate.x}px, ${previewItem.translate.y}px) scale(${previewItem.scale}) rotate(${previewItem.rotation}deg)` : previewTransform;
   const contentForVariant = (variant: (typeof effectRegistry)[number], current: EffectInstance['content']): EffectInstance['content'] => {
     if (variant.contentSlots.includes('items')) return { items: ['First step', '第二步'] };
@@ -293,7 +328,7 @@ function EffectLabView({
           <div className={'previewCanvas preview-' + previewMode} key={replayKey}>
             <div className="previewPerson" />
             <span className="draftBadge">PREVIEW DRAFT · 不影响主项目</span>
-            <div className="previewCard" data-testid="preview-content" style={{ opacity: previewItem?.opacity ?? previewFrame.opacity, transform: previewItemTransform, filter: previewItem?.blur ? `blur(${previewItem.blur}px)` : undefined }}>
+            <div className="previewCard" data-render-signature={previewSpec ? renderSpecSignature(previewSpec) : undefined} data-renderer-id={previewSpec?.rendererId} data-testid="preview-content" style={{ opacity: previewItem?.opacity ?? previewFrame.opacity, transform: previewItemTransform, filter: previewItem?.blur ? `blur(${previewItem.blur}px)` : undefined }}>
               {previewItem?.content.kind === 'number' ? (
                 <>
                   <div className="previewRing" data-testid="preview-ring" style={{ borderColor: draft.appearance.accent, borderLeftColor: '#364154' }}>{String(previewItem.content.value)}</div>
@@ -304,7 +339,7 @@ function EffectLabView({
               ) : previewItem?.content.kind === 'text' ? (
                 <div className="previewCopy"><b>{previewItem.content.text}</b><span>{draft.variantId}</span></div>
               ) : (
-                <div className="previewCopy"><b>{previewItem?.content.label ?? draft.familyId}</b><span>{draft.variantId}</span></div>
+                <div className="previewCopy"><b>{(previewItem?.content as { label?: string } | undefined)?.label ?? draft.familyId}</b><span>{draft.variantId}</span></div>
               )}
             </div>
           </div>
@@ -332,7 +367,7 @@ function EffectLabView({
           </div>
           <div className="field range-field">
             <label htmlFor="enter-duration"><span>入场时长</span><b>{draft.motion.enter.durationSec.toFixed(2)}s</b></label>
-            <input id="enter-duration" type="range" min="20" max="120" value={draft.motion.enter.durationSec * 100} onChange={(event) => setDraft((current) => current ? { ...current, motion: { ...current.motion, enter: { ...current.motion.enter, durationSec: Number(event.target.value) / 100 } } } : current)} />
+          <input id="enter-duration" type="range" min="20" max="120" value={draft.motion.enter.durationSec * 100} onChange={(event) => setDraft((current) => current ? updateEffectDraftMotion(current, 'enter', { durationSec: Number(event.target.value) / 100 }) : current)} />
           </div>
 
           <div className="groupTitle">出场 Exit</div>
@@ -402,31 +437,48 @@ export function App() {
   const [store] = useState(() => createProjectStore(createFixtureProject()));
   const videoInputRef = useRef<HTMLInputElement>(null);
   const project = useStoreSnapshot(store);
-  const [clock] = useState(() => createPlaybackClock({ durationSec: project.project.durationSec, fps: project.project.fps, initialTime: 6.6 }));
+  const [clock] = useState(() => createPlaybackClock({ durationSec: project.project.durationSec, fps: project.project.fps }));
   const [preferenceEngine] = useState(() => createPreferenceEngine());
   const clockSnapshot = useClockSnapshot(clock);
   const [view, setView] = useState<ViewId>('edit');
   const [selectedEffectId, setSelectedEffectId] = useState(project.effects[0]?.effectId ?? '');
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
   const [sourceVideoFile, setSourceVideoFile] = useState<File | null>(null);
+  const bundleInputRef = useRef<HTMLInputElement>(null);
   const [generationState, setGenerationState] = useState<'idle' | 'generating' | 'success' | 'error'>('idle');
   const [generationError, setGenerationError] = useState<string | null>(null);
   const [generationDiagnostics, setGenerationDiagnostics] = useState<GenerationDiagnostics | null>(null);
-  const [packagingState, setPackagingState] = useState<'idle' | 'generating' | 'success' | 'error'>('idle');
+  const [packagingState, setPackagingState] = useState<'idle' | 'preflight' | 'blocked' | 'generating' | 'success' | 'error'>('idle');
   const [packagingPlan, setPackagingPlan] = useState<PackagingPlan | null>(null);
   const [packagingResolvedCount, setPackagingResolvedCount] = useState(0);
+  const [packagingAssetCount, setPackagingAssetCount] = useState(0);
   const [packagingError, setPackagingError] = useState<string | null>(null);
+  const [packagingWarnings, setPackagingWarnings] = useState<string[]>([]);
+  const [packagingWorkflow, setPackagingWorkflow] = useState<PackagingWorkflowStep[]>(createPackagingWorkflow);
   const [packagingPreferences, setPackagingPreferences] = useState({ density: 'auto' as 'low' | 'medium' | 'high' | 'auto', motionIntensity: 0.5, subjectAvoidPadding: 0.1, allowBehindSubject: true, maxConcurrentOverlays: 2, visualStyle: 'clean-tech' });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsConfigured, setSettingsConfigured] = useState(false);
   const [settingsApiKey, setSettingsApiKey] = useState('');
-  const [settingsStatus, setSettingsStatus] = useState<string | null>(null);
+  const [visualAssetApiKey, setVisualAssetApiKey] = useState('');
+  const [visualAssetApiKeyConfigured, setVisualAssetApiKeyConfigured] = useState(false);
+  const [visualAssetProvider, setVisualAssetProvider] = useState<'disabled' | 'openai-compatible' | 'custom'>('disabled');
+  const [visualAssetEndpoint, setVisualAssetEndpoint] = useState('');
+  const [visualAssetModel, setVisualAssetModel] = useState('');
+  const [visualAssetDefaultStyle, setVisualAssetDefaultStyle] = useState('tech_neon_3d');
+  const [visualAssetMaxAssets, setVisualAssetMaxAssets] = useState(12);
+  const [referenceImageConditioning, setReferenceImageConditioning] = useState<'auto' | 'on' | 'off'>('auto');
+  const [bailianSettingsStatus, setBailianSettingsStatus] = useState<string | null>(null);
+  const [visualSettingsStatus, setVisualSettingsStatus] = useState<string | null>(null);
   const [exportMode, setExportMode] = useState<'full-video' | 'transparent-mov' | 'transparent-webm'>('full-video');
   const [exportState, setExportState] = useState<'idle' | 'exporting' | 'success' | 'error'>('idle');
   const [exportError, setExportError] = useState<string | null>(null);
   const [exportAbortController, setExportAbortController] = useState<AbortController | null>(null);
   const [mediaProbeState, setMediaProbeState] = useState<'idle' | 'probing' | 'ready' | 'error'>('idle');
   const [mediaProbeError, setMediaProbeError] = useState<string | null>(null);
+  const [browserPlaybackState, setBrowserPlaybackState] = useState<BrowserPlaybackState>(createInitialBrowserPlaybackState);
+  const [browserPlaybackError, setBrowserPlaybackError] = useState<string | null>(null);
+  const [externalBundleStatus, setExternalBundleStatus] = useState<string | null>(null);
+  const [missingRequiredAssetIds, setMissingRequiredAssetIds] = useState<string[]>([]);
   const [projectStatus, setProjectStatus] = useState<string | null>(null);
   const realtimeEnabled = isRealtimeChromaCaptureEnabled();
   const [realtimeState, setRealtimeState] = useState<CaptureState>('IDLE');
@@ -481,12 +533,18 @@ export function App() {
   const handleVideoImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    clock.pause();
+    clock.setTime(0);
     setSourceVideoFile(file);
     setMediaProbeState('probing');
     setMediaProbeError(null);
+    setBrowserPlaybackState('loading-metadata');
+    setBrowserPlaybackError(null);
     setGenerationState('idle');
     setGenerationError(null);
     setGenerationDiagnostics(null);
+    setExternalBundleStatus(null);
+    setMissingRequiredAssetIds([]);
     setVideoSrc(videoSourceManager.replace(file));
     const importedProject = createFixtureProject();
     importedProject.project.video.sourceFileName = file.name;
@@ -513,6 +571,32 @@ export function App() {
       setMediaProbeState('error');
       setMediaProbeError('视频元数据读取失败，请重试或检查 FFprobe 配置');
     });
+  };
+
+  const handleExternalBundleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []);
+    const bundleFile = files.find((file) => file.name.toLowerCase().endsWith('.json') || file.type === 'application/json');
+    if (!bundleFile) {
+      setExternalBundleStatus('无法载入包装 JSON：请选择 Bundle JSON 文件。');
+      return;
+    }
+    try {
+      const input = JSON.parse(await bundleFile.text()) as unknown;
+      const result = importExternalBundle(input, store.getSnapshot(), files.filter((file) => file !== bundleFile).map((file) => ({ name: file.name, type: file.type })));
+      store.replaceComposition(result.project);
+      clock.setDuration(result.project.project.durationSec, result.project.project.fps);
+      clock.setTime(0);
+      setSelectedEffectId(result.project.effects[0]?.effectId ?? '');
+      setMissingRequiredAssetIds(result.missingRequiredAssetIds);
+      setExternalBundleStatus(result.status === 'partial'
+        ? `包装已载入，但有 ${result.missingRequiredAssetIds.length} 个必需素材缺失，当前不可导出。`
+        : `已载入外部包装：${result.project.effects.length} 个包装项，${result.boundAssetCount} 个素材已绑定。`);
+      setView('edit');
+    } catch (error) {
+      setExternalBundleStatus(error instanceof Error ? `无法载入包装 JSON：${error.message}` : '无法载入包装 JSON：文件结构不符合 CueCut Bundle v1。');
+    } finally {
+      event.target.value = '';
+    }
   };
 
   const preferenceProfile = useMemo(
@@ -564,12 +648,40 @@ export function App() {
   };
 
   const handleGeneratePackaging = async () => {
-    if (!sourceVideoFile || mediaProbeState !== 'ready' || packagingState === 'generating') return;
-    setPackagingState('generating');
+    if (!sourceVideoFile || mediaProbeState !== 'ready' || packagingState === 'preflight' || packagingState === 'generating') return;
+    let activeStep: PackagingWorkflowStepId = 'preflight';
+    const updateStep = (id: PackagingWorkflowStepId, status: PackagingWorkflowStep['status'], detail?: string) => {
+      activeStep = id;
+      setPackagingWorkflow((current) => current.map((step) => step.id === id ? { ...step, status, ...(detail ? { detail } : {}) } : step));
+    };
+    setPackagingWorkflow(createPackagingWorkflow());
+    setPackagingState('preflight');
     setPackagingError(null);
+    setPackagingWarnings([]);
+    updateStep('preflight', 'running');
+    try {
+      const capabilityResponse = await fetch('/api/runtime-capabilities');
+      const capability = await capabilityResponse.json() as { director?: { configured?: boolean } };
+      if (!capabilityResponse.ok || capability.director?.configured !== true) {
+        updateStep('preflight', 'failed', '主模型未配置');
+        setPackagingState('blocked');
+        setPackagingError('无法开始生成：请先配置阿里云百炼 API Key 和主模型。');
+        return;
+      }
+    } catch {
+      updateStep('preflight', 'failed', '运行时能力检查失败');
+      setPackagingState('blocked');
+      setPackagingError('无法开始生成：运行时能力检查失败，请检查本地服务。');
+      return;
+    }
+    updateStep('preflight', 'success');
+    updateStep('video-read', 'success', `${sourceVideoFile.name} 已就绪`);
+    setPackagingState('generating');
     try {
       let transcript = project.subtitles;
       if (transcript.length === 0) {
+        updateStep('video-audio', 'running', '服务端提取音频');
+        updateStep('audio-srt', 'running', '等待 ASR 返回');
         const transcriptionResponse = await fetch('/api/transcribe-video', {
           method: 'POST',
           headers: {
@@ -582,10 +694,16 @@ export function App() {
         if (!transcriptionResponse.ok || !Array.isArray(transcriptionPayload.transcript)) {
           throw new Error(transcriptionPayload.message ?? ('SRT 生成失败（HTTP ' + transcriptionResponse.status + '）'));
         }
+        updateStep('video-audio', 'success', '音频已提取');
+        updateStep('audio-srt', 'success', `${transcriptionPayload.transcript.length} 段字幕`);
         transcript = transcriptionPayload.transcript;
         store.setSubtitles(transcript);
+      } else {
+        updateStep('video-audio', 'success', '使用已有音频结果');
+        updateStep('audio-srt', 'success', `${transcript.length} 段已有字幕`);
       }
       const projectForPackaging = store.getSnapshot();
+      updateStep('director', 'running', '调用一次 Packaging Director');
       const response = await fetch('/api/generate-packaging', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -606,21 +724,84 @@ export function App() {
       });
       const payload = await response.json() as { message?: string; plan?: PackagingPlan; aiCallCount?: number };
       if (!response.ok || !payload.plan) throw new Error(payload.message ?? ('包装生成失败（HTTP ' + response.status + '）'));
-      setPackagingPlan(payload.plan);
-      const resolved = resolvePackagingPlan(payload.plan);
-      const appliedProject = applyResolvedPackagingToProject(projectForPackaging, resolved);
-      store.replaceComposition(appliedProject);
-      setSelectedEffectId(appliedProject.effects[0]?.effectId ?? '');
+      if (payload.aiCallCount !== 1) throw new Error('Packaging Director 必须严格调用 1 次');
+      updateStep('director', 'success', '1 次调用完成');
+      const groundingUnits = payload.plan.timeline.filter((item) => item.keyClaim !== undefined || item.evidenceText !== undefined).map((item) => ({ id: item.id, sourceSubtitleIds: item.sourceSubtitleIds ?? [], keyClaim: item.keyClaim, evidenceText: item.evidenceText, visualValue: item.visualValue, content: item.content }));
+      const grounding = groundingUnits.length > 0 ? validateVisualGrounding(groundingUnits, transcript) : null;
+      if (grounding?.fatal.length) throw new Error(`包装语义校验失败：${grounding.fatal[0]!.message}`);
+      const acceptedGroundedIds = new Set(grounding?.acceptedUnitIds ?? []);
+      const planForResolve = grounding ? { ...payload.plan, timeline: payload.plan.timeline.filter((item) => !groundingUnits.some((unit) => unit.id === item.id) || acceptedGroundedIds.has(item.id)) } : payload.plan;
+      updateStep('asset-plan', 'running');
+      const assetCandidates = planVisualAssets(payload.plan, { styleId: 'tech_neon_3d', maxAssets: 12 });
+      setPackagingAssetCount(assetCandidates.length);
+      updateStep('asset-plan', 'success', `${assetCandidates.length} 个候选`);
+      const generatedAssetRefs = new Map<string, string>();
+      updateStep('visual-generation', 'running', assetCandidates.length > 0 ? '提交冻结的 Atlas 计划' : '没有需要生图的资产');
+      if (assetCandidates.length === 0) {
+        updateStep('visual-generation', 'success', '无 raster asset，已跳过');
+      } else {
+        const atlasPages = planAtlasPages(assetCandidates.map((candidate) => candidate.assetId));
+        const atlasPlans = atlasPages.map((page) => ({
+          ...page,
+          prompt: buildAtlasPrompt(page, 'tech_neon_3d'),
+          candidates: page.slots.map((slot) => assetCandidates.find((candidate) => candidate.assetId === slot.assetId)).filter(Boolean),
+        }));
+        try {
+          const assetResponse = await fetch('/api/generate-visual-assets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ styleId: 'tech_neon_3d', atlasPlans, referenceImage: null }) });
+          const assetPayload = await assetResponse.json() as { ok?: boolean; status?: 'disabled' | 'generated'; assets?: Array<{ assetId?: string; page?: number; imageBase64?: string }>; message?: string };
+          if (!assetResponse.ok || assetPayload.status === undefined) throw new Error(assetPayload.message ?? `视觉资产生成失败（HTTP ${assetResponse.status}）`);
+          for (const asset of assetPayload.assets ?? []) {
+            if (typeof asset.assetId === 'string' && typeof asset.imageBase64 === 'string' && asset.imageBase64.trim()) generatedAssetRefs.set(asset.assetId, asset.imageBase64.startsWith('data:') ? asset.imageBase64 : `data:image/png;base64,${asset.imageBase64}`);
+          }
+          if (assetPayload.status === 'disabled') {
+            updateStep('visual-generation', 'success', 'Provider 未启用，已跳过');
+            setPackagingWarnings((current) => [...current, '视觉资产生图服务未配置，已跳过生图；原生文字和动效仍会继续生成。']);
+          } else {
+            updateStep('visual-generation', 'success', `${generatedAssetRefs.size}/${assetCandidates.length} 个资产返回`);
+            if (generatedAssetRefs.size < assetCandidates.length) setPackagingWarnings((current) => [...current, '部分视觉资产未返回，已回退到原生包装。']);
+          }
+        } catch (error) {
+          const message = error instanceof Error ? error.message : '未知错误';
+          updateStep('visual-generation', 'failed', `${message}；已回退原生包装`);
+          setPackagingWarnings((current) => [...current, '视觉资产生成失败，已回退到原生包装。']);
+        }
+      }
+      setPackagingPlan(planForResolve);
+      updateStep('resolve-layout', 'running');
+      const resolved = resolvePackagingPlan(planForResolve);
+      const validation = validateResolvedPackagingPlan({ durationSec: projectForPackaging.project.durationSec, maxConcurrentOverlays: planForResolve.constraints.maxConcurrentOverlays, overlays: resolved.overlays });
+      if (!validation.valid) throw new Error(`包装校验失败：${validation.issues[0]!.message}`);
+      updateStep('resolve-layout', 'success', `${resolved.runtimeTimeline.items.length} 个时间项`);
+      const appliedProject = applyResolvedPackagingToProject(projectForPackaging, {
+        overlays: resolved.overlays,
+        chapters: planForResolve.chapters?.map((chapter) => ({ id: chapter.id, title: chapter.title, startSec: chapter.startSec, endSec: chapter.endSec })),
+      });
+      const assetBoundProject: ProjectComposition = generatedAssetRefs.size === 0 ? appliedProject : {
+        ...appliedProject,
+        effects: appliedProject.effects.map((effect) => {
+          const assetId = assetRequestId(effect.content);
+          const projectAssetRef = assetId ? generatedAssetRefs.get(assetId) : undefined;
+          return projectAssetRef && assetId ? { ...effect, asset: { assetId, source: 'generated' as const, projectAssetRef } } : effect;
+        }),
+      };
+      updateStep('runtime', 'running');
+      const runtimeItems = compileProjectToRuntime(assetBoundProject);
+      if (runtimeItems.length !== assetBoundProject.effects.length) throw new Error('Runtime 编译结果与 Workspace effect 数量不一致');
+      updateStep('runtime', 'success', `${runtimeItems.length} 个 RuntimeItem`);
+      store.replaceComposition(assetBoundProject);
+      setSelectedEffectId(assetBoundProject.effects[0]?.effectId ?? '');
       setPackagingResolvedCount(resolved.runtimeTimeline.items.length);
+      updateStep('workspace', 'success', '已载入当前项目');
       setPackagingState('success');
     } catch (error) {
+      updateStep(activeStep, 'failed', error instanceof Error ? error.message : '未知错误');
       setPackagingState('error');
       setPackagingError(error instanceof Error ? error.message : '包装生成失败');
     }
   };
 
   const handleExport = async () => {
-    if (exportState === 'exporting' || mediaProbeState !== 'ready' || (exportMode === 'full-video' && !sourceVideoFile)) return;
+    if (exportState === 'exporting' || mediaProbeState !== 'ready' || missingRequiredAssetIds.length > 0 || (exportMode === 'full-video' && !sourceVideoFile)) return;
     setExportState('exporting');
     setExportError(null);
     const abortController = new AbortController();
@@ -683,25 +864,63 @@ export function App() {
     if (settingsOpen) return;
     try {
       const response = await fetch('/api/settings');
-      const payload = await response.json() as { bailianApiKeyConfigured?: boolean };
+      const payload = await response.json() as {
+        bailianApiKeyConfigured?: boolean;
+        visualAssetApiKeyConfigured?: boolean;
+        visualAssetProvider?: 'disabled' | 'openai-compatible' | 'custom';
+        visualAssetEndpoint?: string;
+        visualAssetModel?: string;
+        visualAssetDefaultStyle?: string;
+        visualAssetMaxAssets?: number;
+        referenceImageConditioning?: 'auto' | 'on' | 'off';
+      };
       setSettingsConfigured(payload.bailianApiKeyConfigured === true);
-      setSettingsStatus(null);
+      setVisualAssetApiKeyConfigured(payload.visualAssetApiKeyConfigured === true);
+      if (payload.visualAssetProvider) setVisualAssetProvider(payload.visualAssetProvider);
+      if (typeof payload.visualAssetEndpoint === 'string') setVisualAssetEndpoint(payload.visualAssetEndpoint);
+      if (typeof payload.visualAssetModel === 'string') setVisualAssetModel(payload.visualAssetModel);
+      if (typeof payload.visualAssetDefaultStyle === 'string') setVisualAssetDefaultStyle(payload.visualAssetDefaultStyle);
+      if (typeof payload.visualAssetMaxAssets === 'number') setVisualAssetMaxAssets(payload.visualAssetMaxAssets);
+      if (payload.referenceImageConditioning) setReferenceImageConditioning(payload.referenceImageConditioning);
+      setBailianSettingsStatus(null);
+      setVisualSettingsStatus(null);
     } catch {
-      setSettingsStatus('设置服务不可用');
+      setBailianSettingsStatus('读取设置失败：设置服务不可用');
+      setVisualSettingsStatus('读取设置失败：设置服务不可用');
     }
   };
 
-  const handleSaveSettings = async () => {
-    if (!settingsApiKey.trim()) return;
+  const handleSaveSettings = async (section: 'bailian' | 'visual') => {
+    const isBailian = section === 'bailian';
+    const setStatus = isBailian ? setBailianSettingsStatus : setVisualSettingsStatus;
+    setStatus(null);
     try {
-      const response = await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: settingsApiKey }) });
-      const payload = await response.json() as { ok?: boolean; message?: string };
+      const body = isBailian
+        ? { apiKey: settingsApiKey }
+        : {
+            ...(visualAssetApiKey.trim() ? { visualAssetApiKey } : {}),
+            visualAssetProvider,
+            visualAssetEndpoint,
+            visualAssetModel,
+            visualAssetDefaultStyle,
+            visualAssetMaxAssets,
+            referenceImageConditioning,
+          };
+      const response = await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const payload = await response.json() as { ok?: boolean; message?: string; bailianApiKeyConfigured?: boolean; visualAssetApiKeyConfigured?: boolean };
       if (!response.ok || payload.ok !== true) throw new Error(payload.message ?? '保存失败');
-      setSettingsConfigured(true);
-      setSettingsApiKey('');
-      setSettingsStatus('已保存到本机私密配置');
+      if (isBailian) {
+        setSettingsConfigured(true);
+        setSettingsApiKey('');
+        setStatus('保存成功：阿里百炼 API Key 已保存');
+      } else {
+        setVisualAssetApiKeyConfigured(payload.visualAssetApiKeyConfigured === true || visualAssetApiKeyConfigured || Boolean(visualAssetApiKey.trim()));
+        setVisualAssetApiKey('');
+        setStatus('保存成功：视觉资产设置已保存');
+      }
     } catch (error) {
-      setSettingsStatus(error instanceof Error ? error.message : '保存失败');
+      const message = error instanceof Error ? error.message : '未知错误';
+      setStatus(message.startsWith('保存失败') ? message : `保存失败：${message}`);
     }
   };
 
@@ -750,17 +969,24 @@ export function App() {
         <span className="pill">后续调整全部本地</span>
         <span className="spacer" />
         <input ref={videoInputRef} accept="video/*" className="file-input" data-testid="video-input" id="video-input" onChange={handleVideoImport} type="file" />
+        <input ref={bundleInputRef} accept=".json,application/json,image/png,image/jpeg,image/webp,image/svg+xml" className="file-input" data-testid="packaging-bundle-input" multiple onChange={(event) => void handleExternalBundleImport(event)} type="file" />
         <button className="btn import-video-control" data-testid="video-import-control" onClick={() => videoInputRef.current?.click()} type="button">导入视频</button>
+        <button className="btn" onClick={() => bundleInputRef.current?.click()} type="button">载入包装 JSON</button>
         <span className="file-name">{project.project.video.sourceFileName ?? '未导入视频'}</span>
         <button className="btn primary" disabled={!sourceVideoFile || mediaProbeState !== 'ready' || generationState === 'generating' || generationState === 'success'} onClick={() => void handleGenerateEffects()} type="button">
           {generationState === 'generating' ? '生成中…' : generationState === 'success' ? generationDiagnostics?.usedFallback ? '已载入（本地回退）' : '已生成并载入' : '开始生成动效'}
         </button>
-        <button className="btn primary" data-testid="packaging-generate-button" disabled={!sourceVideoFile || mediaProbeState !== 'ready' || packagingState === 'generating'} onClick={() => void handleGeneratePackaging()} type="button">
-          {packagingState === 'generating' ? '生成 AI 包装中…' : '生成 AI 包装'}
+        <button className="btn primary" data-testid="packaging-generate-button" disabled={!sourceVideoFile || mediaProbeState !== 'ready' || packagingState === 'preflight' || packagingState === 'generating'} onClick={() => void handleGeneratePackaging()} type="button">
+          {packagingState === 'preflight' ? '检查配置中…' : packagingState === 'generating' ? '生成 AI 包装中…' : '生成 AI 包装'}
         </button>
+        {packagingState === 'preflight' && <span className="tiny" data-testid="packaging-status">检查主模型配置…</span>}
         {packagingState === 'generating' && <span className="tiny" data-testid="packaging-status">提取音频 → 生成 SRT → SRT+动效库 → 一次 AI 生成 → 生成包装</span>}
-        {packagingState === 'success' && packagingPlan && <span className="tiny" data-testid="packaging-status">已生成包装计划 · {packagingPlan.timeline.length} 个意图 · {packagingResolvedCount} 个已排版 · AI 1 次</span>}
+        {packagingState === 'success' && packagingPlan && <span className="tiny" data-testid="packaging-status">已生成包装计划 · {packagingPlan.timeline.length} 个意图 · {packagingResolvedCount} 个已排版 · {packagingAssetCount} 个视觉资产候选 · AI 1 次</span>}
         {packagingError && <span className="tiny error" role="alert">{packagingError}</span>}
+        {packagingWarnings.length > 0 && <span className="tiny error" data-testid="packaging-warnings" role="alert">警告：{packagingWarnings.join('；')}</span>}
+        <ol className="packaging-workflow" data-testid="packaging-workflow" aria-label="包装生成工作流">
+          {packagingWorkflow.map((step) => <li data-stage-id={step.id} data-stage-status={step.status} key={step.id}><span>{step.label} · {step.status === 'pending' ? '等待' : step.status === 'running' ? '进行中' : step.status === 'success' ? '成功' : '失败'}</span>{step.detail && <small> · {step.detail}</small>}</li>)}
+        </ol>
         <details className="packaging-settings">
           <summary>包装设置</summary>
           <div className="packaging-settings-panel">
@@ -777,6 +1003,8 @@ export function App() {
         {generationState === 'success' && generationDiagnostics && generationDiagnostics.warnings.length > 0 && <span className="tiny error" data-testid="generation-warnings">警告：{generationDiagnostics.warnings.join('；')}</span>}
         {generationError && <span className="tiny error" role="alert">{generationError}</span>}
         {mediaProbeError && <span className="tiny error" role="alert">{mediaProbeError}</span>}
+        {videoSrc && <span className="tiny" data-testid="video-playback-status">{browserPlaybackState === 'can-play' ? '视频预览可用' : `视频预览：${browserPlaybackState}`}</span>}
+        {browserPlaybackError && <span className="tiny error" role="alert">{browserPlaybackError}</span>}
         <button className="btn" disabled={store.undoDepth() === 0} onClick={() => store.undo()} type="button">↶</button>
         <button className="btn" disabled={store.redoDepth() === 0} onClick={() => store.redo()} type="button">↷</button>
         <select aria-label="导出模式" className="export-mode" title="选择导出格式" value={exportMode} onChange={(event) => setExportMode(event.target.value as typeof exportMode)}>
@@ -784,12 +1012,13 @@ export function App() {
           <option value="transparent-mov">MOV · 透明叠加</option>
           <option value="transparent-webm">WebM · 透明叠加</option>
         </select>
-        <button aria-label="导出" className="btn primary export-action" disabled={exportState === 'exporting' || mediaProbeState !== 'ready' || (exportMode === 'full-video' && !sourceVideoFile)} onClick={() => void handleExport()} title="导出当前项目视频文件" type="button">
+        <button aria-label="导出" className="btn primary export-action" disabled={exportState === 'exporting' || mediaProbeState !== 'ready' || missingRequiredAssetIds.length > 0 || (exportMode === 'full-video' && !sourceVideoFile)} onClick={() => void handleExport()} title="导出当前项目视频文件" type="button">
           {exportState === 'exporting' ? '导出中…' : '导出文件'}
         </button>
         {exportState === 'exporting' && <button className="btn" onClick={handleCancelExport} type="button">取消导出</button>}
         {exportState === 'success' && <span className="tiny" data-testid="export-status">已生成本地文件</span>}
         {exportError && <span className="tiny error" role="alert">{exportError}</span>}
+        {externalBundleStatus && <span className={'tiny' + (missingRequiredAssetIds.length > 0 ? ' error' : '')} data-testid="external-bundle-status" role={missingRequiredAssetIds.length > 0 ? 'alert' : 'status'}>{externalBundleStatus}</span>}
         <RealtimeCapturePanel
           enabled={realtimeEnabled}
           state={realtimeState}
@@ -808,8 +1037,21 @@ export function App() {
             <strong>大模型 API Key</strong>
             <div className="tiny">阿里百炼 · {settingsConfigured ? '已配置' : '未配置'}</div>
             <label>阿里百炼 API Key<input aria-label="阿里百炼 API Key" type="password" value={settingsApiKey} onChange={(event) => setSettingsApiKey(event.target.value)} placeholder="输入后保存，不会回显" /></label>
-            <button className="btn primary" disabled={!settingsApiKey.trim()} onClick={() => void handleSaveSettings()} type="button">保存 API Key</button>
-            {settingsStatus && <div className="tiny">{settingsStatus}</div>}
+            <button className="btn primary" disabled={!settingsApiKey.trim()} onClick={() => void handleSaveSettings('bailian')} type="button">保存 API Key</button>
+            {bailianSettingsStatus && <div className="tiny" data-testid="bailian-settings-status">{bailianSettingsStatus}</div>}
+          </section>
+          <section>
+            <strong>第三方 API 生图</strong>
+            <div className="tiny">视觉资产 API Key · {visualAssetApiKeyConfigured ? '已配置' : '未配置'}</div>
+            <label>Provider<select aria-label="视觉资产 Provider" value={visualAssetProvider} onChange={(event) => setVisualAssetProvider(event.target.value as typeof visualAssetProvider)}><option value="disabled">关闭</option><option value="openai-compatible">OpenAI Compatible</option><option value="custom">Custom</option></select></label>
+            <label>Endpoint<input aria-label="视觉资产 Endpoint" type="url" value={visualAssetEndpoint} onChange={(event) => setVisualAssetEndpoint(event.target.value)} placeholder="https://…" /></label>
+            <label>模型<input aria-label="视觉资产模型" type="text" value={visualAssetModel} onChange={(event) => setVisualAssetModel(event.target.value)} /></label>
+            <label>视觉资产 API Key<input aria-label="视觉资产 API Key" type="password" value={visualAssetApiKey} onChange={(event) => setVisualAssetApiKey(event.target.value)} placeholder="输入后保存，不会回显" /></label>
+            <label>默认风格<input aria-label="视觉资产默认风格" type="text" value={visualAssetDefaultStyle} onChange={(event) => setVisualAssetDefaultStyle(event.target.value)} /></label>
+            <label>每次最多生成资产<input aria-label="视觉资产数量上限" type="number" min="1" max="12" value={visualAssetMaxAssets} onChange={(event) => setVisualAssetMaxAssets(Number(event.target.value))} /></label>
+            <label>参考图条件<select aria-label="参考图条件" value={referenceImageConditioning} onChange={(event) => setReferenceImageConditioning(event.target.value as typeof referenceImageConditioning)}><option value="auto">自动</option><option value="on">开启</option><option value="off">关闭</option></select></label>
+            <button className="btn primary" onClick={() => void handleSaveSettings('visual')} type="button">保存视觉资产设置</button>
+            {visualSettingsStatus && <div className="tiny" data-testid="visual-settings-status">{visualSettingsStatus}</div>}
           </section>
         </div>}
         {projectStatus && <span className="tiny" data-testid="project-status">{projectStatus}</span>}
@@ -837,7 +1079,7 @@ export function App() {
           ))}
         </nav>
         <div className="views">
-          {view === 'edit' && <EditView project={project} store={store} currentTime={clockSnapshot.currentTime} selectedEffectId={selectedEffectId} videoSrc={videoSrc} playing={clockSnapshot.playing} onSelect={onSelect} onSeek={onSeek} subtitleItems={project.subtitles} onSubtitleItemsChange={(items) => store.setSubtitles(items)} subtitleSettings={project.subtitleSettings} onSubtitleSettingsChange={(update) => store.setSubtitleSettings(update)} onVideoMetadata={() => undefined} onOpenLab={() => setView('lab')} />}
+          {view === 'edit' && <EditView project={project} store={store} currentTime={clockSnapshot.currentTime} selectedEffectId={selectedEffectId} videoSrc={videoSrc} playing={clockSnapshot.playing} onSelect={onSelect} onSeek={onSeek} subtitleItems={project.subtitles} onSubtitleItemsChange={(items) => store.setSubtitles(items)} subtitleSettings={project.subtitleSettings} onSubtitleSettingsChange={(update) => store.setSubtitleSettings(update)} onVideoMetadata={() => undefined} onVideoPlaybackState={setBrowserPlaybackState} onVideoPlaybackError={setBrowserPlaybackError} onOpenLab={() => setView('lab')} />}
           {view === 'lab' && <EffectLabView project={project} store={store} selectedEffectId={selectedEffectId} onClose={() => setView('edit')} />}
           {view === 'sfx' && <SfxLibrary store={store} selectedEffectId={selectedEffectId} />}
           {view === 'learn' && <LearnView />}

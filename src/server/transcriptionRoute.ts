@@ -7,7 +7,7 @@ import { pipeline } from 'node:stream/promises';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { createBailianAsrClient } from '../media/bailianAsr';
 import { serializeSrt, type TranscriptSegment } from '../subtitles/srt';
-import { readBailianApiKey } from './generationRoute';
+import { assertDirectorConfigured, readBailianApiKey, resolveCueCutEnvPath } from './generationRoute';
 
 const MAX_VIDEO_BYTES = 512 * 1024 * 1024;
 const MAX_AUDIO_BASE64_BYTES = 10 * 1024 * 1024;
@@ -46,8 +46,9 @@ export function createTranscriptionRoute(runner: TranscriptionRunner) {
 
 export function createHostTranscriptionRunner(options: { projectRoot?: string; envPath?: string; ffmpegPath?: string; tempRoot?: string; fetchImpl?: typeof fetch } = {}): TranscriptionRunner {
   const projectRoot = options.projectRoot ?? process.cwd();
-  const envPath = options.envPath ?? resolve(projectRoot, '测试素材与api', '.env');
+  const envPath = options.envPath ?? resolveCueCutEnvPath(projectRoot);
   return async (input) => {
+    await assertDirectorConfigured(envPath);
     const temporaryDirectory = await fs.mkdtemp(join(options.tempRoot ?? tmpdir(), 'cuecut-transcription-'));
     const videoPath = join(temporaryDirectory, safeFileName(input.fileName));
     const audioPath = join(temporaryDirectory, 'audio.mp3');

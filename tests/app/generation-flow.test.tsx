@@ -32,6 +32,44 @@ describe('video to Workspace generation flow', () => {
     expect(screen.getByLabelText('人物避让距离')).toBeInTheDocument();
   });
 
+  it('blocks Packaging AI before transcription when the Director capability is not configured', async () => {
+    const calls: string[] = [];
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      calls.push(String(input));
+      if (input === '/api/probe-video') return new Response(JSON.stringify({ durationSec: 12, fps: 30, width: 1920, height: 1080 }), { status: 200 });
+      if (input === '/api/runtime-capabilities') return new Response(JSON.stringify({ ok: true, director: { configured: false, verified: false, model: null, source: 'none' }, visualAssets: { mode: 'disabled', provider: 'disabled', model: null } }), { status: 200 });
+      return new Response('{}', { status: 500 });
+    });
+    const video = new File(['video-bytes'], 'preflight.mp4', { type: 'video/mp4' });
+
+    render(<App />);
+    fireEvent.change(screen.getByTestId('video-input'), { target: { files: [video] } });
+    const packagingButton = screen.getByRole('button', { name: '生成 AI 包装' });
+    await waitFor(() => expect(packagingButton).toBeEnabled());
+    fireEvent.click(packagingButton);
+
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('无法开始生成：请先配置阿里云百炼 API Key 和主模型。'));
+    expect(calls).toContain('/api/runtime-capabilities');
+    expect(calls).not.toContain('/api/transcribe-video');
+    expect(calls).not.toContain('/api/generate-packaging');
+    expect(packagingButton).toBeEnabled();
+    fetchMock.mockRestore();
+  });
+
+  it('imports an external packaging bundle locally without calling an AI endpoint', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response('{}', { status: 500 }));
+    const bundle = { schema: 'cuecut.packaging-bundle', version: 1, mode: 'project', composition: createFixtureProject(), assets: [] };
+    const bundleFile = new File([JSON.stringify(bundle)], 'external-bundle.json', { type: 'application/json' });
+
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: '载入包装 JSON' }));
+    fireEvent.change(screen.getByTestId('packaging-bundle-input'), { target: { files: [bundleFile] } });
+
+    await waitFor(() => expect(screen.getByTestId('external-bundle-status')).toHaveTextContent('已载入外部包装'));
+    expect(fetchMock).not.toHaveBeenCalled();
+    fetchMock.mockRestore();
+  });
+
   it('transcribes an imported video before the independent Packaging AI call and loads both SRT and overlays', async () => {
     const calls: string[] = [];
     const plan = {
@@ -52,6 +90,7 @@ describe('video to Workspace generation flow', () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
       calls.push(String(input));
       if (input === '/api/probe-video') return new Response(JSON.stringify({ durationSec: 12, fps: 30, width: 1920, height: 1080 }), { status: 200 });
+      if (input === '/api/runtime-capabilities') return new Response(JSON.stringify({ ok: true, director: { configured: true, verified: false, model: 'qwen3.8-flash', source: 'env' }, visualAssets: { mode: 'disabled', provider: 'disabled', model: null } }), { status: 200 });
       if (input === '/api/transcribe-video') return new Response(JSON.stringify({ transcript: [{ id: 's-1', startSec: 0, endSec: 2.5, text: 'ASR字幕' }], srtFileName: 'portrait-asr.srt' }), { status: 200 });
       if (input === '/api/generate-packaging') {
         const body = JSON.parse(String(init?.body));
@@ -72,9 +111,83 @@ describe('video to Workspace generation flow', () => {
     await waitFor(() => expect(screen.getByDisplayValue('ASR字幕')).toBeVisible());
     expect(await screen.findByTestId('packaging-status')).toHaveTextContent('1 个已排版');
     expect(screen.getByTestId('effect-card-packaging-overlay-1')).toBeInTheDocument();
+    expect(screen.getByTestId('packaging-status')).toHaveTextContent('AI 1 次');
+    expect(screen.getByTestId('packaging-workflow')).toHaveTextContent('配置检查 · 成功');
+    expect(screen.getByTestId('packaging-workflow')).toHaveTextContent('视频读取 · 成功');
+    expect(screen.getByTestId('packaging-workflow')).toHaveTextContent('视频 → 音频 · 成功');
+    expect(screen.getByTestId('packaging-workflow')).toHaveTextContent('音频 → SRT · 成功');
+    expect(screen.getByTestId('packaging-workflow')).toHaveTextContent('SRT → Director · 成功');
+    expect(screen.getByTestId('packaging-workflow')).toHaveTextContent('本地 Resolve / Layout · 成功');
+    expect(screen.getByTestId('packaging-workflow')).toHaveTextContent('Runtime 编译 · 成功');
+    expect(screen.getByTestId('packaging-workflow')).toHaveTextContent('载入 Workspace · 成功');
     expect(calls.indexOf('/api/transcribe-video')).toBeLessThan(calls.indexOf('/api/generate-packaging'));
     expect(calls.filter((call) => call === '/api/generate-packaging')).toHaveLength(1);
 
+    fetchMock.mockRestore();
+  });
+
+  it('marks the Director stage as failed when Packaging Director times out', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      if (input === '/api/probe-video') return new Response(JSON.stringify({ durationSec: 12, fps: 30, width: 1920, height: 1080 }), { status: 200 });
+      if (input === '/api/runtime-capabilities') return new Response(JSON.stringify({ ok: true, director: { configured: true, verified: false, model: 'qwen3.8-flash', source: 'env' }, visualAssets: { mode: 'disabled', provider: 'disabled', model: null } }), { status: 200 });
+      if (input === '/api/transcribe-video') return new Response(JSON.stringify({ transcript: [{ id: 's-1', startSec: 0, endSec: 2, text: '字幕' }], srtFileName: 'smoke-asr.srt' }), { status: 200 });
+      if (input === '/api/generate-packaging') return new Response(JSON.stringify({ message: 'Bailian request timed out after 120000ms' }), { status: 500 });
+      return new Response('{}', { status: 404 });
+    });
+    const video = new File(['video-bytes'], 'timeout.mp4', { type: 'video/mp4' });
+
+    render(<App />);
+    fireEvent.change(screen.getByTestId('video-input'), { target: { files: [video] } });
+    const packagingButton = screen.getByRole('button', { name: '生成 AI 包装' });
+    await waitFor(() => expect(packagingButton).toBeEnabled());
+    fireEvent.click(packagingButton);
+
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Bailian request timed out after 120000ms'));
+    expect(screen.getByTestId('packaging-workflow')).toHaveTextContent('SRT → Director · 失败');
+    expect(screen.getByTestId('packaging-workflow')).toHaveTextContent('120000ms');
+    expect(screen.getByTestId('packaging-workflow')).not.toHaveTextContent('Runtime 编译 · 成功');
+    fetchMock.mockRestore();
+  });
+
+  it('calls the visual asset provider for raster-worthy plan assets and continues to Workspace', async () => {
+    const calls: string[] = [];
+    const plan = {
+      schemaVersion: '1.0' as const,
+      projectId: 'visual-asset-project',
+      canvas: { width: 1920, height: 1080, aspectRatio: '16:9', fps: 30 },
+      globalStyle: { visualStyle: 'clean-tech', energy: 0.5, density: 'auto' as const, paletteIntent: 'brand', motionIntensity: 0.5 },
+      timeline: [{
+        id: 'robot-overlay', startSec: 1, endSec: 4, intent: 'character', category: 'stat' as const, content: { value: '1', label: 'AI 助手', text: 'AI 助手', assetRequest: { needed: true, assetId: 'ai_robot_assistant', displayName: 'AI Robot Assistant', kind: 'character' as const, description: 'friendly futuristic AI robot assistant, isolated full body', semanticTags: ['ai', 'robot'], importance: 'hero' as const } }, importance: 0.9,
+        visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'strong' as const }, motionIntent: { entrance: 'slide_right' as const, emphasis: 'none' as const, exit: 'slide_out_right' as const }, placementIntent: { preferredZones: ['upper-right' as const], subjectRelation: 'avoid' as const, anchor: 'scene-safe' as const }, templateQuery: { semanticRole: 'evidence' as const, requiredContentSlots: ['value'], preferredZones: ['upper-right' as const] }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false },
+      }],
+      constraints: { maxConcurrentOverlays: 2, allowBehindSubject: true, subjectAvoidPadding: 0.1, edgeInsets: { top: 0.04, bottom: 0.08, left: 0.05, right: 0.05 } },
+      exportHints: { formats: ['mp4' as const], transparent: false },
+    };
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      calls.push(String(input));
+      if (input === '/api/probe-video') return new Response(JSON.stringify({ durationSec: 12, fps: 30, width: 1920, height: 1080 }), { status: 200 });
+      if (input === '/api/runtime-capabilities') return new Response(JSON.stringify({ ok: true, director: { configured: true, verified: false, model: 'qwen3.8-flash', source: 'env' }, visualAssets: { mode: 'ready', provider: 'openai-compatible', model: 'image-model' } }), { status: 200 });
+      if (input === '/api/transcribe-video') return new Response(JSON.stringify({ transcript: [{ id: 's-1', startSec: 0, endSec: 2, text: 'AI 助手' }], srtFileName: 'visual-asr.srt' }), { status: 200 });
+      if (input === '/api/generate-packaging') return new Response(JSON.stringify({ plan, aiCallCount: 1 }), { status: 200 });
+      if (input === '/api/generate-visual-assets') {
+        const body = JSON.parse(String(init?.body)) as { atlasPlans?: Array<{ slots?: Array<{ assetId: string }> }> };
+        expect(body.atlasPlans?.[0]?.slots?.[0]?.assetId).toBe('ai_robot_assistant');
+        return new Response(JSON.stringify({ ok: true, status: 'generated', assets: [{ assetId: 'ai_robot_assistant', page: 0, imageBase64: 'generated-png' }] }), { status: 200 });
+      }
+      return new Response('{}', { status: 404 });
+    });
+    const video = new File(['video-bytes'], 'visual.mp4', { type: 'video/mp4' });
+
+    render(<App />);
+    fireEvent.change(screen.getByTestId('video-input'), { target: { files: [video] } });
+    const packagingButton = screen.getByRole('button', { name: '生成 AI 包装' });
+    await waitFor(() => expect(packagingButton).toBeEnabled());
+    fireEvent.click(packagingButton);
+
+    await waitFor(() => expect(screen.getByTestId('packaging-status')).toHaveTextContent('已生成包装计划'));
+    expect(calls.indexOf('/api/generate-packaging')).toBeLessThan(calls.indexOf('/api/generate-visual-assets'));
+    expect(screen.getByTestId('packaging-workflow')).toHaveTextContent('视觉资产生成 · 成功');
+    expect(screen.getByTestId('packaging-workflow')).toHaveTextContent('Runtime 编译 · 成功');
     fetchMock.mockRestore();
   });
 
@@ -83,6 +196,64 @@ describe('video to Workspace generation flow', () => {
     fireEvent.click(screen.getByRole('button', { name: '设置' }));
     expect(screen.getByRole('dialog', { name: '设置' })).toBeInTheDocument();
     expect(screen.getByLabelText('阿里百炼 API Key')).toHaveAttribute('type', 'password');
+  });
+
+  it('loads and persists visual asset provider settings without retaining the API key in the form', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      if (input === '/api/settings' && !init) {
+        return new Response(JSON.stringify({ ok: true, bailianApiKeyConfigured: true, visualAssetApiKeyConfigured: false, visualAssetProvider: 'openai-compatible', visualAssetEndpoint: 'https://images.example.test/v1', visualAssetModel: 'qwen3.8-flash', visualAssetDefaultStyle: 'tech_neon_3d', visualAssetMaxAssets: 8, referenceImageConditioning: 'auto' }), { status: 200 });
+      }
+      if (input === '/api/settings' && init?.method === 'POST') {
+        const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+        expect(body).toMatchObject({ visualAssetApiKey: 'visual-secret', visualAssetProvider: 'openai-compatible', visualAssetEndpoint: 'https://images.example.test/v1', visualAssetModel: 'qwen3.8-flash', visualAssetMaxAssets: 8 });
+        return new Response(JSON.stringify({ ok: true, bailianApiKeyConfigured: true, visualAssetApiKeyConfigured: true, visualAssetProvider: 'openai-compatible', visualAssetEndpoint: body.visualAssetEndpoint, visualAssetModel: body.visualAssetModel, visualAssetDefaultStyle: body.visualAssetDefaultStyle, visualAssetMaxAssets: body.visualAssetMaxAssets, referenceImageConditioning: body.referenceImageConditioning }), { status: 200 });
+      }
+      return new Response('{}', { status: 404 });
+    });
+
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: '设置' }));
+    await waitFor(() => expect(screen.getByDisplayValue('qwen3.8-flash')).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText('视觉资产 API Key'), { target: { value: 'visual-secret' } });
+    fireEvent.click(screen.getByRole('button', { name: '保存视觉资产设置' }));
+
+    await waitFor(() => expect(screen.getByLabelText('视觉资产 API Key')).toHaveValue(''));
+    expect(screen.getByText('视觉资产 API Key · 已配置')).toBeInTheDocument();
+    fetchMock.mockRestore();
+  });
+
+  it('does not clear the other settings draft and shows scoped save errors', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      if (input === '/api/settings' && !init) {
+        return new Response(JSON.stringify({ ok: true, bailianApiKeyConfigured: false, visualAssetApiKeyConfigured: false, visualAssetProvider: 'disabled', visualAssetEndpoint: '', visualAssetModel: '', visualAssetDefaultStyle: 'tech_neon_3d', visualAssetMaxAssets: 12, referenceImageConditioning: 'auto' }), { status: 200 });
+      }
+      if (input === '/api/settings' && init?.method === 'POST') {
+        const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+        if (body.visualAssetProvider) {
+          expect(body).not.toHaveProperty('apiKey');
+          return new Response(JSON.stringify({ ok: true, bailianApiKeyConfigured: false, visualAssetApiKeyConfigured: true, visualAssetProvider: body.visualAssetProvider, visualAssetEndpoint: body.visualAssetEndpoint, visualAssetModel: body.visualAssetModel, visualAssetDefaultStyle: body.visualAssetDefaultStyle, visualAssetMaxAssets: body.visualAssetMaxAssets, referenceImageConditioning: body.referenceImageConditioning }), { status: 200 });
+        }
+        expect(body).not.toHaveProperty('visualAssetApiKey');
+        return new Response(JSON.stringify({ ok: false, message: '保存失败：Key 无效' }), { status: 500 });
+      }
+      return new Response('{}', { status: 404 });
+    });
+
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: '设置' }));
+    await waitFor(() => expect(screen.getByLabelText('视觉资产模型')).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText('阿里百炼 API Key'), { target: { value: 'bailian-draft' } });
+    fireEvent.change(screen.getByLabelText('视觉资产 API Key'), { target: { value: 'visual-secret' } });
+    fireEvent.click(screen.getByRole('button', { name: '保存视觉资产设置' }));
+
+    await waitFor(() => expect(screen.getByLabelText('视觉资产 API Key')).toHaveValue(''));
+    expect(screen.getByLabelText('阿里百炼 API Key')).toHaveValue('bailian-draft');
+    expect(screen.getByTestId('visual-settings-status')).toHaveTextContent('保存成功');
+
+    fireEvent.click(screen.getByRole('button', { name: '保存 API Key' }));
+    await waitFor(() => expect(screen.getByTestId('bailian-settings-status')).toHaveTextContent('保存失败：Key 无效'));
+    expect(screen.getByLabelText('阿里百炼 API Key')).toHaveValue('bailian-draft');
+    fetchMock.mockRestore();
   });
 
   it('shows an HTTP export error when the server returns an empty error body', async () => {

@@ -103,10 +103,17 @@
       "status": "WAITING_REVIEW",
       "progress": 90,
       "completedAt": null
+    },
+    {
+      "id": "runtime-v2",
+      "name": "Runtime V2 + Visual Asset Layer",
+      "status": "WAITING_USER",
+      "progress": 95,
+      "completedAt": null
     }
   ],
   "complexity": "COMPLEX",
   "externalVerifierRequired": true,
-  "currentPhase": "single-pass-v1-verification",
-  "status": "WAITING_REVIEW"
+  "currentPhase": "runtime-v2",
+  "status": "WAITING_USER"
 }

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { promises as fs, createWriteStream } from 'node:fs';
+import { promises as fs, createWriteStream, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
 import { spawn } from 'node:child_process';
@@ -61,8 +61,9 @@ export function createGenerationRoute(runner: GenerationRunner) {
       const result = await runner({ fileName, video: request, preferenceProfile });
       writeJson(response, 200, result);
     } catch (error) {
-      writeJson(response, 500, {
-        error: 'generation_failed',
+      const statusCode = error && typeof error === 'object' && 'statusCode' in error && typeof error.statusCode === 'number' ? error.statusCode : 500;
+      writeJson(response, statusCode, {
+        error: error && typeof error === 'object' && 'code' in error && typeof error.code === 'string' ? error.code : 'generation_failed',
         message: error instanceof Error ? error.message : 'Generation failed',
       });
     }
@@ -79,10 +80,11 @@ export function createHostGenerationRunner(options: {
   fetchImpl?: typeof fetch;
 } = {}): GenerationRunner {
   const projectRoot = options.projectRoot ?? process.cwd();
-  const envPath = options.envPath ?? resolve(projectRoot, '测试素材与api', '.env');
+  const envPath = options.envPath ?? resolveCueCutEnvPath(projectRoot);
   const skillPath = options.skillPath ?? resolve(projectRoot, 'CueCut_Director_SKILL.md');
 
   return async (input) => {
+    await assertDirectorConfigured(envPath);
     const temporaryDirectory = await fs.mkdtemp(join(options.tempRoot ?? tmpdir(), 'cuecut-generation-'));
     const videoPath = join(temporaryDirectory, safeFileName(input.fileName));
     const audioPath = join(temporaryDirectory, 'audio.mp3');
@@ -131,7 +133,8 @@ export function createHostGenerationRunner(options: {
       });
       const directorProvider = createBailianProvider({
         apiKey,
-        model: 'qwen-plus',
+        model: await readBailianModel(envPath),
+        timeoutMs: readDirectorTimeoutMs(),
         fetchImpl: options.fetchImpl,
       });
       const directorService = createDirectorService(
@@ -219,11 +222,44 @@ export async function readBailianApiKey(envPath: string): Promise<string> {
   if (configured) return configured;
   const lines = (await fs.readFile(envPath, 'utf8')).split(/\r?\n/);
   const sectionIndex = lines.findIndex((line) => line.trim() === '阿里云百炼');
-  if (sectionIndex < 0) throw new Error('Alibaba Bailian section is missing from the local env file');
-  const keyLine = lines.slice(sectionIndex + 1).find((line) => /^API KEY\s*=/.test(line));
-  const key = keyLine?.replace(/^API KEY\s*=\s*/, '').trim();
+  const keyLine = sectionIndex >= 0
+    ? lines.slice(sectionIndex + 1).find((line) => /^API KEY\s*=/.test(line))
+    : lines.find((line) => /^\s*(API KEY|api_key)\s*=/.test(line));
+  const key = keyLine?.replace(/^\s*(API KEY|api_key)\s*=\s*/, '').trim();
   if (!key) throw new Error('Alibaba Bailian API key is not configured in the local env file');
   return key;
+}
+
+export async function readBailianModel(envPath: string): Promise<string> {
+  const configured = process.env.CUECUT_DIRECTOR_MODEL?.trim();
+  if (configured) return configured;
+  try {
+    const lines = (await fs.readFile(envPath, 'utf8')).split(/\r?\n/);
+    const modelLine = lines.find((line) => /^\s*model\s*=\s*\S+/.test(line));
+    const model = modelLine?.replace(/^\s*model\s*=\s*/, '').trim();
+    return model || 'qwen3.8-flash';
+  } catch {
+    return 'qwen3.8-flash';
+  }
+}
+
+export async function assertDirectorConfigured(envPath: string): Promise<void> {
+  let apiKey = '';
+  try { apiKey = await readBailianApiKey(envPath); } catch { /* The caller receives one bounded configuration error. */ }
+  const model = await readBailianModel(envPath);
+  if (!apiKey || !model) {
+    throw Object.assign(new Error('主模型 API Key 或模型未配置'), { statusCode: 409, code: 'DIRECTOR_PROVIDER_NOT_CONFIGURED' });
+  }
+}
+
+export function readDirectorTimeoutMs(): number {
+  const configured = Number(process.env.CUECUT_DIRECTOR_TIMEOUT_MS);
+  return Number.isFinite(configured) && configured >= 1_000 && configured <= 300_000 ? Math.floor(configured) : 30_000;
+}
+
+export function resolveCueCutEnvPath(projectRoot: string): string {
+  const rootEnv = resolve(projectRoot, '.env');
+  return existsSync(rootEnv) ? rootEnv : resolve(projectRoot, '测试素材与api', '.env');
 }
 
 function parsePreferenceProfile(encoded: string | undefined): Record<string, unknown> {

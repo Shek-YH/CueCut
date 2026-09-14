@@ -9,6 +9,7 @@ export interface LayoutSolveInput {
   height: number;
   edgeInsets: EdgeInsets;
   blockedRects: NormalizedRect[];
+  recentPlacementHistory?: PackagingZone[];
 }
 
 export interface LayoutSolveResult {
@@ -46,9 +47,19 @@ function candidateFor(zone: PackagingZone, input: LayoutSolveInput): NormalizedR
 
 export function solvePackagingLayout(input: LayoutSolveInput): LayoutSolveResult {
   const zones = [...new Set([...input.preferredZones, ...placementZones])];
-  const candidates = zones.map((zone) => ({ zone, rect: candidateFor(zone, input) }));
+  const recent = input.recentPlacementHistory?.slice(-5) ?? [];
+  const streakZone = recent.at(-1);
+  let streak = 0;
+  for (let index = recent.length - 1; index >= 0 && recent[index] === streakZone; index -= 1) streak += 1;
+  const candidates = zones.map((zone, index) => {
+    const preferredIndex = input.preferredZones.indexOf(zone);
+    const preferenceScore = preferredIndex >= 0 ? 100 - preferredIndex * 12 : 40;
+    const recentPenalty = recent.filter((recentZone) => recentZone === zone).length * 70;
+    const streakPenalty = zone === streakZone ? streak * 20 : 0;
+    return { zone, rect: candidateFor(zone, input), score: preferenceScore - recentPenalty - streakPenalty, index };
+  }).sort((left, right) => right.score - left.score || left.index - right.index);
   const available = candidates.find((candidate) => input.blockedRects.every((blocked) => !overlaps(candidate.rect, blocked)));
   const selected = available ?? candidates[0];
   if (!selected) throw new Error('At least one preferred zone is required');
-  return { rect: selected.rect, candidates: candidates.slice(1).map((candidate) => candidate.rect), resolvedZone: selected.zone, fallbackUsed: selected !== candidates[0] };
+  return { rect: selected.rect, candidates: candidates.filter((candidate) => candidate !== selected).map((candidate) => candidate.rect), resolvedZone: selected.zone, fallbackUsed: selected.zone !== input.preferredZones[0] };
 }

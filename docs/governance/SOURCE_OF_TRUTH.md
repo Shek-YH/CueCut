@@ -1,5 +1,15 @@
 # CueCut Source of Truth Map｜Talking-Head Effects Phase
 
+## Active Runtime V2 addendum — 2026-09-12
+
+The current user instruction and `CueCut_Runtime_V2_VisualAsset_Luna_Development_PRD_v1.0.md` are the active authority for this execution. This addendum supersedes the older Talking-Head-only scope where they conflict; it does not invalidate historical evidence.
+
+- Active execution prompt: `CueCut_Codex_Luna_Master_Execution_Prompt_v1.0.md`
+- Current baseline: `docs/runtime-v2/00_BASELINE.md`
+- Work item order: `WI-00` through `WI-18`, tracked as `runtime-v2-WI-00` through `runtime-v2-WI-18` in `.ai-ledger/tasks.json`
+- Product invariants: one Packaging Director LLM call; local deterministic resolve/grounding/layout/motion; no silent UI information-architecture redesign; no secrets in project records.
+- Current next item: `WI-18` is locally code-complete and waiting only for configured-provider real smoke; no further executable P0 item remains.
+
 **Updated:** 2026-09-08
 
 ## Authority order

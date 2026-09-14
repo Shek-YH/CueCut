@@ -1,5 +1,6 @@
 import { createOneCallGuard } from '../director/oneCallGuard';
 import { evidenceTypes, packagingCategories, packagingPlanSchema, persistenceModes, placementZones, semanticRoles, type PackagingPlan } from '../packaging-ir/schema';
+import { visualAssetKinds } from '../visual-assets/schema';
 import { PACKAGING_DIRECTOR_SYSTEM_PROMPT } from './prompt';
 
 export type PackagingProvider = (input: { systemPrompt: string; request: unknown }) => Promise<unknown>;
@@ -128,6 +129,20 @@ function persistenceFor(value: unknown): Persistence | undefined {
   return persistenceModes.includes(value as Persistence) ? value as Persistence : undefined;
 }
 
+// 护栏：visualUnit.kind 必须落在本地包装目录的真实卡片类型枚举内，否则降级为已推导的安全 category（不抛异常、不引入新错误体系）。
+function kindFor(value: unknown, fallback: (typeof packagingCategories)[number]): (typeof packagingCategories)[number] {
+  const candidate = String(value ?? '');
+  return (packagingCategories as readonly string[]).includes(candidate) ? (candidate as (typeof packagingCategories)[number]) : fallback;
+}
+
+const supportedContentSlots = new Set(['headline', 'value', 'items', 'title', 'supportingText', 'cueTimes']);
+
+function contentSlotFor(value: unknown): string | undefined {
+  if (typeof value !== 'string' || !value.trim() || value === 'assetRequest') return undefined;
+  const normalized = value === 'text' ? 'headline' : value.trim();
+  return supportedContentSlots.has(normalized) ? normalized : undefined;
+}
+
 function categoryFor(value: unknown): (typeof packagingCategories)[number] {
   const normalized = String(value ?? '').toLowerCase();
   if (packagingCategories.includes(normalized as (typeof packagingCategories)[number])) return normalized as (typeof packagingCategories)[number];
@@ -196,6 +211,51 @@ function contentFor(value: R): R {
   return { text: text || stringValue(value.text) || stringValue(value.title) || stringValue(value.type) || '包装重点' };
 }
 
+function assetKindFor(value: unknown): (typeof visualAssetKinds)[number] {
+  const normalized = String(value ?? '').toLowerCase();
+  if (visualAssetKinds.includes(value as (typeof visualAssetKinds)[number])) return value as (typeof visualAssetKinds)[number];
+  if (/character|person|human|robot|avatar/.test(normalized)) return 'character';
+  if (/illustration|raster|drawing|image/.test(normalized)) return 'illustration';
+  if (/mini.?scene|scene/.test(normalized)) return 'mini-scene';
+  if (/3d|model/.test(normalized)) return '3d-object';
+  if (/product|device/.test(normalized)) return 'product-object';
+  if (/metaphor|concept|abstract/.test(normalized)) return 'concept-metaphor';
+  if (/decorative|decoration/.test(normalized)) return 'decorative-object';
+  return 'object';
+}
+
+function assetIdFor(value: unknown, fallback: string): string {
+  const candidate = typeof value === 'string' ? value.toLowerCase().replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '') : '';
+  const normalized = candidate || fallback.toLowerCase().replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '');
+  return /^[a-z]/.test(normalized) ? normalized : `asset_${normalized || 'visual'}`;
+}
+
+function assetRequestFor(value: unknown, fallbackId: string): R | undefined {
+  const raw = record(value);
+  if (raw.needed !== true) return undefined;
+  const kind = assetKindFor(raw.kind);
+  const description = stringValue(raw.description) ?? stringValue(raw.displayName) ?? `Visual asset for ${fallbackId}`;
+  const semanticTags = Array.isArray(raw.semanticTags) ? raw.semanticTags.filter((tag): tag is string => typeof tag === 'string' && Boolean(tag.trim())).map((tag) => tag.trim().slice(0, 64)).slice(0, 32) : [];
+  return {
+    needed: true,
+    assetId: assetIdFor(raw.assetId, fallbackId),
+    displayName: stringValue(raw.displayName) ?? fallbackId,
+    kind,
+    description: description.slice(0, 1000),
+    semanticTags: semanticTags.length > 0 ? semanticTags : [kind],
+    importance: raw.importance === 'hero' || raw.importance === 'normal' || raw.importance === 'small' ? raw.importance : 'normal',
+  };
+}
+
+function contentForWithAsset(value: R, fallbackId: string): R {
+  const content = contentFor(value);
+  const assetRequest = assetRequestFor(content.assetRequest, fallbackId);
+  if (assetRequest) return { ...content, assetRequest };
+  if (!Object.hasOwn(content, 'assetRequest')) return content;
+  const { assetRequest: _ignored, ...withoutAssetRequest } = content;
+  return withoutAssetRequest;
+}
+
 function visualValueFor(value: unknown): VisualValue | undefined {
   if (value === true || value === false) return value;
   const number = numberValue(value);
@@ -240,14 +300,22 @@ function cadenceFor(value: unknown, cueTimesSec: number[], startSec: number, end
 
 function templateQueryFor(value: unknown, role: Role | undefined, visualIntent: unknown, category: (typeof packagingCategories)[number], content: R, zones: Zone[]): R {
   const raw = record(value);
-  return {
-    ...raw,
-    ...(raw.semanticRole === undefined && role ? { semanticRole: role } : {}),
-    ...(raw.visualIntent === undefined && typeof visualIntent === 'string' ? { visualIntent } : {}),
-    ...(raw.tags === undefined ? { tags: [category] } : {}),
-    ...(raw.requiredContentSlots === undefined ? { requiredContentSlots: Object.keys(content).slice(0, 24) } : {}),
-    ...(raw.preferredZones === undefined ? { preferredZones: zones } : {}),
-  };
+  const query: R = {};
+  const semanticRole = semanticRoleFor(raw.semanticRole) ?? role;
+  if (semanticRole) query.semanticRole = semanticRole;
+  if (typeof raw.visualIntent === 'string' && raw.visualIntent.trim()) query.visualIntent = raw.visualIntent;
+  else if (typeof visualIntent === 'string' && visualIntent.trim()) query.visualIntent = visualIntent;
+  query.tags = Array.isArray(raw.tags) ? raw.tags.filter((tag): tag is string => typeof tag === 'string' && Boolean(tag.trim())).slice(0, 24) : [category];
+  const rawSlots = Array.isArray(raw.requiredContentSlots) ? raw.requiredContentSlots : Array.isArray(raw.contentSlots) ? raw.contentSlots : undefined;
+  const normalizedSlots = rawSlots?.flatMap((slot) => { const normalized = contentSlotFor(slot); return normalized ? [normalized] : []; });
+  query.requiredContentSlots = normalizedSlots && normalizedSlots.length > 0 ? [...new Set(normalizedSlots)].slice(0, 24) : Object.keys(content).flatMap((key) => { const normalized = contentSlotFor(key); return normalized ? [normalized] : []; }).slice(0, 24);
+  if (typeof raw.itemCount === 'number' && Number.isInteger(raw.itemCount) && raw.itemCount > 0 && raw.itemCount <= 32) query.itemCount = raw.itemCount;
+  if (Array.isArray(raw.durationRangeSec) && raw.durationRangeSec.length === 2 && raw.durationRangeSec.every((item) => typeof item === 'number' && Number.isFinite(item))) query.durationRangeSec = raw.durationRangeSec;
+  if (persistenceFor(raw.persistence)) query.persistence = persistenceFor(raw.persistence);
+  const rawZones = Array.isArray(raw.preferredZones) ? raw.preferredZones : typeof raw.positionHint === 'string' ? [raw.positionHint] : [];
+  const preferredZones = rawZones.filter((zone): zone is Zone => placementZones.includes(zone as Zone));
+  query.preferredZones = preferredZones.length > 0 ? preferredZones : zones;
+  return query;
 }
 
 function normalizeTranscriptRepair(value: unknown, context: Context, ids: IdAllocator, references: IdReferences): R {
@@ -269,7 +337,7 @@ function normalizeTimelineItem(value: unknown, index: number, context: Context, 
   const category = categoryFor(raw.category ?? raw.kind ?? raw.type ?? inherited.category ?? evidence ?? role);
   const startSec = clamp(numberValue(raw.startSec) ?? numberValue(raw.start) ?? numberValue(inherited.startSec) ?? index * Math.min(8, context.durationSec), 0, context.durationSec - 0.01);
   const endSec = clamp(numberValue(raw.endSec) ?? numberValue(raw.end) ?? numberValue(inherited.endSec) ?? Math.min(context.durationSec, startSec + 3), startSec + 0.01, context.durationSec);
-  const content = contentFor({ ...inherited, ...raw });
+  const content = contentForWithAsset({ ...inherited, ...raw }, stringValue(raw.id) ?? `overlay-${index + 1}`);
   const placement = placementFor(raw.placementIntent ?? raw.placement ?? inherited.placementIntent, role, category);
   const cueTimesSec = numberArray(raw.cueTimesSec).map((cue) => clamp(cue, startSec, endSec));
   const templateQuery = templateQueryFor(raw.templateQuery ?? inherited.templateQuery, role, raw.visualIntent ?? inherited.visualIntent, category, content, placement.preferredZones as Zone[]);
@@ -341,12 +409,12 @@ function normalizeVisualUnit(value: unknown, context: Context, ids: IdAllocator,
   const endSec = clamp(numberValue(raw.endSec) ?? numberValue(raw.end) ?? Math.min(context.durationSec, startSec + 0.01), startSec + 0.01, context.durationSec);
   const role = semanticRoleFor(raw.semanticRole) ?? semanticRoleFor(record(raw.templateQuery).semanticRole);
   const category = categoryFor(raw.kind ?? raw.category ?? role);
-  const content = contentFor(raw);
+  const content = contentForWithAsset(raw, stringValue(raw.id) ?? 'visual-unit');
   const placement = placementFor(raw.placement ?? raw.placementIntent, role, category);
   const cueTimesSec = numberArray(raw.cueTimesSec).map((cue) => clamp(cue, startSec, endSec));
   const visualValue = visualValueFor(raw.visualValue);
   const sectionId = rewriteId(raw.sectionId, references.section) ?? 'section-1';
-  return { id, sectionId, kind: stringValue(raw.kind) || category, startSec, endSec, layer: intClamp(numberValue(raw.layer) ?? 1, 0, 3), persistence: persistenceFor(raw.persistence) ?? 'transient', sourceSubtitleIds: subtitleIdsForRange(raw.sourceSubtitleIds, context.transcript, startSec, endSec).map((sourceId) => references.transcript.get(sourceId) ?? sourceId), summary: stringValue(raw.summary) || readableContent(content) || 'Visual packaging unit', selectionReason: stringValue(raw.selectionReason) || 'AI selected this visual unit', visualIntent: typeof raw.visualIntent === 'string' || (raw.visualIntent && typeof raw.visualIntent === 'object' && !Array.isArray(raw.visualIntent)) ? raw.visualIntent : 'emphasize-key-claim', content, cueTimesSec, placement, templateQuery: templateQueryFor(raw.templateQuery, role, raw.visualIntent, category, content, placement.preferredZones as Zone[]), ...(visualValue !== undefined ? { visualValue } : {}), ...(raw.keepForVisualPackaging !== undefined ? { keepForVisualPackaging: raw.keepForVisualPackaging === true } : {}) };
+  return { id, sectionId, kind: kindFor(raw.kind, category), startSec, endSec, layer: intClamp(numberValue(raw.layer) ?? 1, 0, 3), persistence: persistenceFor(raw.persistence) ?? 'transient', sourceSubtitleIds: subtitleIdsForRange(raw.sourceSubtitleIds, context.transcript, startSec, endSec).map((sourceId) => references.transcript.get(sourceId) ?? sourceId), summary: stringValue(raw.summary) || readableContent(content) || 'Visual packaging unit', selectionReason: stringValue(raw.selectionReason) || 'AI selected this visual unit', visualIntent: typeof raw.visualIntent === 'string' || (raw.visualIntent && typeof raw.visualIntent === 'object' && !Array.isArray(raw.visualIntent)) ? raw.visualIntent : 'emphasize-key-claim', content, cueTimesSec, placement, templateQuery: templateQueryFor(raw.templateQuery, role, raw.visualIntent, category, content, placement.preferredZones as Zone[]), ...(visualValue !== undefined ? { visualValue } : {}), ...(raw.keepForVisualPackaging !== undefined ? { keepForVisualPackaging: raw.keepForVisualPackaging === true } : {}) };
 }
 
 function keepVisual(item: R): boolean {

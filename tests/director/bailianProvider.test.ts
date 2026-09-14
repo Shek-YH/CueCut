@@ -20,9 +20,27 @@ describe('Alibaba Bailian provider adapter', () => {
     expect(requestBody).toMatchObject({
       model: 'qwen-plus',
       response_format: { type: 'json_object' },
+      enable_thinking: false,
+      stream: true,
+      max_completion_tokens: 12000,
     });
     expect(requestBody).not.toHaveProperty('apiKey');
-    expect(requestBody).not.toHaveProperty('max_tokens');
+  });
+
+  it('assembles streamed content chunks into one assistant response', async () => {
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(encoder.encode('data: {"choices":[{"delta":{"content":"{\\"ok\\":"}}]}\n\n'));
+        controller.enqueue(encoder.encode('data: {"choices":[{"delta":{"content":"true}"}}]}\n\n'));
+        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+        controller.close();
+      },
+    });
+    const fetchImpl: typeof fetch = async () => new Response(stream, { status: 200, headers: { 'content-type': 'text/event-stream' } });
+    const provider = createBailianProvider({ apiKey: 'synthetic-secret', model: 'qwen3.8-flash', fetchImpl });
+
+    await expect(provider({ messages: [{ role: 'user', content: 'Return JSON.' }] })).resolves.toBe('{"ok":true}');
   });
 
   it('passes an explicitly selected JSON Schema response format for strict models', async () => {
@@ -37,5 +55,13 @@ describe('Alibaba Bailian provider adapter', () => {
     await provider({ messages: [{ role: 'user', content: 'Return JSON.' }] });
 
     expect(requestBody?.response_format).toEqual(responseFormat);
+  });
+
+  it('aborts an external request at the configured timeout', async () => {
+    const fetchImpl: typeof fetch = async (_input, init) => await new Promise((_, reject) => {
+      init?.signal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')));
+    });
+    const provider = createBailianProvider({ apiKey: 'synthetic-secret', model: 'qwen3.8-flash', timeoutMs: 10, fetchImpl });
+    await expect(provider({ messages: [{ role: 'user', content: 'Return JSON.' }] })).rejects.toThrow('timed out');
   });
 });

@@ -5,7 +5,7 @@ import {
   type CueCutMotionAdapter,
 } from './adapters';
 import type { MotionCategory, MotionParameterSet } from './format';
-import { packMotionCatalog } from './packCatalog';
+import { canonicalPackagingCatalog } from '../packaging-registry/canonicalCatalog';
 
 export type MotionLicense = 'MIT' | 'PROJECT-LOCAL' | 'Apache-2.0' | 'BSD-2-Clause' | 'BSD-3-Clause' | 'CC-BY-4.0';
 
@@ -164,7 +164,7 @@ function formalDefinition(adapter: CueCutMotionAdapter): MotionDefinition {
 
 const formalMotionDefinitions = motionAdapterRegistry.filter((adapter) => adapter.category !== 'pack-effect').map(formalDefinition);
 
-const packMotionDefinitions: MotionDefinition[] = packMotionCatalog.map((entry) => {
+const packMotionDefinitions: MotionDefinition[] = canonicalPackagingCatalog.map((entry) => {
   const adapter = findMotionAdapter(entry.adapterId);
   if (!adapter) throw new Error(`Motion adapter must be registered: ${entry.adapterId}`);
   const timing = ['delay', 'duration', 'enter', 'exit', 'deterministic-frame'];
@@ -217,7 +217,33 @@ const legacyMotionDefinitions: MotionDefinition[] = [
   legacy({ motionId: 'spin-out', role: 'exit', category: 'rotation', intensity: 0.85, durationRangeSec: [0.35, 1.3], recommendedEffectFamilies: ['emphasis-marker'] }),
 ];
 
-export const motionRegistry: MotionDefinition[] = [...formalMotionDefinitions, ...packMotionDefinitions, ...legacyMotionDefinitions];
+function packagingTransition(motionId: string, role: 'enter' | 'exit', category: string, intensity: number): MotionDefinition {
+  return { id: motionId, motionId, role, category, intensity, durationRangeSec: [0.1, 1], recommendedEffectFamilies: ['*'] };
+}
+
+const packagingTransitionDefinitions: MotionDefinition[] = [
+  packagingTransition('fade_in', 'enter', 'basic', 0.2),
+  packagingTransition('fade_blur', 'enter', 'blur', 0.35),
+  packagingTransition('fade_out', 'exit', 'basic', 0.2),
+  packagingTransition('slide_left', 'enter', 'direction', 0.4),
+  packagingTransition('slide_right', 'enter', 'direction', 0.4),
+  packagingTransition('slide_top', 'enter', 'direction', 0.4),
+  packagingTransition('slide_bottom', 'enter', 'direction', 0.4),
+  packagingTransition('slide_out_left', 'exit', 'direction', 0.4),
+  packagingTransition('slide_out_right', 'exit', 'direction', 0.4),
+  packagingTransition('slide_out_bottom', 'exit', 'direction', 0.4),
+  packagingTransition('scale_grow', 'enter', 'basic', 0.4),
+  packagingTransition('scale_punch', 'enter', 'spring', 0.65),
+  packagingTransition('scale_out', 'exit', 'basic', 0.35),
+  packagingTransition('wipe_left', 'enter', 'direction', 0.45),
+  packagingTransition('wipe_right', 'enter', 'direction', 0.45),
+  packagingTransition('wipe_out', 'exit', 'direction', 0.45),
+  packagingTransition('word_reveal', 'enter', 'basic', 0.3),
+  packagingTransition('typewriter', 'enter', 'basic', 0.3),
+  packagingTransition('slam', 'enter', 'spring', 0.7),
+];
+
+export const motionRegistry: MotionDefinition[] = [...formalMotionDefinitions, ...packMotionDefinitions, ...legacyMotionDefinitions, ...packagingTransitionDefinitions];
 
 export const motionDefinitions = motionRegistry;
 

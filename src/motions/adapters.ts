@@ -1,5 +1,5 @@
 import { evaluateMotion, type MotionFrame } from './runtime';
-import { packMotionCatalog } from './packCatalog';
+import { canonicalPackagingCatalog } from '../packaging-registry/canonicalCatalog';
 import {
   defaultCommonMotionParams,
   defaultListMotionParams,
@@ -194,7 +194,7 @@ const packDefaultProps = normalizeMotionParams({
   list: { ...defaultListMotionParams },
 });
 
-const packMotionAdapters: CueCutMotionAdapter[] = packMotionCatalog.map((entry) =>
+const packMotionAdapters: CueCutMotionAdapter[] = canonicalPackagingCatalog.map((entry) =>
   createAdapter(entry.adapterId, 'pack-effect', packDefaultProps, (_id, params, context) => ({
     text: params.text?.text ?? '',
     items: params.list?.items ?? [],

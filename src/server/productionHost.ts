@@ -6,8 +6,13 @@ import { createExportRoute, createHostExportRunner, type ExportRouteRunner } fro
 import { createProbeRoute, createHostProbeRunner, type ProbeRouteRunner } from './probeRoute';
 import { createRealtimeCaptureRoute } from './realtimeCaptureRoute';
 import { createPackagingRoute, createHostPackagingRunner, type PackagingRunner } from './packagingRoute';
-import { createSettingsRoute } from './settingsRoute';
+import { createPersistentVisualAssetSettingsStore, createSettingsRoute } from './settingsRoute';
 import { createTranscriptionRoute, createHostTranscriptionRunner, type TranscriptionRunner } from './transcriptionRoute';
+import { createUserSecretStore } from './secretStore';
+import { createVisualAssetProvider } from './visualAssetProvider';
+import { createVisualAssetRoute } from './visualAssetRoute';
+import { createRuntimeCapabilitiesRoute } from './runtimeCapabilitiesRoute';
+import { resolveCueCutEnvPath } from './generationRoute';
 
 export interface ProductionHostOptions {
   runner?: GenerationRunner;
@@ -36,6 +41,11 @@ export function createProductionServer(options: ProductionHostOptions = {}): Ser
   const realtimeCaptureRoute = createRealtimeCaptureRoute();
   const packagingRoute = createPackagingRoute(packagingRunner ?? createHostPackagingRunner(runnerOptions));
   const transcriptionRoute = createTranscriptionRoute(transcriptionRunner ?? createHostTranscriptionRunner(runnerOptions));
+  const settingsSecrets = createUserSecretStore();
+  const visualAssetSettings = createPersistentVisualAssetSettingsStore();
+  const settingsRoute = createSettingsRoute(settingsSecrets, visualAssetSettings);
+  const visualAssetRoute = createVisualAssetRoute({ provider: createVisualAssetProvider({ settings: visualAssetSettings, secrets: settingsSecrets, fetchImpl: options.fetchImpl }) });
+  const runtimeCapabilitiesRoute = createRuntimeCapabilitiesRoute({ envPath: runnerOptions.envPath ?? resolveCueCutEnvPath(runnerOptions.projectRoot ?? process.cwd()), secrets: settingsSecrets, visualAssets: visualAssetSettings });
   return createServer((request, response) => {
     const pathname = request.url?.split('?')[0] ?? '/';
     if (pathname === '/api/export') {
@@ -63,7 +73,15 @@ export function createProductionServer(options: ProductionHostOptions = {}): Ser
       return;
     }
     if (pathname === '/api/settings') {
-      void createSettingsRoute()(request, response);
+      void settingsRoute(request, response);
+      return;
+    }
+    if (pathname === '/api/runtime-capabilities') {
+      void runtimeCapabilitiesRoute(request, response);
+      return;
+    }
+    if (pathname === '/api/generate-visual-assets') {
+      void visualAssetRoute(request, response);
       return;
     }
     void serveStatic(request, response, webRoot);

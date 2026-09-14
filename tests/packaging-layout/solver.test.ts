@@ -13,4 +13,26 @@ describe('packaging layout solver', () => {
     expect(result.rect.x).toBeGreaterThan(0.5);
     expect(result.rect.y).toBeGreaterThanOrEqual(0.04);
   });
+
+  it('penalizes recent zones so sequential items form a deterministic multi-zone layout', () => {
+    const history: Array<Parameters<typeof solvePackagingLayout>[0]['preferredZones'][number]> = [];
+    const zones = Array.from({ length: 10 }, () => {
+      const result = solvePackagingLayout({
+        preferredZones: ['upper-left'], width: 0.3, height: 0.12,
+        edgeInsets: { top: 0.04, bottom: 0.08, left: 0.05, right: 0.05 },
+        blockedRects: [], recentPlacementHistory: history,
+      });
+      history.push(result.resolvedZone);
+      return result.resolvedZone;
+    });
+
+    const repeat = solvePackagingLayout({
+      preferredZones: ['upper-left'], width: 0.3, height: 0.12,
+      edgeInsets: { top: 0.04, bottom: 0.08, left: 0.05, right: 0.05 },
+      blockedRects: [], recentPlacementHistory: [],
+    });
+
+    expect(new Set(zones).size).toBeGreaterThanOrEqual(3);
+    expect(repeat.resolvedZone).toBe('upper-left');
+  });
 });

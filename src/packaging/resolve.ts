@@ -5,6 +5,7 @@ import { solvePackagingLayout, type PackagingZone } from '../packaging-layout/so
 import { resolveOverlayCollisions, type CollisionOverlay, type CollisionRepair } from '../packaging-collision/resolver';
 import { compileResolvedTimeline, type RuntimeTimelineItem } from '../packaging-timeline/compiler';
 import type { NormalizedRect } from '../packaging-layout/safeArea';
+import { findEffectTemplateById } from '../effects/templateRegistry';
 
 export interface ResolvedPackagingOverlay extends CollisionOverlay {
   effectId: string;
@@ -38,9 +39,11 @@ type ResolvablePackagingPlan = Omit<PackagingPlan, 'timeline'> & { timeline: Res
 export interface PackagingSpatialContext {
   subtitleRects?: NormalizedRect[];
   subjectRects?: NormalizedRect[];
+  faceRects?: NormalizedRect[];
 }
 
-const emptySpatialContext: Required<PackagingSpatialContext> = { subtitleRects: [], subjectRects: [] };
+const emptySpatialContext: Required<PackagingSpatialContext> = { subtitleRects: [], subjectRects: [], faceRects: [] };
+const rendererContentSlots = new Set(['headline', 'value', 'items', 'title', 'supportingText', 'cueTimes']);
 
 function expandRect(rect: NormalizedRect, padding: number): NormalizedRect {
   const x = Math.max(0, rect.x - padding);
@@ -85,15 +88,24 @@ function limitConcurrentOverlays(overlays: ResolvedPackagingOverlay[], maxConcur
 export function resolvePackagingPlan(plan: ResolvablePackagingPlan, spatialContext: PackagingSpatialContext = emptySpatialContext): { overlays: ResolvedPackagingOverlay[]; runtimeTimeline: { engineVersion: string; registryVersion: string; items: RuntimeTimelineItem[] }; diagnostics: { registryFallbacks: number; layoutFallbacks: number; collisionRepairs: number; dropped: string[]; repairs?: CollisionRepair[]; warnings?: string[] } } {
   const spatial = { ...emptySpatialContext, ...spatialContext };
   const usedEffectIds: string[] = [];
+  const recentPlacementHistory: PackagingZone[] = [];
   const initial = plan.timeline.map((item, index) => {
-    const registry = resolvePackagingEffect({ category: item.category, visualStyle: item.visualIntent.style, energy: item.visualIntent.energy, subjectRelation: item.placementIntent.subjectRelation, preferredZones: item.placementIntent.preferredZones, aspectRatio: plan.canvas.aspectRatio, durationSec: item.endSec - item.startSec, requiredContentSlots: Object.keys(item.content), templateQuery: item.templateQuery, excludeEffectIds: usedEffectIds });
+    const requiredContentSlots = Object.keys(item.content)
+      .filter((slot) => slot !== 'assetRequest')
+      .map((slot) => slot === 'text' ? 'headline' : slot)
+      .filter((slot) => rendererContentSlots.has(slot));
+    const registry = resolvePackagingEffect({ category: item.category, visualStyle: item.visualIntent.style, energy: item.visualIntent.energy, subjectRelation: item.placementIntent.subjectRelation, preferredZones: item.placementIntent.preferredZones, aspectRatio: plan.canvas.aspectRatio, durationSec: item.endSec - item.startSec, requiredContentSlots, templateQuery: item.templateQuery, excludeEffectIds: usedEffectIds });
     if (!registry.selected) throw new Error(`No packaging effect candidate for ${item.id}`);
     usedEffectIds.push(registry.selected.effect.id);
+    const template = findEffectTemplateById(registry.selected.effect.id);
+    const templateLayout = template?.layout;
+    const preferredZones = [...new Set([...item.placementIntent.preferredZones, ...(templateLayout?.preferredZones ?? [])])] as PackagingZone[];
     // Layout blocking is resolved below with actual time ranges. A global rect
     // blacklist would make two non-overlapping cards fight for different zones
     // even though they never coexist on screen.
     const lockedOverride = item.userOverride?.locked ? item.userOverride : undefined;
-    const layout = solvePackagingLayout({ preferredZones: (lockedOverride?.zone ? [lockedOverride.zone] : item.placementIntent.preferredZones) as PackagingZone[], width: 0.36, height: 0.12, edgeInsets: plan.constraints.edgeInsets, blockedRects: [] });
+    const layout = solvePackagingLayout({ preferredZones: (lockedOverride?.zone ? [lockedOverride.zone] : preferredZones) as PackagingZone[], width: templateLayout?.defaultSize[0] ?? 0.36, height: templateLayout?.defaultSize[1] ?? 0.12, edgeInsets: plan.constraints.edgeInsets, blockedRects: [], recentPlacementHistory: lockedOverride?.zone ? [] : recentPlacementHistory });
+    recentPlacementHistory.push(layout.resolvedZone);
     return {
       id: item.id,
       effectId: registry.selected.effect.id,
@@ -127,7 +139,7 @@ export function resolvePackagingPlan(plan: ResolvablePackagingPlan, spatialConte
       layoutFallback: layout.fallbackUsed,
     } satisfies ResolvedPackagingOverlay & { registryFallback: boolean; layoutFallback: boolean };
   });
-  const collision = resolveOverlayCollisions({ overlays: initial, subtitleRects: spatial.subtitleRects, subjectRects: spatial.subjectRects.map((rect) => expandRect(rect, plan.constraints.subjectAvoidPadding)), allowSubjectOverlap: (overlay) => overlay.subjectRelation === 'foreground' || (plan.constraints.allowBehindSubject && overlay.subjectRelation === 'behind') });
+  const collision = resolveOverlayCollisions({ overlays: initial, subtitleRects: spatial.subtitleRects, subjectRects: [...spatial.subjectRects, ...spatial.faceRects].map((rect) => expandRect(rect, plan.constraints.subjectAvoidPadding)), allowSubjectOverlap: (overlay) => overlay.subjectRelation === 'foreground' || (plan.constraints.allowBehindSubject && overlay.subjectRelation === 'behind') });
   const concurrency = limitConcurrentOverlays(collision.overlays, plan.constraints.maxConcurrentOverlays);
   const runtimeTimeline = compileResolvedTimeline({ engineVersion: '1.0', registryVersion: '1.0', overlays: concurrency.overlays });
   const repairs = [...collision.repairs, ...concurrency.repairs];

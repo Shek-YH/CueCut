@@ -285,8 +285,23 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   width: 100%;
   box-sizing: border-box;
 }
+.settings-popover input[type='text'], .settings-popover input[type='url'], .settings-popover input[type='number'], .settings-popover select {
+  width: 100%;
+  min-height: 28px;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #11161f;
+  color: var(--text);
+}
 
 .packaging-settings { position: relative; flex: 0 0 auto; }
+.packaging-workflow { display: grid; grid-template-columns: repeat(3, minmax(150px, 1fr)); gap: 4px 10px; width: min(760px, 100%); margin: 5px 0; padding: 6px 8px 6px 24px; border: 1px solid var(--line); border-radius: 6px; background: #0e131b; color: var(--muted); font-size: 8px; }
+.packaging-workflow li[data-stage-status='running'] { color: #f1c76b; }
+.packaging-workflow li[data-stage-status='success'] { color: #8ed7a4; }
+.packaging-workflow li[data-stage-status='failed'] { color: #ff9b9b; }
+.packaging-workflow small { color: inherit; opacity: .78; }
 .packaging-settings summary { min-height: 31px; display: flex; align-items: center; padding: 0 8px; border: 1px solid var(--line); border-radius: 7px; background: #151b25; color: var(--text); cursor: pointer; font-size: 9px; list-style: none; white-space: nowrap; }
 .packaging-settings summary::-webkit-details-marker { display: none; }
 .packaging-settings-panel { position: absolute; top: 38px; right: 0; z-index: 40; display: grid; gap: 9px; width: 280px; padding: 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); box-shadow: 0 14px 36px rgb(0 0 0 / 40%); }

@@ -195,7 +195,7 @@ test.describe('CueCut first vertical slice', () => {
     await expect(page.getByRole('button', { name: 'A', exact: true })).toHaveClass(/on/);
 
     await page.getByRole('button', { name: 'B', exact: true }).click();
-    await page.getByRole('button', { name: '应用到 Workspace' }).click();
+    await page.getByRole('button', { name: '确认修改' }).click();
     await expect(page.getByTestId('inspector')).toContainText('ring-b');
 
     await page.getByRole('button', { name: '↶' }).click();

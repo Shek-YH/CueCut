@@ -192,6 +192,126 @@
     },
     {
       "id": "realtime-p0-real-test-requirements", "path": "REAL_TEST_REQUIREMENTS.md", "kind": "real-test-readiness", "status": "WAITING_USER"
+    },
+    {
+      "id": "runtime-v2-wi-00-baseline",
+      "path": "docs/runtime-v2/00_BASELINE.md",
+      "kind": "baseline",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "runtime-v2-wi-00-evidence",
+      "path": "docs/evidence/runtime-v2-WI-00.md",
+      "kind": "evidence",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "runtime-v2-wi-01-evidence",
+      "path": "docs/evidence/runtime-v2-WI-01.md",
+      "kind": "evidence",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "runtime-v2-wi-02-evidence",
+      "path": "docs/evidence/runtime-v2-WI-02.md",
+      "kind": "evidence",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "runtime-v2-wi-03-evidence",
+      "path": "docs/evidence/runtime-v2-WI-03.md",
+      "kind": "evidence",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "runtime-v2-wi-04-evidence",
+      "path": "docs/evidence/runtime-v2-WI-04.md",
+      "kind": "evidence",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "runtime-v2-wi-05-evidence",
+      "path": "docs/evidence/runtime-v2-WI-05.md",
+      "kind": "evidence",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "runtime-v2-wi-06-evidence",
+      "path": "docs/evidence/runtime-v2-WI-06.md",
+      "kind": "evidence",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "runtime-v2-wi-07-evidence",
+      "path": "docs/evidence/runtime-v2-WI-07.md",
+      "kind": "evidence",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "runtime-v2-wi-08-evidence",
+      "path": "docs/evidence/runtime-v2-WI-08.md",
+      "kind": "evidence",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "runtime-v2-wi-09-evidence",
+      "path": "docs/evidence/runtime-v2-WI-09.md",
+      "kind": "evidence",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "runtime-v2-wi-10-evidence",
+      "path": "docs/evidence/runtime-v2-WI-10.md",
+      "kind": "evidence",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "runtime-v2-wi-11-evidence",
+      "path": "docs/evidence/runtime-v2-WI-11.md",
+      "kind": "evidence",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "runtime-v2-wi-12-evidence",
+      "path": "docs/evidence/runtime-v2-WI-12.md",
+      "kind": "evidence",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "runtime-v2-wi-13-evidence",
+      "path": "docs/evidence/runtime-v2-WI-13.md",
+      "kind": "evidence",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "runtime-v2-wi-14-evidence",
+      "path": "docs/evidence/runtime-v2-WI-14.md",
+      "kind": "evidence",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "runtime-v2-wi-15-evidence",
+      "path": "docs/evidence/runtime-v2-WI-15.md",
+      "kind": "evidence",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "runtime-v2-wi-16-evidence",
+      "path": "docs/evidence/runtime-v2-WI-16.md",
+      "kind": "evidence",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "runtime-v2-wi-17-evidence",
+      "path": "docs/evidence/runtime-v2-WI-17.md",
+      "kind": "evidence",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "runtime-v2-wi-18-evidence",
+      "path": "docs/evidence/runtime-v2-WI-18.md",
+      "kind": "evidence",
+      "status": "WAITING_USER"
     }
   ]
 }

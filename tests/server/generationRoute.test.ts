@@ -1,8 +1,11 @@
 import { Readable } from 'node:stream';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { describe, expect, it, vi } from 'vitest';
 import { createFixtureProject } from '../../src/project/fixtures';
-import { createGenerationRoute } from '../../src/server/generationRoute';
+import { createGenerationRoute, createHostGenerationRunner } from '../../src/server/generationRoute';
 
 function responseHarness() {
   let body = '';
@@ -52,5 +55,19 @@ describe('generation API route', () => {
 
     expect(response.statusCode).toBe(405);
     expect(read()).toEqual({ error: 'method_not_allowed' });
+  });
+
+  it('rejects an unconfigured host generation before invoking ffmpeg', async () => {
+    const appData = mkdtempSync(join(tmpdir(), 'cuecut-empty-secrets-'));
+    const previousAppData = process.env.APPDATA;
+    process.env.APPDATA = appData;
+    try {
+      const runner = createHostGenerationRunner({ envPath: 'F:/missing/cuecut-preflight.env', ffmpegPath: 'missing-ffmpeg', ffprobePath: 'missing-ffprobe' });
+      await expect(runner({ fileName: 'video.mp4', video: Readable.from([Buffer.from('video')]), preferenceProfile: {} })).rejects.toMatchObject({ statusCode: 409, code: 'DIRECTOR_PROVIDER_NOT_CONFIGURED' });
+    } finally {
+      if (previousAppData === undefined) delete process.env.APPDATA;
+      else process.env.APPDATA = previousAppData;
+      rmSync(appData, { recursive: true, force: true });
+    }
   });
 });

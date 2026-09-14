@@ -25,5 +25,7 @@ export function visualSurfaceForKind(kind: SceneVisualKind, accent: string): Vis
       return { background: '#3B2434', backgroundAlpha: 0.9333333333333333, accent, accentAlpha: 1, contentAlpha: 1, accentBar: false };
     case 'text':
       return { background: accent, backgroundAlpha: 0.85, accent, accentAlpha: 1, contentAlpha: 1, accentBar: false };
+    case 'chapterNav':
+      return { background: '#000000', backgroundAlpha: 0, accent, accentAlpha: 1, contentAlpha: 1, accentBar: false };
   }
 }

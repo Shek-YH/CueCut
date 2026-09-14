@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { createBailianProvider } from '../director/bailianProvider';
 import { createPackagingDirector, type PackagingProvider } from '../packaging-ai/service';
 import type { PackagingPlan } from '../packaging-ir/schema';
-import { readBailianApiKey } from './generationRoute';
+import { assertDirectorConfigured, readBailianApiKey, readBailianModel, readDirectorTimeoutMs, resolveCueCutEnvPath } from './generationRoute';
 
 const MAX_BODY_BYTES = 8 * 1024 * 1024;
 
@@ -33,17 +33,19 @@ export function createPackagingRoute(runner: PackagingRunner) {
       const input = normalizeRequest(payload);
       writeJson(response, 200, await runner(input));
     } catch (error) {
-      writeJson(response, 500, { error: 'packaging_generation_failed', message: error instanceof Error ? error.message : 'Packaging generation failed' });
+      const statusCode = error && typeof error === 'object' && 'statusCode' in error && typeof error.statusCode === 'number' ? error.statusCode : 500;
+      writeJson(response, statusCode, { error: error && typeof error === 'object' && 'code' in error && typeof error.code === 'string' ? error.code : 'packaging_generation_failed', message: error instanceof Error ? error.message : 'Packaging generation failed' });
     }
   };
 }
 
 export function createHostPackagingRunner(options: { projectRoot?: string; envPath?: string; model?: string; fetchImpl?: typeof fetch } = {}): PackagingRunner {
   const projectRoot = options.projectRoot ?? process.cwd();
-  const envPath = options.envPath ?? resolve(projectRoot, '测试素材与api', '.env');
+  const envPath = options.envPath ?? resolveCueCutEnvPath(projectRoot);
   return async (input) => {
+    await assertDirectorConfigured(envPath);
     const apiKey = await readBailianApiKey(envPath);
-    const provider = createBailianProvider({ apiKey, model: options.model ?? 'qwen-plus', fetchImpl: options.fetchImpl });
+    const provider = createBailianProvider({ apiKey, model: options.model ?? await readBailianModel(envPath), timeoutMs: readDirectorTimeoutMs(), fetchImpl: options.fetchImpl });
     const packagingProvider: PackagingProvider = ({ systemPrompt, request }) => provider({ messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: JSON.stringify(request) },

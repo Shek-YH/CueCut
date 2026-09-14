@@ -130,4 +130,61 @@ describe('apply resolved packaging to project', () => {
     expect(evaluateSceneAtTime(next, 7.5).items.find((item) => item.effectId === 'packaging-overlay-steps')?.content).toEqual({ kind: 'list', items: ['第一步', '第二步'] });
     expect(evaluateSceneAtTime(next, 12).items.find((item) => item.effectId === 'packaging-overlay-steps')?.visible).toBe(false);
   });
+
+  it('writes sorted, de-duplicated chapters carrying only the four declared fields', () => {
+    const project = createFixtureProject();
+    project.effects = [];
+    const next = applyResolvedPackagingToProject(project, {
+      overlays: [],
+      chapters: [
+        { id: 'c2', title: '第二章', startSec: 10, endSec: 20 },
+        { id: 'c1', title: '第一章', startSec: 1, endSec: 5 },
+        { id: 'c1', title: '重复第一章', startSec: 1, endSec: 5 },
+        { id: 'c3', title: '非法范围', startSec: 30, endSec: 20 },
+      ],
+    });
+
+    expect(next.chapters).toEqual([
+      { id: 'c1', title: '第一章', startSec: 1, endSec: 5 },
+      { id: 'c2', title: '第二章', startSec: 10, endSec: 20 },
+    ]);
+    next.chapters?.forEach((chapter) => expect(Object.keys(chapter).sort()).toEqual(['endSec', 'id', 'startSec', 'title']));
+  });
+
+  it('leaves chapters undefined when none are provided (no stray nav branch)', () => {
+    const project = createFixtureProject();
+    project.effects = [];
+    const next = applyResolvedPackagingToProject(project, { overlays: [] });
+    expect(next.chapters).toBeUndefined();
+  });
+
+  it('resolves distinct semantic accents for warning vs metric overlays and honors themePalette', () => {
+    const project = createFixtureProject();
+    project.project.themePalette = { opportunity: '#10B981', method: '#6366F1', warning: '#DC2626', result: '#F59E0B' };
+    project.effects = [];
+    const next = applyResolvedPackagingToProject(project, {
+      overlays: [
+        { id: 'w', effectId: 'cuecut-alert-card', startSec: 1, endSec: 3, rect: { x: 0.1, y: 0.2, width: 0.3, height: 0.12 }, content: { headline: '风险点' }, evidenceType: 'warning', motion: { entrance: 'fade_in', emphasis: 'none', exit: 'fade_out' }, seed: 1, candidates: [], importance: 0.5 },
+        { id: 'm', effectId: 'cuecut-ring-metric', startSec: 1, endSec: 3, rect: { x: 0.5, y: 0.2, width: 0.3, height: 0.12 }, content: { value: '67%', text: '67%' }, evidenceType: 'metric', motion: { entrance: 'fade_in', emphasis: 'none', exit: 'fade_out' }, seed: 2, candidates: [], importance: 0.5 },
+      ],
+    });
+
+    const warningAccent = next.effects.find((effect) => effect.effectId === 'packaging-w')?.appearance.accent;
+    const metricAccent = next.effects.find((effect) => effect.effectId === 'packaging-m')?.appearance.accent;
+    expect(warningAccent).not.toBe(metricAccent);
+    expect(warningAccent).toBe('#DC2626');
+    expect(metricAccent).toBe('#F59E0B');
+  });
+
+  it('falls back to palette.accent when themePalette is absent (historical behavior)', () => {
+    const project = createFixtureProject();
+    project.project.themePalette = undefined;
+    project.effects = [];
+    const next = applyResolvedPackagingToProject(project, {
+      overlays: [{
+        id: 'o', effectId: 'cuecut-ring-metric', startSec: 1, endSec: 3, rect: { x: 0.1, y: 0.2, width: 0.3, height: 0.12 }, content: { value: '67%', text: '67%' }, evidenceType: 'metric', motion: { entrance: 'fade_in', emphasis: 'none', exit: 'fade_out' }, seed: 1, candidates: [], importance: 0.5,
+      }],
+    });
+    expect(next.effects[0]?.appearance.accent).toBe(project.project.palette.accent);
+  });
 });

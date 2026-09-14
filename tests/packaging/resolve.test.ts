@@ -17,6 +17,26 @@ describe('packaging plan resolver', () => {
     expect(result.overlays[0]?.rect.x).toBeGreaterThanOrEqual(0.05);
   });
 
+  it('treats a visual asset request as metadata rather than a renderer content slot', () => {
+    const result = resolvePackagingPlan({
+      schemaVersion: '1.0', projectId: 'asset-plan', canvas: { width: 1920, height: 1080, aspectRatio: '16:9', fps: 30 },
+      globalStyle: { visualStyle: 'clean-tech', energy: 0.5, density: 'auto', paletteIntent: 'brand', motionIntensity: 0.5 },
+      timeline: [{ id: 'robot', startSec: 1, endSec: 4, intent: 'character', category: 'stat', content: { value: '1', label: 'AI', assetRequest: { needed: true, assetId: 'ai_robot', displayName: 'AI Robot', kind: 'character', description: 'friendly robot', semanticTags: ['robot'], importance: 'hero' } }, importance: 0.9, visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'strong' }, motionIntent: { entrance: 'fade_in', emphasis: 'none', exit: 'fade_out' }, placementIntent: { preferredZones: ['upper-right'], subjectRelation: 'avoid', anchor: 'scene-safe' }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false } }],
+      constraints: { maxConcurrentOverlays: 2, allowBehindSubject: false, subjectAvoidPadding: 0.1, edgeInsets: { top: 0.04, bottom: 0.08, left: 0.05, right: 0.05 } }, exportHints: { formats: ['mp4'], transparent: false },
+    });
+    expect(result.overlays).toHaveLength(1);
+  });
+
+  it('ignores Director-only content fields when resolving a local template', () => {
+    const result = resolvePackagingPlan({
+      schemaVersion: '1.0', projectId: 'asset-fields', canvas: { width: 1920, height: 1080, aspectRatio: '16:9', fps: 30 },
+      globalStyle: { visualStyle: 'clean-tech', energy: 0.5, density: 'auto', paletteIntent: 'brand', motionIntensity: 0.5 },
+      timeline: [{ id: 'asset-fields', startSec: 1, endSec: 4, intent: 'character', category: 'callout', content: { text: 'AI', subText: '说明', left: '左', right: '右', assetRequest: { needed: true, assetId: 'ai_robot', displayName: 'AI Robot', kind: 'character', description: 'friendly robot', semanticTags: ['robot'], importance: 'hero' } }, importance: 0.9, visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'strong' }, motionIntent: { entrance: 'fade_in', emphasis: 'none', exit: 'fade_out' }, placementIntent: { preferredZones: ['upper-right'], subjectRelation: 'avoid', anchor: 'scene-safe' }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false } }],
+      constraints: { maxConcurrentOverlays: 2, allowBehindSubject: false, subjectAvoidPadding: 0.1, edgeInsets: { top: 0.04, bottom: 0.08, left: 0.05, right: 0.05 } }, exportHints: { formats: ['mp4'], transparent: false },
+    });
+    expect(result.overlays).toHaveLength(1);
+  });
+
   it('keeps nearby packaging intents by using deterministic zone fallbacks before dropping them', () => {
     const base = {
       schemaVersion: '1.0' as const, projectId: 'p', canvas: { width: 1080, height: 1920, aspectRatio: '9:16', fps: 30 },
@@ -33,7 +53,7 @@ describe('packaging plan resolver', () => {
     expect(result.diagnostics.dropped).toEqual([]);
   });
 
-  it('reuses the visual main axis for sequential overlays that never coexist', () => {
+  it('distributes sequential overlays across deterministic zones even when they never coexist', () => {
     const base = {
       schemaVersion: '1.0' as const, projectId: 'p', canvas: { width: 1080, height: 1920, aspectRatio: '9:16', fps: 30 },
       globalStyle: { visualStyle: 'clean-tech', energy: 0.5, density: 'auto' as const, paletteIntent: 'brand', motionIntensity: 0.5 },
@@ -44,7 +64,7 @@ describe('packaging plan resolver', () => {
 
     const result = resolvePackagingPlan({ ...base, timeline: [item('first', 1, 2), item('second', 3, 4)] });
 
-    expect(result.overlays[1]?.rect).toEqual(result.overlays[0]?.rect);
+    expect(result.overlays[1]?.rect).not.toEqual(result.overlays[0]?.rect);
   });
 
   it('keeps chapter and source timing metadata through resolution', () => {
@@ -112,7 +132,7 @@ describe('packaging plan resolver', () => {
     const allowedAvoid = resolvePackagingPlan({ ...base, constraints: { ...base.constraints, allowBehindSubject: true } }, { subjectRects: [{ x: 0.05, y: 0.04, width: 0.36, height: 0.12 }] });
 
     expect(blocked.overlays[0]?.rect).not.toEqual({ x: 0.05, y: 0.04, width: 0.36, height: 0.12 });
-    expect(allowedBehind.overlays[0]?.rect).toEqual({ x: 0.05, y: 0.04, width: 0.36, height: 0.12 });
+    expect(allowedBehind.overlays[0]?.rect).toEqual({ x: 0.05, y: 0.04, width: 0.3, height: 0.14 });
     expect(allowedAvoid.overlays[0]?.rect).not.toEqual({ x: 0.05, y: 0.04, width: 0.36, height: 0.12 });
   });
 
@@ -169,7 +189,7 @@ describe('packaging plan resolver', () => {
       constraints: { maxConcurrentOverlays: 2, allowBehindSubject: false, subjectAvoidPadding: 0, edgeInsets: { top: 0.04, bottom: 0.08, left: 0.05, right: 0.05 } }, exportHints: { formats: ['mp4'], transparent: false },
     });
 
-    expect(result.overlays[0]).toMatchObject({ rect: { x: 0.59, y: 0.8, width: 0.36, height: 0.12 }, locked: true, userOverride: { locked: true, zone: 'lower-right' } });
+    expect(result.overlays[0]).toMatchObject({ rect: { x: 0.65, y: 0.78, width: 0.3, height: 0.14 }, locked: true, userOverride: { locked: true, zone: 'lower-right' } });
     expect(result.runtimeTimeline.items[0]).toMatchObject({ locked: true, userOverride: { locked: true, zone: 'lower-right' } });
   });
 
@@ -179,7 +199,7 @@ describe('packaging plan resolver', () => {
       schemaVersion: '1.0', projectId: 'p', canvas: { width: 1080, height: 1920, aspectRatio: '9:16', fps: 30 }, globalStyle: { visualStyle: 'clean-tech', energy: 0.5, density: 'auto', paletteIntent: 'brand', motionIntensity: 0.5 }, timeline: [item('first', false), item('locked', true)], constraints: { maxConcurrentOverlays: 2, allowBehindSubject: false, subjectAvoidPadding: 0, edgeInsets: { top: 0.04, bottom: 0.08, left: 0.05, right: 0.05 } }, exportHints: { formats: ['mp4'], transparent: false },
     });
 
-    expect(result.overlays.find((overlay) => overlay.id === 'locked')).toMatchObject({ rect: { x: 0.05, y: 0.04, width: 0.36, height: 0.12 }, locked: true });
+    expect(result.overlays.find((overlay) => overlay.id === 'locked')).toMatchObject({ rect: { x: 0.05, y: 0.04, width: 0.3, height: 0.14 }, locked: true });
     expect(result.diagnostics.warnings).toContain('locked overlay locked retained despite overlay collision');
   });
 

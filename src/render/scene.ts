@@ -1,15 +1,16 @@
 import { findEffectDefinition } from '../effects/registry';
-import { evaluateMotion } from '../motions/runtime';
-import type { EffectInstance, ProjectComposition } from '../project/schema';
+import { evaluateCompiledMotion, evaluateMotion, type MotionFrame } from '../motions/runtime';
+import { defaultChapterNavSettings, defaultThemePalette, type EffectInstance, type ProjectComposition } from '../project/schema';
 
 export type ScenePhase = 'hidden' | 'enter' | 'active' | 'exit';
-export type SceneVisualKind = 'metric' | 'chart' | 'list' | 'quote' | 'highlight' | 'badge' | 'text';
+export type SceneVisualKind = 'metric' | 'chart' | 'list' | 'quote' | 'highlight' | 'badge' | 'text' | 'chapterNav';
 
 export type SceneContent =
   | { kind: 'text'; text: string }
   | { kind: 'number'; value: number; label: string }
   | { kind: 'list'; items: string[] }
-  | { kind: 'motion-layer'; label: string };
+  | { kind: 'motion-layer'; label: string }
+  | { kind: 'chapters'; items: string[]; activeIndex: number };
 
 export interface SceneItem {
   effectId: string;
@@ -17,6 +18,7 @@ export interface SceneItem {
   phase: ScenePhase;
   visible: boolean;
   content: SceneContent;
+  asset?: EffectInstance['asset'];
   visualTags: string[];
   visualKind: SceneVisualKind;
   layout: Pick<EffectInstance['layout'], 'nx' | 'ny' | 'nw' | 'nh' | 'scale'>;
@@ -25,6 +27,13 @@ export interface SceneItem {
   scale: number;
   rotation: number;
   blur: number;
+  // 语义动效字段（按 key 透传，不存在时保持 undefined）
+  clipProgress?: number;
+  revealProgress?: number;
+  glow?: number;
+  colorProgress?: number;
+  progress?: number;
+  chapterProgress?: number;
   appearance: EffectInstance['appearance'];
   zIndex: number;
 }
@@ -103,6 +112,7 @@ export function evaluateSceneAtTime(project: ProjectComposition, timeSec: number
         phase,
         visible: false,
         content: contentForEffect(effect, safeTime),
+        asset: effect.asset,
         visualTags: visualTagsForEffect(effect),
         visualKind: visualKindForEffect(effect),
         layout: { nx: effect.layout.nx, ny: effect.layout.ny, nw: effect.layout.nw, nh: effect.layout.nh, scale: effect.layout.scale },
@@ -117,15 +127,31 @@ export function evaluateSceneAtTime(project: ProjectComposition, timeSec: number
     }
     const role = phase === 'exit' ? 'exit' : 'enter';
     const motion = effect.motion[role];
-    const motionFrame = phase === 'active'
-      ? evaluateMotion('fade', 'enter', 1)
-      : evaluateMotion(motion.motionId, role, progress, { common: { duration: motion.durationSec } });
+    let motionFrame: MotionFrame;
+    if (phase === 'active') {
+      // active 相位不再写死 fade：若 effect 带 compiled，用 emphasis 相位求值（不循环）
+      if (effect.motion.compiled) {
+        const enterDuration = Math.min(effect.motion.enter.durationSec, effect.time.endSec - effect.time.startSec);
+        const emphasisDuration = effect.motion.compiled.emphasis.durationSec;
+        const emphasisProgress = emphasisDuration > 0
+          ? Math.max(0, Math.min(1, (safeTime - (effect.time.startSec + enterDuration)) / emphasisDuration))
+          : 1;
+        motionFrame = evaluateCompiledMotion(effect.motion.compiled, 'enter', emphasisProgress, { width: project.project.canvasWidth, height: project.project.canvasHeight }, 'emphasis');
+      } else {
+        motionFrame = evaluateMotion('fade', 'enter', 1);
+      }
+    } else if (effect.motion.compiled) {
+      motionFrame = evaluateCompiledMotion(effect.motion.compiled, role, progress, { width: project.project.canvasWidth, height: project.project.canvasHeight });
+    } else {
+      motionFrame = evaluateMotion(motion.motionId, role, progress, { common: { duration: motion.durationSec } });
+    }
     return {
       effectId: effect.effectId,
       variantId: effect.variantId,
       phase,
         visible: true,
       content: contentForEffect(effect, safeTime),
+      asset: effect.asset,
       visualTags: visualTagsForEffect(effect),
       visualKind: visualKindForEffect(effect),
       layout: { nx: effect.layout.nx, ny: effect.layout.ny, nw: effect.layout.nw, nh: effect.layout.nh, scale: effect.layout.scale },
@@ -134,6 +160,11 @@ export function evaluateSceneAtTime(project: ProjectComposition, timeSec: number
       scale: effect.layout.scale * motionFrame.scale,
       rotation: motionFrame.rotationDeg,
       blur: motionFrame.blurPx ?? 0,
+      clipProgress: motionFrame.clipProgress,
+      revealProgress: motionFrame.revealProgress,
+      glow: motionFrame.glow,
+      colorProgress: motionFrame.colorProgress,
+      progress: motionFrame.progress,
       appearance: effect.appearance,
       zIndex: effect.zIndex,
     } satisfies SceneItem;
@@ -158,6 +189,47 @@ export function evaluateSceneAtTime(project: ProjectComposition, timeSec: number
       zIndex: 100,
     };
   });
-  const items = [...effectItems, ...subtitleItems];
+  // 防御性排序：apply.ts 会排序，但手写/外部导入的 composition 可能未排序。
+  // 未排序时 chapters[0]/chapters[last] 不再等于"首章起/末章止"，导航条会整体消失。
+  const chapters = project.chapters && project.chapters.length > 0
+    ? [...project.chapters].sort((left, right) => left.startSec - right.startSec || left.endSec - right.endSec)
+    : undefined;
+  const navItems: SceneItem[] = (chapters && chapters.length > 0 && (project.project.chapterNav ?? defaultChapterNavSettings).visible)
+    ? (() => {
+      const firstStart = chapters[0]!.startSec;
+      const lastEnd = chapters[chapters.length - 1]!.endSec;
+      if (safeTime < firstStart || safeTime >= lastEnd) return [];
+      // 覆盖 safeTime 的章节下标；落在章节空隙时取前一个章节（不留 undefined）
+      let activeIndex = 0;
+      for (let index = 0; index < chapters.length; index += 1) {
+        if (safeTime >= chapters[index]!.startSec && safeTime < chapters[index]!.endSec) {
+          activeIndex = index;
+          break;
+        }
+        if (safeTime >= chapters[index]!.endSec) activeIndex = index;
+      }
+      const navSettings = project.project.chapterNav ?? defaultChapterNavSettings;
+      const progress = (safeTime - firstStart) / Math.max(0.0001, lastEnd - firstStart);
+      return [{
+        effectId: 'chapter-nav',
+        variantId: 'chapter-nav',
+        phase: 'active' as const,
+        visible: true,
+        content: { kind: 'chapters', items: chapters.map((chapter) => chapter.title), activeIndex },
+        visualTags: [],
+        visualKind: 'chapterNav' as const,
+        layout: { nx: 0.03, ny: navSettings.position === 'top' ? 0.02 : 0.93, nw: 0.94, nh: 0.06, scale: 1 },
+        opacity: 1,
+        translate: { x: 0, y: 0 },
+        scale: 1,
+        rotation: 0,
+        blur: 0,
+        appearance: { accent: (project.project.themePalette ?? defaultThemePalette).method, theme: 'dark' as const },
+        chapterProgress: Math.max(0, Math.min(1, progress)),
+        zIndex: 90,
+      } satisfies SceneItem];
+    })()
+    : [];
+  const items = [...effectItems, ...subtitleItems, ...navItems];
   return { timeSec: safeTime, items, activeEffectIds: effectItems.filter((item) => item.visible && item.opacity > 0).map((item) => item.effectId) };
 }

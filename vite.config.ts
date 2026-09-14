@@ -22,6 +22,8 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./tests/setup.ts'],
-    exclude: ['node_modules', 'dist', 'AI-Project-Ledger-Dashboard/**', 'tests/e2e/**'],
+    // `.workbuddy/tmp/**` 下放的是真跑脚本与临时验证文件（会打真实 ASR/LLM API、
+    // 导出完整视频），绝不能被 `pnpm test` 收集，否则每次跑测试都烧额度且耗时数分钟。
+    exclude: ['node_modules', 'dist', 'AI-Project-Ledger-Dashboard/**', '.workbuddy/**', 'tests/e2e/**'],
   }
 });

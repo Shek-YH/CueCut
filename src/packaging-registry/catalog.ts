@@ -1,10 +1,10 @@
-import { packMotionCatalog } from '../motions/packCatalog';
+import { canonicalPackagingCatalog } from './canonicalCatalog';
 import { packagingCategories, type PackagingPlan } from '../packaging-ir/schema';
 import { packagingEffectManifestSchema, type PackagingEffectManifest } from './manifest';
 
 type PackagingCategory = (typeof packagingCategories)[number];
 
-function categoryFor(entry: (typeof packMotionCatalog)[number]): PackagingCategory {
+function categoryFor(entry: (typeof canonicalPackagingCatalog)[number]): PackagingCategory {
   const key = `${entry.family} ${entry.effectFamilyId} ${entry.semanticTags.join(' ')}`.toLowerCase();
   if (/lowerthird|nameplate/.test(key)) return 'lower-third';
   if (/quote|keypoint|definition|term|keyword/.test(key)) return 'quote';
@@ -18,7 +18,7 @@ function categoryFor(entry: (typeof packMotionCatalog)[number]): PackagingCatego
   return 'callout';
 }
 
-function manifestFor(entry: (typeof packMotionCatalog)[number]): PackagingEffectManifest {
+function manifestFor(entry: (typeof canonicalPackagingCatalog)[number]): PackagingEffectManifest {
   const category = categoryFor(entry);
   const key = `${entry.family} ${entry.semanticTags.join(' ')} ${entry.visualTags.join(' ')}`.toLowerCase();
   const supportsCueTimes = entry.motionCategory.toLowerCase() === 'liststagger' || /list|steps/.test(key);
@@ -68,7 +68,7 @@ function manifestFor(entry: (typeof packMotionCatalog)[number]): PackagingEffect
   });
 }
 
-export const packagingEffectCatalog: PackagingEffectManifest[] = packMotionCatalog.map(manifestFor);
+export const packagingEffectCatalog: PackagingEffectManifest[] = canonicalPackagingCatalog.map(manifestFor);
 export const packagingCategoriesInCatalog = new Set(packagingEffectCatalog.map((effect) => effect.category));
 
 export function findPackagingEffect(id: string): PackagingEffectManifest | undefined {

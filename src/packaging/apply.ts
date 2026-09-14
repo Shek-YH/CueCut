@@ -1,16 +1,15 @@
 import { findPackMotion } from '../motions/packCatalog';
-import { projectCompositionSchema, type ProjectComposition } from '../project/schema';
+import { compileMotionIntent } from '../packaging-motion/compiler';
+import { projectCompositionSchema, type ChapterEntry, type ProjectComposition } from '../project/schema';
+import { resolveSemanticAccent } from '../packaging-theme/palette';
 import type { TranscriptSegment } from '../subtitles/srt';
 import type { ResolvedPackagingOverlay } from './resolve';
 
-function runtimeMotion(motionId: string, role: 'enter' | 'exit'): string {
-  if (role === 'enter') {
-    if (motionId === 'scale_punch' || motionId === 'scale_grow' || motionId === 'slam') return 'pop';
-    if (motionId === 'slide_left' || motionId === 'slide_right' || motionId === 'slide_bottom' || motionId === 'slide_top') return 'soft-slide';
-    return 'fade';
-  }
-  if (motionId === 'scale_out') return 'scale-fade-out';
-  return motionId.startsWith('slide_out') ? 'fly-left' : 'fade';
+export interface ResolvedChapterInput {
+  id: string;
+  title: string;
+  startSec: number;
+  endSec: number;
 }
 
 function sourceEntry(effectId: string) {
@@ -71,7 +70,7 @@ function effectContent(overlay: ResolvedPackagingOverlay, subtitles: TranscriptS
   return content;
 }
 
-export function applyResolvedPackagingToProject(project: ProjectComposition, resolved: { overlays: ResolvedPackagingOverlay[] }): ProjectComposition {
+export function applyResolvedPackagingToProject(project: ProjectComposition, resolved: { overlays: ResolvedPackagingOverlay[]; chapters?: ResolvedChapterInput[] }): ProjectComposition {
   const next = structuredClone(project);
   next.effects = next.effects.filter((effect) => !effect.effectId.startsWith('packaging-'));
   next.segments = next.segments.filter((segment) => !segment.segmentId.startsWith('packaging-'));
@@ -79,6 +78,7 @@ export function applyResolvedPackagingToProject(project: ProjectComposition, res
     const entry = sourceEntry(overlay.effectId);
     if (!entry) throw new Error(`Packaging effect is not registered: ${overlay.effectId}`);
     const segmentId = `packaging-${overlay.id}`;
+    const compiledMotion = compileMotionIntent(overlay.motion, { seed: overlay.seed, durationSec: overlay.endSec - overlay.startSec });
     next.segments.push({
       segmentId,
       sourceSubtitleIds: overlay.sourceSubtitleIds ?? next.subtitles.filter((subtitle) => subtitle.startSec < overlay.endSec && subtitle.endSec > overlay.startSec).map((subtitle) => subtitle.id),
@@ -105,8 +105,17 @@ export function applyResolvedPackagingToProject(project: ProjectComposition, res
       time: { startSec: overlay.startSec, endSec: overlay.endSec },
       content: effectContent(overlay, next.subtitles),
       layout: { nx: overlay.rect.x, ny: overlay.rect.y, nw: overlay.rect.width, nh: overlay.rect.height, scale: 1, anchor: 'scene-safe', preferredSide: 'center', relationToSubject: overlay.subjectRelation ?? 'avoid' },
-      appearance: { accent: next.project.palette.accent, theme: 'dark' as const },
-      motion: { enter: { motionId: runtimeMotion(overlay.motion.entrance, 'enter'), durationSec: Math.min(0.6, (overlay.endSec - overlay.startSec) / 3), intensity: 0.6 }, exit: { motionId: runtimeMotion(overlay.motion.exit, 'exit'), durationSec: Math.min(0.6, (overlay.endSec - overlay.startSec) / 3), intensity: 0.4 } },
+      appearance: {
+        accent: resolveSemanticAccent({
+          semanticRole: overlay.semanticRole,
+          evidenceType: overlay.evidenceType,
+          familyId: entry.effectFamilyId,
+          visualTags: entry.visualTags,
+          semanticTags: entry.semanticTags,
+        }, next.project.themePalette, next.project.palette.accent),
+        theme: 'dark' as const,
+      },
+      motion: { enter: { motionId: overlay.motion.entrance, durationSec: compiledMotion.enter.durationSec, intensity: 0.6 }, exit: { motionId: overlay.motion.exit, durationSec: compiledMotion.exit.durationSec, intensity: 0.4 }, compiled: compiledMotion },
       sfx: null,
       zIndex: overlay.layer === undefined ? 10 + index : 10 + overlay.layer * 10,
       userFlags: { locked: overlay.locked === true, manual: false, ...(overlay.locked === true && overlay.userOverride?.zone ? { lockedZone: overlay.userOverride.zone } : {}) },
@@ -114,5 +123,18 @@ export function applyResolvedPackagingToProject(project: ProjectComposition, res
     } satisfies ProjectComposition['effects'][number];
   });
   next.effects.push(...appended);
+  if (resolved.chapters && resolved.chapters.length > 0) {
+    const seen = new Set<string>();
+    const cleaned = resolved.chapters
+      .filter((chapter) => chapter.endSec > chapter.startSec)
+      .sort((left, right) => left.startSec - right.startSec)
+      .filter((chapter) => {
+        if (seen.has(chapter.id)) return false;
+        seen.add(chapter.id);
+        return true;
+      })
+      .map((chapter): ChapterEntry => ({ id: chapter.id, title: chapter.title, startSec: chapter.startSec, endSec: chapter.endSec }));
+    if (cleaned.length > 0) next.chapters = cleaned;
+  }
   return projectCompositionSchema.parse(next);
 }

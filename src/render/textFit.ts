@@ -123,6 +123,7 @@ function contentText(content: SceneContent): string {
   if (content.kind === 'text') return content.text;
   if (content.kind === 'number') return String(content.value);
   if (content.kind === 'list') return content.items.map((item) => `✓ ${item}`).join('\n');
+  if (content.kind === 'chapters') return content.items[content.activeIndex] ?? content.items[0] ?? '';
   return content.label;
 }
 

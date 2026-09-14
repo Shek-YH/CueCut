@@ -28,6 +28,46 @@ describe('single-pass packaging director', () => {
     expect(calls).toBe(1);
   });
 
+  it('sanitizes unsupported template query extensions returned by the Director', async () => {
+    const director = createPackagingDirector(async () => ({
+      schemaVersion: '1.0',
+      timeline: [{
+        id: 'model-unit', startSec: 1, endSec: 4, category: 'stat', content: { value: '67%' }, importance: 0.8,
+        visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'normal' }, motionIntent: { entrance: 'fade_in', emphasis: 'none', exit: 'fade_out' }, placementIntent: { preferredZones: ['upper-right'], subjectRelation: 'avoid', anchor: 'scene-safe' }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false },
+        templateQuery: { semanticRole: 'key-stat', contentSlots: ['value'], durationHint: 'short', positionHint: 'upper-right' },
+      }],
+    }));
+    const result = await director.generate({ project: { projectId: 'sanitize-query', durationSec: 10, fps: 30, canvasWidth: 1080, canvasHeight: 1920, aspectRatio: '9:16' } });
+    expect(result.plan.timeline[0]?.templateQuery).toMatchObject({ tags: ['stat'], requiredContentSlots: ['value'], preferredZones: ['upper-right'] });
+    expect(result.plan.timeline[0]?.templateQuery).not.toHaveProperty('durationHint');
+    expect(result.plan.timeline[0]?.templateQuery).not.toHaveProperty('positionHint');
+  });
+
+  it('does not let visual asset metadata become a renderer content requirement', async () => {
+    const director = createPackagingDirector(async () => ({
+      schemaVersion: '1.0',
+      timeline: [{
+        id: 'asset-unit', startSec: 1, endSec: 4, category: 'stat', content: { value: '67%', assetRequest: { needed: true, assetId: 'ai_robot', displayName: 'AI Robot', kind: 'character', description: 'friendly robot', semanticTags: ['robot'], importance: 'hero' } }, importance: 0.8,
+        visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'normal' }, motionIntent: { entrance: 'fade_in', emphasis: 'none', exit: 'fade_out' }, placementIntent: { preferredZones: ['upper-right'], subjectRelation: 'avoid', anchor: 'scene-safe' }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false },
+        templateQuery: { requiredContentSlots: ['assetRequest', 'value', 'subText'] },
+      }],
+    }));
+    const result = await director.generate({ project: { projectId: 'asset-query', durationSec: 10, fps: 30, canvasWidth: 1080, canvasHeight: 1920, aspectRatio: '9:16' } });
+    expect(result.plan.timeline[0]?.templateQuery?.requiredContentSlots).toEqual(['value']);
+  });
+
+  it('normalizes Director asset requests into the local visual asset contract', async () => {
+    const director = createPackagingDirector(async () => ({
+      schemaVersion: '1.0',
+      timeline: [{
+        id: 'asset-unit', startSec: 1, endSec: 4, category: 'callout', content: { text: '知识沉淀', assetRequest: { needed: true, assetId: 'bad id', displayName: '书架隐喻', kind: 'raster-illustration', description: 'A dusty bookshelf illustration', semanticTags: ['knowledge-loss'], importance: 'hero' } }, importance: 0.8,
+        visualIntent: { style: 'clean-tech', energy: 0.5, emphasis: 'normal' }, motionIntent: { entrance: 'fade_in', emphasis: 'none', exit: 'fade_out' }, placementIntent: { preferredZones: ['upper-right'], subjectRelation: 'avoid', anchor: 'scene-safe' }, constraints: { maxLines: 2, mustRemainReadable: true, mayOverlapSubtitle: false },
+      }],
+    }));
+    const result = await director.generate({ project: { projectId: 'asset-normalize', durationSec: 10, fps: 30, canvasWidth: 1080, canvasHeight: 1920, aspectRatio: '9:16' } });
+    expect(result.plan.timeline[0]?.content.assetRequest).toMatchObject({ kind: 'illustration', assetId: 'bad_id', needed: true });
+  });
+
   it('repairs the legacy type/elements timeline shape into Packaging IR locally', async () => {
     const director = createPackagingDirector(async () => JSON.stringify({
       schemaVersion: 1,
@@ -120,6 +160,24 @@ describe('single-pass packaging director', () => {
     });
 
     expect(result.plan.timeline).toEqual([]);
+  });
+
+  it('degrades an invented visualUnit kind to a safe catalog category instead of trusting it', async () => {
+    const director = createPackagingDirector(async () => ({
+      schemaVersion: '1.0',
+      visualUnits: [{
+        id: 'unit-invented', sectionId: 'section-1', kind: 'totally-invented-card', startSec: 1, endSec: 2,
+        layer: 1, persistence: 'transient', sourceSubtitleIds: [], summary: '重点', selectionReason: '核心',
+        visualIntent: 'emphasize-key-claim', content: { text: '重点' }, cueTimesSec: [],
+        placement: { preferredZones: ['center'], subjectRelation: 'avoid', anchor: 'scene-safe' },
+        templateQuery: { semanticRole: 'quote' }, visualValue: 1,
+      }],
+    }));
+    const result = await director.generate({
+      project: { projectId: 'kind-project', durationSec: 10, fps: 30, canvasWidth: 1080, canvasHeight: 1920, aspectRatio: '9:16' },
+      preferences: { style: 'clean-tech', density: 'auto' },
+    });
+    expect(result.plan.visualUnits?.[0]?.kind).toBe('callout');
   });
 
   it('removes skipped visual unit ids from the final section element references', async () => {

@@ -6,6 +6,8 @@ import { evaluateSceneAtTime } from '../../render/scene';
 import { sceneItemBox, textLayoutPlanForSceneItem, type TextLayoutRegion } from '../../render/textFit';
 import { findEffectDefinition } from '../../effects/registry';
 import { previewTimeForEffect } from '../selection/previewTime';
+import { BROWSER_VIDEO_DECODE_ERROR_MESSAGE, type BrowserPlaybackState } from '../../media/videoPlayback';
+import { createEffectRenderSpec, renderSpecSignature } from '../../render/effectRenderSpec';
 
 interface CanvasStageProps {
   project: ProjectComposition;
@@ -16,6 +18,8 @@ interface CanvasStageProps {
   playing: boolean;
   onVideoTime: (timeSec: number) => void;
   onVideoMetadata: (metadata: { durationSec: number; canvasWidth: number; canvasHeight: number }) => void;
+  onVideoPlaybackState?: (state: BrowserPlaybackState) => void;
+  onVideoPlaybackError?: (message: string) => void;
   onSelect: (effectId: string) => void;
 }
 
@@ -47,7 +51,7 @@ function FittedText({ region, canvasWidth, className, fillContainer = false }: {
   );
 }
 
-export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, store, playing, onVideoTime, onVideoMetadata, onSelect }: CanvasStageProps) {
+export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, store, playing, onVideoTime, onVideoMetadata, onVideoPlaybackState, onVideoPlaybackError, onSelect }: CanvasStageProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const didDragRef = useRef(false);
   const pointerSelectionRef = useRef(false);
@@ -177,12 +181,22 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
   };
 
   const handleLoadedMetadata = (event: React.SyntheticEvent<HTMLVideoElement>) => {
+    onVideoPlaybackState?.('metadata-ready');
     onVideoMetadata({ durationSec: event.currentTarget.duration, canvasWidth: event.currentTarget.videoWidth, canvasHeight: event.currentTarget.videoHeight });
     try {
       event.currentTarget.currentTime = currentTime;
     } catch {
       // Ignore seeks before the native media element is ready.
     }
+  };
+
+  const handleLoadedData = () => onVideoPlaybackState?.('loading-data');
+  const handleCanPlay = () => onVideoPlaybackState?.('can-play');
+  const handleWaiting = () => onVideoPlaybackState?.('waiting');
+  const handleStalled = () => onVideoPlaybackState?.('stalled');
+  const handleVideoError = () => {
+    onVideoPlaybackState?.('error');
+    onVideoPlaybackError?.(BROWSER_VIDEO_DECODE_ERROR_MESSAGE);
   };
 
   const selectEffect = (effectId: string, event: ReactMouseEvent<HTMLButtonElement>) => {
@@ -231,7 +245,7 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
       </div>
       <div className="canvaswrap">
         <div className="canvas" data-aspect-ratio={project.project.aspectRatio} style={{ aspectRatio: project.project.aspectRatio.replace(':', ' / ') }}>
-          {videoSrc ? <video ref={videoRef} className="vbg-video" data-testid="preview-video" preload="metadata" src={videoSrc} playsInline onLoadedMetadata={handleLoadedMetadata} onTimeUpdate={(event) => handleVideoTime(event.currentTarget.currentTime)} /> : <div className="vbg" />}
+          {videoSrc ? <video ref={videoRef} className="vbg-video" data-testid="preview-video" preload="auto" src={videoSrc} playsInline onLoadedMetadata={handleLoadedMetadata} onLoadedData={handleLoadedData} onCanPlay={handleCanPlay} onWaiting={handleWaiting} onStalled={handleStalled} onError={handleVideoError} onTimeUpdate={(event) => handleVideoTime(event.currentTarget.currentTime)} /> : <div className="vbg" />}
           <span className="vlabel">VIDEO FRAME · {currentTime.toFixed(2)}s</span>
           <div className="person" />
           <div className="safe" />
@@ -239,16 +253,18 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
             const sceneItem = scene.items.find((item) => item.effectId === effect.effectId);
             const isActive = sceneItem?.visible ?? false;
             const selected = effect.effectId === selectedEffectId;
-            const isMetric = sceneItem?.visualKind === 'metric';
             const position = preview[effect.effectId] ?? effect.layout;
             const positionedItem = sceneItem ? { ...sceneItem, layout: { ...sceneItem.layout, ...position } } : null;
             const box = positionedItem ? sceneItemBox(positionedItem, project.project.canvasWidth, project.project.canvasHeight) : { x: position.nx * project.project.canvasWidth, y: position.ny * project.project.canvasHeight, width: position.nw * project.project.canvasWidth, height: position.nh * project.project.canvasHeight };
             const textRegions = positionedItem ? textLayoutPlanForSceneItem(positionedItem, box.width, box.height).regions : [];
+            const renderSpec = positionedItem ? createEffectRenderSpec(positionedItem) : null;
             const definition = findEffectDefinition(effect.familyId, effect.variantId);
             return (
               <button
                 className={'fx visual-' + (sceneItem?.visualKind ?? 'text') + ' ' + effect.familyId + (isActive ? '' : ' off') + (selected ? ' sel' : '')}
                 data-motion-phase={sceneItem?.phase ?? 'hidden'}
+                data-render-signature={renderSpec ? renderSpecSignature(renderSpec) : undefined}
+                data-renderer-id={renderSpec?.rendererId}
                 data-testid={'effect-card-' + effect.effectId}
                 key={effect.effectId}
                 onClick={(event) => selectEffect(effect.effectId, event)}
@@ -269,7 +285,8 @@ export function CanvasStage({ project, currentTime, selectedEffectId, videoSrc, 
                 type="button"
               >
                 <span className="fxtag">{definition?.displayName ?? effect.familyId}</span>
-                {isMetric ? (
+                {sceneItem?.asset && <img alt={sceneItem.asset.assetId} className="fx-asset" data-testid={'asset-' + sceneItem.asset.assetId} src={sceneItem.asset.trimmedRef ?? sceneItem.asset.projectAssetRef} />}
+                {renderSpec?.visualKind === 'metric' ? (
                   <>
                     <span className="circle"><FittedText canvasWidth={project.project.canvasWidth} className="fit-value" region={textRegions[0]!} /></span>
                     <span className="card-copy"><FittedText canvasWidth={project.project.canvasWidth} className="fit-label" region={textRegions[1]!} /></span>

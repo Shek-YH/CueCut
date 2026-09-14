@@ -4,9 +4,13 @@
   "ledgerWriter": "AI_Autonomous_Project_Ledger_Skill_v2.3.0",
   "active": true,
   "currentTaskIds": [
-    "realtime-p0-verification"
+    "runtime-v2-WI-18"
   ],
-  "lastWriteAt": "2026-09-11T02:05:35.235Z",
+  "executionMode": "constrained-single-agent",
+  "executionProfile": "Luna Execution Profile",
+  "activePrd": "CueCut_Runtime_V2_VisualAsset_Luna_Development_PRD_v1.0.md",
+  "lastWriteAt": "2026-09-12T06:02:00.000Z",
+  "waitingUserReason": "Visual Asset Provider/API key is not configured for the required real-generation smoke.",
   "dashboard": {
     "enabled": true,
     "status": "RUNNING",

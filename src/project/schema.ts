@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { findMotion } from '../motions/registry';
 import { persistenceModes, placementZones, templateQuerySchema } from '../packaging-ir/schema';
+import { compiledMotionSchema } from '../runtime/schema';
 
 const hexColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be a six-digit hex color');
 
@@ -67,6 +68,41 @@ export const subtitleSettingsSchema = z.object({
   position: z.enum(['top', 'center', 'bottom']).default(defaultSubtitleSettings.position),
 }).strict().default(defaultSubtitleSettings);
 
+const chapterEntrySchema = z.object({
+  id: z.string().min(1).max(160),
+  title: z.string().min(1).max(160),
+  startSec: z.number().finite().min(0),
+  endSec: z.number().finite().min(0),
+}).strict().superRefine((value, context) => {
+  if (value.endSec <= value.startSec) context.addIssue({ code: 'custom', path: ['endSec'], message: 'chapter endSec must be greater than startSec' });
+});
+
+export const defaultThemePalette = {
+  opportunity: '#22C55E',
+  method: '#3B82F6',
+  warning: '#EF4444',
+  result: '#F59E0B',
+};
+
+const themePaletteSchema = z.object({
+  opportunity: hexColorSchema,
+  method: hexColorSchema,
+  warning: hexColorSchema,
+  result: hexColorSchema,
+}).strict();
+
+export const defaultChapterNavSettings = {
+  visible: true,
+  position: 'top' as const,
+  showProgress: true,
+};
+
+const chapterNavSchema = z.object({
+  visible: z.boolean(),
+  position: z.enum(['top', 'bottom']),
+  showProgress: z.boolean(),
+}).strict();
+
 const packagingCadenceSchema = z.object({
   stepMs: z.number().finite().min(0).max(120000).optional(),
   staggerMs: z.number().finite().min(0).max(120000).optional(),
@@ -94,6 +130,12 @@ const effectSchema = z.object({
   variantId: z.string().min(1),
   time: timeRangeSchema,
   content: z.record(z.string(), z.unknown()),
+  asset: z.object({
+    assetId: z.string().min(1),
+    source: z.enum(['generated', 'imported', 'builtin']),
+    projectAssetRef: z.string().min(1),
+    trimmedRef: z.string().min(1).optional(),
+  }).strict().optional(),
   layout: layoutSchema,
   appearance: z.object({
     accent: hexColorSchema,
@@ -102,6 +144,7 @@ const effectSchema = z.object({
   motion: z.object({
     enter: motionPartSchema,
     exit: motionPartSchema,
+    compiled: compiledMotionSchema.optional(),
   }),
   sfx: z
     .object({
@@ -145,7 +188,10 @@ export const projectCompositionSchema = z.object({
     }).default({ sourceFileName: null, zIndex: 0, locked: true }),
     platformHint: z.string().nullable(),
     contentStyleHint: z.string().nullable(),
+    themePalette: themePaletteSchema.optional(),
+    chapterNav: chapterNavSchema.optional(),
   }),
+  chapters: z.array(chapterEntrySchema).optional(),
   segments: z.array(
     z.object({
       segmentId: z.string().min(1),
@@ -201,6 +247,9 @@ export const projectCompositionSchema = z.object({
 });
 
 export type SubtitleSettings = z.infer<typeof subtitleSettingsSchema>;
+export type ChapterEntry = z.infer<typeof chapterEntrySchema>;
+export type ThemePalette = z.infer<typeof themePaletteSchema>;
+export type ChapterNavSettings = z.infer<typeof chapterNavSchema>;
 export type ParsedProjectComposition = z.infer<typeof projectCompositionSchema>;
 export type ProjectComposition = Omit<ParsedProjectComposition, 'subtitleSettings'> & { subtitleSettings?: SubtitleSettings };
 export type EffectInstance = ParsedProjectComposition['effects'][number];

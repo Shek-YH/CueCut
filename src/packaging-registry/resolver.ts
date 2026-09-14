@@ -148,10 +148,11 @@ function scoreEffect(effect: PackagingEffectManifest, request: RegistryResolveRe
 }
 
 export function resolvePackagingEffect(request: RegistryResolveRequest, catalog = packagingEffectCatalog): { selected?: RegistryCandidate; candidates: RegistryCandidate[] } {
+  const excluded = new Set(request.excludeEffectIds ?? []);
   const candidates = catalog
     .filter((effect) => templateRequirementsSatisfied(effect, request))
     .map((effect) => scoreEffect(effect, request))
+    .map((candidate) => excluded.has(candidate.effect.id) ? { ...candidate, score: candidate.score - 8, reasons: [...candidate.reasons, 'recent-use-penalty'] } : candidate)
     .sort((left, right) => right.score - left.score || left.effect.id.localeCompare(right.effect.id));
-  const excluded = new Set(request.excludeEffectIds ?? []);
-  return { selected: candidates.find((candidate) => !excluded.has(candidate.effect.id)) ?? candidates[0], candidates };
+  return { selected: candidates[0], candidates };
 }

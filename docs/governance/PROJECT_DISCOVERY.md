@@ -1,5 +1,13 @@
 # CueCut Project Discovery｜Talking-Head Effects Phase
 
+## Active Runtime V2 correction — 2026-09-12
+
+- The repository is not in the previous “尚无提交” state. Current HEAD is `328122a737324be16c71d71dfbf17aadc77523c2` on `main`; see `docs/runtime-v2/00_BASELINE.md` for the reproducible snapshot.
+- The active project is `CueCut Runtime V2 + Visual Asset Layer`, not only the historical Talking-Head Effects phase.
+- Current toolchain is React 19, TypeScript 7, Vite 8, Vitest 5, Playwright, Zod, pnpm 11; `pnpm lint` and `pnpm build` passed at WI-00 baseline.
+- The project remains COMPLEX. Runtime V2 is being executed one Work Item at a time with Luna constraints; no user-only resource is needed before the visual-asset provider smoke test.
+- The existing `oneCallGuard` is an invariant to preserve, and the present screenshots/PRD/Prompt dirty files are user-owned inputs that must remain untouched.
+
 **Date:** 2026-09-08  
 **Gate:** G1 — Project Understanding
 

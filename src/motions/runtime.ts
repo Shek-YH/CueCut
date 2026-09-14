@@ -1,5 +1,6 @@
 import { normalizeMotionParams, type MotionParameterSet, type PartialMotionParameterSet, type MotionRole } from './format';
 import { packMotionCatalog } from './packCatalog';
+import type { CompiledMotion } from '../packaging-motion/compiler';
 
 export interface MotionFrame {
   opacity: number;
@@ -8,6 +9,73 @@ export interface MotionFrame {
   scale: number;
   rotationDeg: number;
   blurPx?: number;
+  // 语义属性：按 key 透传，不存在时保持 undefined（不填 0）
+  clipProgress?: number;
+  revealProgress?: number;
+  glow?: number;
+  colorProgress?: number;
+  progress?: number;
+}
+
+function interpolateKeyframe(keyframes: Array<Record<string, number>>, key: string, progress: number, fallback: number): number {
+  const values = keyframes.map((keyframe) => keyframe[key]).filter((value): value is number => value !== undefined && Number.isFinite(value));
+  if (values.length === 0) return fallback;
+  if (values.length === 1) return values[0]!;
+  const scaled = progressValue(progress) * (values.length - 1);
+  const index = Math.min(values.length - 2, Math.floor(scaled));
+  return lerp(values[index]!, values[index + 1]!, scaled - index);
+}
+
+// 缓动表：t 已 clamp 到 0..1；未知 ease 退化为 linear（不抛错）
+function easeValue(ease: string, t: number): number {
+  const x = progressValue(t);
+  switch (ease) {
+    case 'linear': return x;
+    case 'power2.out': return 1 - (1 - x) ** 2;
+    case 'power2.in': return x ** 2;
+    case 'power2.inOut': return x < 0.5 ? 2 * x * x : 1 - 2 * (1 - x) ** 2;
+    case 'power3.out': return 1 - (1 - x) ** 3;
+    case 'expo.out': return x >= 1 ? 1 : 1 - 2 ** (-10 * x);
+    case 'sine.inOut': return 0.5 - 0.5 * Math.cos(Math.PI * x);
+    case 'back.out': {
+      const c1 = 1.70158;
+      const c3 = c1 + 1;
+      return 1 + c3 * (x - 1) ** 3 + c1 * (x - 1) ** 2;
+    }
+    default: return x;
+  }
+}
+
+export function evaluateCompiledMotion(compiled: CompiledMotion, role: MotionRole, progress: number, dimensions: { width: number; height: number }, phaseOverride?: MotionRole | 'emphasis'): MotionFrame {
+  // 默认按 role 取 enter/exit；传 'emphasis' 时用 emphasis 相位（保持 4 参数调用点兼容）
+  const phase = phaseOverride === 'emphasis'
+    ? compiled.emphasis
+    : phaseOverride === 'enter' || phaseOverride === 'exit'
+      ? compiled[phaseOverride]
+      : role === 'enter' ? compiled.enter : compiled.exit;
+  // 先按该 phase 的 ease 把进度缓动，再用 eased 进度做插值
+  const eased = easeValue(phase.ease, progress);
+  const semanticKey = (key: string): number | undefined => {
+    const values = phase.keyframes.map((keyframe) => keyframe[key]).filter((value): value is number => value !== undefined && Number.isFinite(value));
+    if (values.length === 0) return undefined;
+    if (values.length === 1) return values[0]!;
+    const scaled = eased * (values.length - 1);
+    const index = Math.min(values.length - 2, Math.floor(scaled));
+    return lerp(values[index]!, values[index + 1]!, scaled - index);
+  };
+  return {
+    opacity: interpolateKeyframe(phase.keyframes, 'opacity', eased, role === 'enter' ? 1 : 0),
+    translateX: interpolateKeyframe(phase.keyframes, 'x', eased, 0) * dimensions.width,
+    translateY: interpolateKeyframe(phase.keyframes, 'y', eased, 0) * dimensions.height,
+    scale: interpolateKeyframe(phase.keyframes, 'scale', eased, 1),
+    rotationDeg: interpolateKeyframe(phase.keyframes, 'rotation', eased, 0),
+    blurPx: interpolateKeyframe(phase.keyframes, 'blur', eased, 0),
+    clipProgress: semanticKey('clipProgress'),
+    revealProgress: semanticKey('revealProgress'),
+    glow: semanticKey('glow'),
+    colorProgress: semanticKey('colorProgress'),
+    progress: semanticKey('progress'),
+  };
 }
 
 export interface MotionFrameInput {
@@ -30,10 +98,79 @@ function visibleOpacity(role: MotionRole, progress: number): number {
   return role === 'enter' ? progress : 1 - progress;
 }
 
-function packProfileId(motionId: string): 'fade' | 'slide' | 'scale' | 'blur' {
-  let hash = 0;
-  for (const character of motionId) hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
-  return (['fade', 'slide', 'scale', 'blur'] as const)[hash % 4] ?? 'fade';
+type PackProfile = 'fade' | 'slide' | 'scale' | 'blur' | 'pop' | 'stagger' | 'ticker';
+
+const SLIDE_HORIZONTAL_FAMILIES = ['flow', 'timeline', 'steps', 'checklist', 'ranking', 'delta', 'beforeafter', 'versus', 'proscons'];
+// 这些 family 本质是进度/数值驱动动效，强制 ticker
+const TICKER_FAMILIES = ['progress', 'gauge', 'percentage', 'ranking', 'delta'];
+
+function packProfileFor(entry: typeof packMotionCatalog[number], role: MotionRole, progress: number): MotionFrame {
+  const p = progressValue(progress);
+  // 1) 按 motionCategory 数据驱动选型（禁止哈希）
+  let profile: PackProfile;
+  switch (entry.motionCategory) {
+    case 'Fade': profile = 'fade'; break;
+    case 'Scale': profile = 'scale'; break;
+    case 'Pop': profile = 'pop'; break;
+    case 'Slide': profile = 'slide'; break;
+    case 'ListStagger': profile = 'stagger'; break;
+    case 'Ticker': profile = 'ticker'; break;
+    default: profile = 'fade'; // 安全兜底：motionCategory 缺失/未知时退化为 fade（非哈希）
+  }
+  // 2) family 级确定性微调（在 profile 基础上）
+  const family = entry.family;
+  if (TICKER_FAMILIES.includes(family)) profile = 'ticker';
+  if (family === 'Alert' || family === 'AttentionBurst') profile = 'pop';
+  if (family === 'FocusReticle' || family === 'CircleFocus') profile = 'scale';
+
+  const tags = entry.semanticTags.map((tag) => tag.toLowerCase());
+  const horizontal = tags.includes('left') || tags.includes('right')
+    ? true
+    : tags.includes('top') || tags.includes('bottom')
+      ? false
+      : SLIDE_HORIZONTAL_FAMILIES.includes(family.toLowerCase());
+  const distance = 520;
+
+  if (profile === 'ticker') {
+    // 进度/数值驱动：progress = eased t，opacity 恒 1，scale 恒 1
+    return { opacity: 1, translateX: 0, translateY: 0, scale: 1, rotationDeg: 0, progress: easeValue('power2.out', p) };
+  }
+  if (profile === 'pop') {
+    const overshoot = family === 'Alert' || family === 'AttentionBurst' ? 1.12 : 1.06;
+    if (role === 'enter') {
+      const opacity = p < 0.4 ? p / 0.4 : 1; // 0→1 在前 40% 完成
+      const scale = p < 0.65 ? lerp(0.6, overshoot, p / 0.65) : lerp(overshoot, 1, (p - 0.65) / 0.35);
+      return { opacity, translateX: 0, translateY: 0, scale, rotationDeg: 0 };
+    }
+    // exit：scale 1 → 0.94 → 0.9，opacity → 0
+    const scale = p < 0.5 ? lerp(1, 0.94, p / 0.5) : lerp(0.94, 0.9, (p - 0.5) / 0.5);
+    return { opacity: 1 - p, translateX: 0, translateY: 0, scale, rotationDeg: 0 };
+  }
+  if (profile === 'stagger' || profile === 'slide') {
+    // 与 slide 同形态（水平由左侧 520px 位移入），stagger 做重映射模拟逐条延迟
+    const tIn = profile === 'stagger' ? progressValue((p - 0.12) / 0.88) : p; // 无 item index 时的近似
+    const pos = role === 'enter' ? lerp(-distance, 0, tIn) : lerp(0, -distance, p);
+    return {
+      opacity: visibleOpacity(role, role === 'enter' ? tIn : p),
+      translateX: horizontal ? pos : 0,
+      translateY: horizontal ? 0 : pos,
+      scale: 1,
+      rotationDeg: 0,
+    };
+  }
+  if (profile === 'scale') {
+    const frame: MotionFrame = {
+      opacity: visibleOpacity(role, p),
+      translateX: 0,
+      translateY: 0,
+      scale: role === 'enter' ? lerp(0.8, 1, p) : lerp(1, 0.8, p),
+      rotationDeg: 0,
+    };
+    if (family === 'FocusReticle' || family === 'CircleFocus') frame.glow = Math.sin(Math.PI * p); // 入场扫光
+    return frame;
+  }
+  // fade
+  return { opacity: visibleOpacity(role, p), translateX: 0, translateY: 0, scale: 1, rotationDeg: 0 };
 }
 
 function applyCommon(frame: MotionFrame, params?: PartialMotionParameterSet): MotionFrame {
@@ -50,8 +187,9 @@ function evaluateMotionProfile(motionId: string, role: MotionRole, progress: num
   const p = progressValue(progress);
 
   if (motionId.startsWith('pack:')) {
-    if (!packMotionCatalog.some((entry) => entry.adapterId === motionId)) throw new Error(`Unknown motion: ${motionId}`);
-    return evaluateMotionProfile(packProfileId(motionId), role, p);
+    const entry = packMotionCatalog.find((candidate) => candidate.adapterId === motionId);
+    if (!entry) throw new Error(`Unknown motion: ${motionId}`);
+    return packProfileFor(entry, role, p);
   }
 
   if (motionId === 'text-morph') return evaluateMotionProfile('blur', role, p);
@@ -63,6 +201,38 @@ function evaluateMotionProfile(motionId: string, role: MotionRole, progress: num
   if (motionId === 'fade') {
     return { opacity: visibleOpacity(role, p), translateX: 0, translateY: 0, scale: 1, rotationDeg: 0 };
   }
+
+  if (motionId === 'fade_in' || motionId === 'fade_out') return evaluateMotionProfile('fade', role, p);
+  if (motionId === 'fade_blur') return evaluateMotionProfile('blur', role, p);
+
+  const directionalDistance = 520;
+  if (motionId === 'slide_left' || motionId === 'slide_right' || motionId === 'slide_top' || motionId === 'slide_bottom') {
+    const horizontal = motionId === 'slide_left' || motionId === 'slide_right';
+    const direction = motionId === 'slide_left' || motionId === 'slide_top' ? -1 : 1;
+    return {
+      opacity: visibleOpacity(role, p),
+      translateX: horizontal ? lerp(direction * directionalDistance, 0, p) : 0,
+      translateY: horizontal ? 0 : lerp(direction * directionalDistance, 0, p),
+      scale: 1,
+      rotationDeg: 0,
+    };
+  }
+  if (motionId === 'slide_out_left' || motionId === 'slide_out_right' || motionId === 'slide_out_bottom') {
+    const horizontal = motionId !== 'slide_out_bottom';
+    const direction = motionId === 'slide_out_left' ? -1 : 1;
+    return {
+      opacity: visibleOpacity(role, p),
+      translateX: horizontal ? lerp(0, direction * directionalDistance, p) : 0,
+      translateY: horizontal ? 0 : lerp(0, directionalDistance, p),
+      scale: 1,
+      rotationDeg: 0,
+    };
+  }
+  if (motionId === 'scale_grow' || motionId === 'scale_punch') return evaluateMotionProfile('scale', role, p);
+  if (motionId === 'scale_out') return evaluateMotionProfile('scale', role, p);
+  if (motionId === 'word_reveal' || motionId === 'typewriter') return evaluateMotionProfile('fade', role, p);
+  if (motionId === 'slam') return evaluateMotionProfile('scale', role, p);
+  if (motionId === 'wipe_left' || motionId === 'wipe_right' || motionId === 'wipe_out') return evaluateMotionProfile('fade', role, p);
 
   if (motionId === 'slide') {
     return {

@@ -100,6 +100,61 @@ describe('Canvas video surface', () => {
     expect(onVideoMetadata).toHaveBeenCalledWith({ durationSec: 42.5, canvasWidth: 1080, canvasHeight: 1920 });
   });
 
+  it('reports browser playback readiness separately from probe metadata', () => {
+    const onVideoPlaybackState = vi.fn();
+    const onVideoPlaybackError = vi.fn();
+    render(
+      <CanvasStage
+        currentTime={0}
+        onSelect={() => undefined}
+        onVideoMetadata={() => undefined}
+        onVideoPlaybackError={onVideoPlaybackError}
+        onVideoPlaybackState={onVideoPlaybackState}
+        onVideoTime={() => undefined}
+        playing={false}
+        project={createFixtureProject()}
+        selectedEffectId="fx-ring"
+        store={createProjectStore(createFixtureProject())}
+        videoSrc="blob:fixture"
+      />,
+    );
+
+    const video = screen.getByTestId('preview-video');
+    fireEvent.loadedMetadata(video);
+    fireEvent.loadedData(video);
+    fireEvent.canPlay(video);
+    fireEvent.waiting(video);
+    fireEvent.stalled(video);
+    fireEvent.error(video);
+
+    expect(onVideoPlaybackState.mock.calls.map(([state]) => state)).toEqual([
+      'metadata-ready', 'loading-data', 'can-play', 'waiting', 'stalled', 'error',
+    ]);
+    expect(onVideoPlaybackError).toHaveBeenCalledWith('浏览器无法解码该视频编码');
+  });
+
+  it('renders a bound visual asset in Workspace while retaining the effect controls', () => {
+    const project = createFixtureProject();
+    project.effects[0]!.asset = { assetId: 'ai_robot_assistant', source: 'generated', projectAssetRef: '/assets/robot.png' };
+
+    render(
+      <CanvasStage
+        currentTime={6}
+        onSelect={() => undefined}
+        onVideoMetadata={() => undefined}
+        onVideoTime={() => undefined}
+        playing={false}
+        project={project}
+        selectedEffectId="fx-ring"
+        store={createProjectStore(project)}
+        videoSrc={null}
+      />,
+    );
+
+    expect(screen.getByTestId('asset-ai_robot_assistant')).toHaveAttribute('src', '/assets/robot.png');
+    expect(screen.getByTestId('effect-card-fx-ring')).toHaveAttribute('data-renderer-id');
+  });
+
   it('seeks the native video while playback remains active', () => {
     const props = {
       onSelect: () => undefined,

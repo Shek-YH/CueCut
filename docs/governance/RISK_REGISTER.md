@@ -1,5 +1,17 @@
 # CueCut Risk Register｜Talking-Head Effects Phase
 
+## Active Runtime V2 risks — 2026-09-12
+
+| ID | Risk | Impact | Mitigation | Owner | Status |
+|---|---|---|---|---|---|
+| RUNTIME-V2-001 | Full Vitest run stays alive after jsdom navigation-not-implemented output | High | Keep focused baseline evidence; isolate the responsible test before final regression gate | R00 | OPEN |
+| RUNTIME-V2-002 | Rich motion intents are downgraded in `src/packaging/apply.ts` | High | WI-04 introduces a single compiled-motion path with directional tests | R00 | OPEN |
+| RUNTIME-V2-003 | Workspace/Lab/Export consume generic visual families independently | High | WI-03/WI-05 establish canonical runtime and shared render contract before broad migration | R00 | OPEN |
+| RUNTIME-V2-004 | Browser playback readiness is inferred from probe/metadata | High | WI-01 separates probe and browser states and records media events | R00 | OPEN |
+| RUNTIME-V2-005 | Visual Asset provider credential or private media could cross trust boundary | High | Synthetic-first; provider disabled by default; secrets only in server store; request user action only at WI-13 smoke | R00 | CONTROLLED |
+| RUNTIME-V2-006 | Existing dirty screenshots and user-supplied PRD/Prompt could be overwritten | High | Safety snapshot recorded; no reset/clean/stash; scoped patches only | R00 | CONTROLLED |
+| RUNTIME-V2-007 | Full E2E screenshot capture rewrote two pre-existing dirty user PNGs; no local backup was found | High | Do not run screenshot-writing E2E against dirty evidence paths; retain current dirty files and disclose incident | R00 | OPEN |
+
 **Updated:** 2026-09-08
 
 | ID | Risk | Impact | Mitigation | Owner | Status |
